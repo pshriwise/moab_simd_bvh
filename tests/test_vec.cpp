@@ -4,7 +4,7 @@
 #include "Vec3.h"
 #include "testutil.hpp"
 
-int main( int argc, char* argv) {
+int main( int argc, char** argv) {
 
   float x = 0.0, y = 1.0 , z = 2.0;
 
