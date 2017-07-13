@@ -3,10 +3,11 @@ SET(SRC_FILES)
 LIST(APPEND SRC_FILES)
 
 SET(HEADERS)
-LIST(APPEND HEADERS testutil.hpp Vec3f.h)
+LIST(APPEND HEADERS testutil.hpp Vec3f.h AABB.h)
 
 INCLUDE_DIRECTORIES(..)
 
 ADD_EXECUTABLE(test_vec3f test_vec.cpp ${SRC_FILES})
+ADD_EXECUTABLE(test_aabb test_aabb.cpp ${SRC_FILES})
 
 
