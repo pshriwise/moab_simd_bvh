@@ -85,146 +85,37 @@
 
 // For EXCEPTION_MODE, throw an exception when a test fails.
 // This will unwind stack, recover memory, etc. 
-#if MODE == EXCEPTION_MODE
-   struct ErrorExcept{};
-#  define FLAG_ERROR throw ErrorExcept()
+// #if MODE == EXCEPTION_MODE
+//    struct ErrorExcept{};
+// #  define FLAG_ERROR throw ErrorExcept()
 // For FORK_MODE, the test is running in its own processs.  Just
 // terminate the process with a non-zero exit code when the test
 // fails.
-#elif MODE == FORK_MODE
-#  include <sys/types.h>
-#  include <sys/wait.h>
-#  include <unistd.h>
-#  include <errno.h>
 #  define FLAG_ERROR exit(1)
 // For LONGJMP_MODE, we do a long jump to just before the test is
 // run, with a return value of -1 to indicate failures (positive
 // return codes are used if the test caused a segfault or other
 // signal.)
-#elif MODE == LONGJMP_MODE
-#  include <signal.h>
-#  include <setjmp.h>
-#  define FLAG_ERROR siglongjmp( jmpenv, -1 )
-#else
-#  error "MODE not set"
-#endif
+// #elif MODE == LONGJMP_MODE
+// #  include <signal.h>
+// #  include <setjmp.h>
+// #  define FLAG_ERROR siglongjmp( jmpenv, -1 )
+// #else
+// #  error "MODE not set"
+// #endif
 
 /***************************************************************************************
  *                              Setup for LONGJMP_MODE
  ***************************************************************************************/
 
-#if MODE == LONGJMP_MODE
+//#if MODE == LONGJMP_MODE
 
 // Variable to hold stack state for longjmp
-sigjmp_buf jmpenv;
+// sigjmp_buf jmpenv;
 
 // Define signal handler used to catch errors such as segfaults.
 // Signal handler does longjmp with the signal number as the 
 // return value.
-extern "C" {
-  void sighandler( int sig ) {
-    signal( sig, sighandler );
-    siglongjmp(jmpenv, sig);
-    // should never return from longjmp
-    exit(1);
-  }
-  typedef void (*sigfunc_t)(int);
-} // extern "C"
-
-// Helper function to register signal handlers.  
-int sethandler( int sig ) {
-  sigfunc_t h = signal( sig, &sighandler );
-  if (h == SIG_ERR)
-    return  1;
-   // If user-defined signal handler (or signal is ignored),
-   // than unregister our handler.
-  else if (h != SIG_DFL)
-    signal( sig, h );
-  return 0;
-}
-
-// Register signal handlers for all defined signals that typicall result
-// in process termination.
-int init_signal_handlers()
-{
-  int result = 0;
-/* Don't trap these.  It is unlikely that a test would ever generate such 
-   a signal on its own and trapping them interfers with a user's ability 
-   to stop a test.  SIGHUP implies that the controlling terminal was closed.  
-   If the user does ctrl-C or ctrl-\ (SIGINT and SIGQUIT, respectively) and
-   we trap these then just the current test stops.  If we leave the default
-   behavior for them then the whole test suite stops.  The latter is likely 
-   the desired behavior.  SIGTERM is the default signal sent by the 'kill'
-   command.
-#ifdef SIGHUP
-  result += sethandler( SIGHUP );
-#endif
-#ifdef SIGINT
-  result += sethandler( SIGINT );
-#endif
-#ifdef SIGQUIT
-  result += sethandler( SIGQUIT );
-#endif
-#ifdef SIGTERM
-  result += sethandler( SIGTERM );
-#endif
-*/
-
-#ifdef SIGILL
-  result += sethandler( SIGILL );
-#endif
-#ifdef SIGTRAP
-  result += sethandler( SIGTRAP );
-#endif
-#ifdef SIGABRT
-  result += sethandler( SIGABRT );
-#endif
-#ifdef SIGBUS
-  result += sethandler( SIGBUS );
-#endif
-#ifdef SIGFPE
-  result += sethandler( SIGFPE );
-#endif
-#ifdef SIGSEGV
-  result += sethandler( SIGSEGV );
-#endif
-
-/* Catching these causes problems with mpich2 1.3.1p1 and a
-   test should never receive such a signal anyway.
-#ifdef SIGUSR1
-  result += sethandler( SIGUSR1 );
-#endif
-#ifdef SIGUSR2
-  result += sethandler( SIGUSR2 );
-#endif
-*/
-
-/* Don't trap SIGCHLD.  The only way a test should receive
-   such a signal is if it actually forked a child process.
-   That is unlikely, but if it does happen the test probably
-   wants to handle the signal itself.
-#ifdef SIGCHLD
-  result += sethandler( SIGCHLD );
-#endif
-*/
-
-#ifdef SIGPIPE
-  result += sethandler( SIGPIPE );
-#endif
-#ifdef SIGIO
-  result += sethandler( SIGIO );
-#endif
-#ifdef SIGSYS
-  result += sethandler( SIGSYS );
-#endif
-  return result;
-}
-
-// Declare a garbage global variable.  Use variable initialization to
-// force call to init_signal_handlers().  
-int junk_init_var = init_signal_handlers();
-
-#endif // LONGJMP_MODE
 
 
 /***************************************************************************************
@@ -235,107 +126,6 @@ int junk_init_var = init_signal_handlers();
 // so we have a convenient place to set a break point
 inline void flag_error() 
   { FLAG_ERROR; }
-
-
-/***************************************************************************************
- *                            The Code to Run Tests
- ***************************************************************************************/
-
-
-/* Make sure IS_BUILDING_MB is defined so we can include MBInternals.hpp */
-//#include "moab/Types.hpp"
-
-#ifndef TEST_USES_ERR_CODES
-typedef void (*test_func)(void);
-int run_test( test_func test, const char* func_name )
-#endif
-{
-  printf("Running %s ...\n", func_name );
-  
-#if MODE == EXCEPTION_MODE
-  /* On Windows, run all tests in same process.
-     Flag errors by throwing an exception.
-   */
-  try {
-    (*test)();
-    return 0;
-  }
-  catch (ErrorExcept) {
-    printf( "  %s: FAILED\n", func_name );
-    return 1;
-  }
-  catch (...) {
-    printf( "  %s: UNCAUGHT EXCEPTION\n", func_name );
-    return 1;
-  }
-    
-#elif MODE == FORK_MODE
-    /* For non-Windows OSs, fork() and run test in child process. */
-  pid_t pid = fork();
-  int status;
-  
-    /* Fork failed? */
-  if (pid == -1) {  
-    perror( "fork()" );
-    abort(); /* abort all tests (can't fork child processes) */
-  }
-  
-    /* If child process*/
-  if (pid == 0) {
-    (*test)();  /* call test function */
-    exit(0);    /* if function returned, then it succeeded */
-  }
-  
-    /* If here, then parent process */
-    
-    /* Wait until child process exits */
-  waitpid( pid, &status, 0 );
-  
-    /* Check child exit status */
-  if (WIFSIGNALED(status)) {
-    if (WTERMSIG(status))
-      printf("  %s: TERMINATED (signal %d)\n", func_name, (int)WTERMSIG(status) );
-    if (WCOREDUMP(status))
-      printf("  %s: CORE DUMP\n", func_name);
-    return 1;
-  }
-  else if(WEXITSTATUS(status)) {
-    printf( "  %s: FAILED\n", func_name );
-    return 1;
-  }
-  else {
-    return 0;
-  }
-  
-#elif MODE == LONGJMP_MODE
-    // Save stack state at this location.
-  int rval = sigsetjmp( jmpenv, 1 );
-    // If rval is zero, then we haven't run the test yet. 
-    // If rval is non-zero then
-    // a) we ran the test
-    // b) the test failed
-    // c) we did a longjmp back to the location where we called setsigjmp.
-    
-    // run test
-  if (!rval) {
-    (*test)();
-    return 0;
-  }
-    // some check failed
-  else if (rval == -1) {
-    printf( "  %s: FAILED\n", func_name );
-    return 1;
-  }
-    // a signal was raised (e.g. segfault)
-  else {
-    printf( "  %s: TERMINATED (signal %d)\n", func_name, rval );
-    return 1;
-  }
-#else
-  #error "MODE not set"
-#endif // MODE
-}
-
 
 
 /***************************************************************************************
