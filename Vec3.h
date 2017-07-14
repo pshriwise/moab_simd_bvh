@@ -2,7 +2,7 @@
 #include <iostream>
 #include <math.h>
 
-  struct Vec3f {
+struct Vec3f {
 
     float x,y,z;
  
@@ -28,6 +28,8 @@
 
     inline float length() const { return sqrtf(x*x + y*y + z*z); }
 
+
+
     friend std::ostream& operator <<(std::ostream &os, Vec3f const&v);
 
   };
@@ -35,3 +37,13 @@
 inline std::ostream& operator <<(std::ostream &os, Vec3f const&v) {
   return os << '[' << v[0] << ' ' << v[1] << ' ' << v[2] << ']';
 }
+
+inline void ge_mask( const Vec3f &a, const Vec3f &b, bool mask[3] ) { mask[0] = a.x >= b.x;
+                                                                      mask[1] = a.y >= b.y;
+								      mask[2] = a.z >= b.z; }
+
+inline void le_mask( const Vec3f &a, const Vec3f &b, bool mask[3] ) { mask[0] = a.x <= b.x;
+                                                                      mask[1] = a.y <= b.y;
+								      mask[2] = a.z <= b.z; }
+
+inline bool all(bool b[3]) { return b[0] && b[1] && b[2]; }

@@ -1,6 +1,5 @@
 
 #include <stdio.h>
-
 #include "Vec3.h"
 #include "testutil.hpp"
 
@@ -31,6 +30,16 @@ int main( int argc, char** argv) {
   CHECK_REAL_EQUAL(z, v1.z, 0.);
 
   Vec3f empty = Vec3f();
+
+  Vec3f a = Vec3f(2.0,3.0,2.0);
+  Vec3f b = Vec3f(1.0,3.0,4.0);
+
+  bool exp_result[3] = {true, true, false};
+
+  bool result[3];
+  ge_mask(a,b,result);
+
+  CHECK_ARRAYS_EQUAL( exp_result, 3, result, 3);
   
   return 0;
 
