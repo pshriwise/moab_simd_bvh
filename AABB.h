@@ -2,41 +2,48 @@
 #include <cstring>
 #include <algorithm>
 
+#include "Vec3.h"
 
 struct AABB {
 
-  float extents[6]; // extents of box {x_min, y_min, z_min, x_max, y_max, z_max}
+  Vec3f lower, upper;
 
   inline AABB() {}
 
-  inline AABB( float x_min, float y_min, float z_min, float x_max, float y_max, float z_max) { extents[0] = x_min;
-                                                                                               extents[1] = y_min;
-											       extents[2] = z_min;
-											       extents[3] = x_max;
-											       extents[4] = y_max;
-											       extents[5] = z_max; }
+  inline AABB( float x_min, float y_min, float z_min, float x_max, float y_max, float z_max) { lower[0] = x_min;
+                                                                                               lower[1] = y_min;
+											       lower[2] = z_min;
+											       upper[0] = x_max;
+											       upper[1] = y_max;
+											       upper[2] = z_max; }
   
-  inline AABB( const float ext[6] ) { std::memcpy(extents,  ext, sizeof(extents)); }
-  
-  inline AABB& operator =( const AABB& other) { std::memcpy(extents, other.extents, sizeof(extents)); return *this; }
+  inline AABB( const float ext[6] ) { lower[0] = ext[0];
+                                      lower[1] = ext[1];
+				      lower[2] = ext[2];
+				      upper[0] = ext[3];
+				      upper[1] = ext[4];
+				      upper[2] = ext[5];}
 
-  inline AABB( const AABB& other) { std::memcpy(extents, other.extents, sizeof(extents)); }
-
-  inline void update( const float x_val, const float y_val, const float z_val ) { extents[0] = std::min(extents[0], x_val);
-                                                                                  extents[1] = std::min(extents[1], y_val);
-										  extents[2] = std::min(extents[2], z_val);
-										  extents[3] = std::max(extents[3], x_val);
-										  extents[4] = std::max(extents[4], y_val);
-										  extents[5] = std::max(extents[5], z_val); }
+  inline AABB( const float low[3], float high[3] ) { lower = Vec3f(low); upper = Vec3f(high); }
   
-  inline void update( const float xyz[3] ) { extents[0] = std::min(extents[0], xyz[0]);
-                                             extents[1] = std::min(extents[1], xyz[1]);
-					     extents[2] = std::min(extents[2], xyz[2]);
-					     extents[3] = std::max(extents[3], xyz[0]);
-					     extents[4] = std::max(extents[4], xyz[1]);
-					     extents[5] = std::max(extents[5], xyz[2]); }
+  inline AABB& operator =( const AABB& other) { lower = other.lower; upper = other.upper; return *this; }
 
-  
+  inline AABB( const AABB& other) { lower = other.lower; upper = other.upper; }
+
+  inline void update( const float x_val, const float y_val, const float z_val ) { lower[0] = std::min(lower[0], x_val);
+                                                                                  lower[1] = std::min(lower[1], y_val);
+										  lower[2] = std::min(lower[2], z_val);
+										  upper[0] = std::max(upper[0], x_val);
+										  upper[1] = std::max(upper[1], y_val);
+										  upper[2] = std::max(upper[2], z_val); }
+
+  inline void update( const float xyz[3] ) { lower[0] = std::min(lower[0], xyz[0]);
+                                             lower[1] = std::min(lower[1], xyz[1]);
+					     lower[2] = std::min(lower[2], xyz[2]);
+					     upper[0] = std::max(upper[0], xyz[0]);
+					     upper[1] = std::max(upper[1], xyz[1]);
+					     upper[2] = std::max(upper[2], xyz[2]); }
+
 };
 
   

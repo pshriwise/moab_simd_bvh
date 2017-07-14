@@ -206,10 +206,8 @@ void check_true( bool cond, const char* str, int line, const char* file )
   }
 }
 
-#ifdef MB_CART_VECT_HPP
-
-void check_equal_cartvect( const moab::CartVect& A,
-                        const moab::CartVect& B, double eps,
+void check_equal_cartvect( const Vec3f& A,
+                        const Vec3f& B, float eps,
                         const char* sA, const char* sB, 
                         int line, const char* file )
 {
@@ -229,8 +227,6 @@ void check_equal_cartvect( const moab::CartVect& A,
   
   flag_error(); 
 }
-
-#endif // #ifdef MB_CART_VECT_HPP
 
 #ifdef __cplusplus
 

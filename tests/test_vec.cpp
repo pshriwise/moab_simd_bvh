@@ -14,6 +14,10 @@ int main( int argc, char** argv) {
   CHECK_REAL_EQUAL(y, v.y, 0.);
   CHECK_REAL_EQUAL(z, v.z, 0.);
 
+  CHECK_REAL_EQUAL(x, v[0], 0.);
+  CHECK_REAL_EQUAL(y, v[1], 0.);
+  CHECK_REAL_EQUAL(z, v[2], 0.);
+  
   Vec3f v1 = v;
 
   CHECK_REAL_EQUAL(x, v1.x, 0.);
