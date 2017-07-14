@@ -14,16 +14,16 @@ int main( int argc, char** argv) {
 
   AABB box = AABB(test_extents);
 
-  CHECK_VECREAL_EQUAL(Vec3f(test_lower), box.lower, 0.0);
-  CHECK_VECREAL_EQUAL(Vec3f(test_upper), box.upper, 0.0);
+  CHECK_VECREAL_EQUAL(Vec3f(test_lower), box.lower);
+  CHECK_VECREAL_EQUAL(Vec3f(test_upper), box.upper);
 
   AABB box1 = box;
 
-  CHECK_VECREAL_EQUAL(box.lower, box1.lower, 0.0);
-  CHECK_VECREAL_EQUAL(box.upper, box1.upper, 0.0);
+  CHECK_VECREAL_EQUAL(box.lower, box1.lower);
+  CHECK_VECREAL_EQUAL(box.upper, box1.upper);
 
-  CHECK_VECREAL_EQUAL(Vec3f(test_lower), box1.lower, 0.0);
-  CHECK_VECREAL_EQUAL(Vec3f(test_upper), box1.upper, 0.0);
+  CHECK_VECREAL_EQUAL(Vec3f(test_lower), box1.lower);
+  CHECK_VECREAL_EQUAL(Vec3f(test_upper), box1.upper);
 
 
   AABB box2 = AABB(x_min, y_min, z_min, x_max, y_max, z_max);

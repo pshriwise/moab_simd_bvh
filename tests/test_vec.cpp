@@ -34,12 +34,20 @@ int main( int argc, char** argv) {
   Vec3f a = Vec3f(2.0,3.0,2.0);
   Vec3f b = Vec3f(1.0,3.0,4.0);
 
-  bool exp_result[3] = {true, true, false};
+  Vec3<bool> expected_result = Vec3<bool>(true, true, false);
+  
+  Vec3<bool> result = ge_mask(a,b);
 
-  bool result[3];
-  ge_mask(a,b,result);
+  CHECK_VECREAL_EQUAL(expected_result, result);
 
-  CHECK_ARRAYS_EQUAL( exp_result, 3, result, 3);
+  expected_result = Vec3<bool>(false, true, true);
+
+  result = le_mask(a,b);
+
+  CHECK_VECREAL_EQUAL(expected_result, result);
+
+
+  //  CHECK_ARRAYS_EQUAL( exp_result, 3, result, 3);
   
   return 0;
 

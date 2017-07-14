@@ -26,7 +26,7 @@
 /** Check that two arrays contain the same values in the same order */
 #define CHECK_ARRAYS_EQUAL( EXP, EXP_LEN, ACT, ACT_LEN ) check_array_equal( (EXP), (EXP_LEN), (ACT), (ACT_LEN), #EXP, #ACT, __LINE__, __FILE__ )
 /** Check that two CartVect objects contain same values */
-#define CHECK_VECREAL_EQUAL( EXP, ACT, EPS ) check_equal_cartvect( (EXP), (ACT), (EPS), #EXP, #ACT, __LINE__, __FILE__ ) 
+#define CHECK_VECREAL_EQUAL( EXP, ACT) check_equal_Vec3( (EXP), (ACT), #EXP, #ACT, __LINE__, __FILE__ ) 
 /** Run a test
  *  Argument should be a function with the signature:  void func(void)
  *  Evaluates to zero if test is successful, one otherwise.
@@ -206,14 +206,15 @@ void check_true( bool cond, const char* str, int line, const char* file )
   }
 }
 
-void check_equal_cartvect( const Vec3f& A,
-                        const Vec3f& B, float eps,
+template<typename T>
+void check_equal_Vec3( const Vec3<T>& A,
+			   const Vec3<T>& B,
                         const char* sA, const char* sB, 
                         int line, const char* file )
 {
-  check_equal( A.length(), B.length(), eps, sA, sB, line, file);
+  check_equal( A.length(), B.length(), 0.0, sA, sB, line, file);
 
-  if( fabs(A[0] - B[0]) <= eps && fabs(A[1] - B[1]) <= eps && fabs(A[2] - B[2]) <= eps )
+  if( (A[0] == B[0]) && (A[1] == B[1]) && (A[2] == B[2]) )
     return;
   
   std::cout << "Equality Test Failed: " << sA << " == " << sB << std::endl;
