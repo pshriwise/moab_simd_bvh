@@ -3,8 +3,23 @@
 #include "AABB.h"
 #include "testutil.hpp"
 
+
+void constructor_tests();
+void point_contain_tests();
+
 int main( int argc, char** argv) {
 
+  // test AABB constructor
+  constructor_tests();
+  // test point containment method
+  point_contain_tests();
+  
+  return 0;
+
+}
+
+void constructor_tests() {
+  //test-box values
   float x_min = 0.0, y_min = 1.0, z_min = 2.0,
         x_max = 3.0, y_max = 4.0, z_max = 5.0;
 
@@ -12,38 +27,51 @@ int main( int argc, char** argv) {
   float test_lower[3] = {x_min, y_min, z_min};
   float test_upper[3] = {x_max, y_max, z_max};
 
+  // create AABB using an array
   AABB box = AABB(test_extents);
-
   CHECK_VECREAL_EQUAL(Vec3f(test_lower), box.lower);
   CHECK_VECREAL_EQUAL(Vec3f(test_upper), box.upper);
-
+  
+  // test copy constructor
   AABB box1 = box;
-
+  // test that values equal original box
   CHECK_VECREAL_EQUAL(box.lower, box1.lower);
   CHECK_VECREAL_EQUAL(box.upper, box1.upper);
-
+  // test that extents equal oritinal values
   CHECK_VECREAL_EQUAL(Vec3f(test_lower), box1.lower);
   CHECK_VECREAL_EQUAL(Vec3f(test_upper), box1.upper);
 
-
+  // test 'explicit' min/max constructor
   AABB box2 = AABB(x_min, y_min, z_min, x_max, y_max, z_max);
-  
+  // test that values are correct
   CHECK_REAL_EQUAL(x_min, box2.lower[0], 0.0);
   CHECK_REAL_EQUAL(y_min, box2.lower[1], 0.0);
   CHECK_REAL_EQUAL(z_min, box2.lower[2], 0.0);
   CHECK_REAL_EQUAL(x_max, box2.upper[0], 0.0);
   CHECK_REAL_EQUAL(y_max, box2.upper[1], 0.0);
   CHECK_REAL_EQUAL(z_max, box2.upper[2], 0.0);
-		   
-  AABB empty = AABB();
 
+  // test empty constructor
+  AABB empty = AABB();
+}
+
+void point_contain_tests() {
+  // test-box values
+  float x_min = 0.0, y_min = 1.0, z_min = 2.0,
+        x_max = 3.0, y_max = 4.0, z_max = 5.0;
+  // create test box
+  AABB box = AABB(x_min, y_min, z_min, x_max, y_max, z_max);
+
+  //create test point inside box
   Vec3f p(1.5,2.0, 4.0);
-  CHECK(inside(box2,p));
+  CHECK(inside(box,p));
 
   //update x position to be outside limits
   p[0] = 3.5;
-  CHECK(!inside(box2,p));
-  
-  return 0;
+  CHECK(!inside(box,p));
 
+  // add point just outside box in double,
+  // should be inside for single precision
+  p = Vec3f(3.0000000000001, 3.0, 3.0);
+  CHECK(inside(box,p));
 }
