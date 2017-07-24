@@ -46,6 +46,20 @@ template<typename T>
 inline Vec3<T> operator -( const Vec3<T> &a, const Vec3<T> &b ) { return Vec3<T>(a.x-b.x, a.y-b.y, a.z-b.z); }
 
 template<typename T>
+inline Vec3<T> operator *( const Vec3<T>& a, const Vec3<T>& b ) { return Vec3<T>(a.x * b.x, a.y * b.y, a.z * b.z); }
+template<typename T>
+inline Vec3<T> operator *( const       T& a, const Vec3<T>& b ) { return Vec3<T>(a   * b.x, a   * b.y, a   * b.z); }
+template<typename T>
+inline Vec3<T> operator *( const Vec3<T>& a, const       T& b ) { return Vec3<T>(a.x * b  , a.y * b  , a.z * b  ); }
+template<typename T>
+inline Vec3<T> operator /( const Vec3<T>& a, const       T& b ) { return Vec3<T>(a.x / b  , a.y / b  , a.z / b  ); }
+template<typename T>
+inline Vec3<T> operator /( const       T& a, const Vec3<T>& b ) { return Vec3<T>(a   / b.x, a   / b.y, a   / b.z); }
+template<typename T>
+inline Vec3<T> operator /( const Vec3<T>& a, const Vec3<T>& b ) { return Vec3<T>(a.x / b.x, a.y / b.y, a.z / b.z); }
+
+
+template<typename T>
 inline Vec3<bool> ge_mask( const Vec3<T> &a, const Vec3<T> &b ) { return Vec3<bool>(a.x >= b.x,a.y >= b.y, a.z >= b.z); }
 
 template<typename T>

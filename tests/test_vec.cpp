@@ -137,7 +137,26 @@ void binary_op_tests() {
   Vec3f expected_add_result(4.0, 4.0, 4.0);
   CHECK_VECREAL_EQUAL(expected_add_result, a+b);
 
-  Vec3f expected_sub_result(-2.0,0.0,2.0);
+  Vec3f expected_sub_result(-2.0, 0.0, 2.0);
   CHECK_VECREAL_EQUAL(expected_sub_result, a-b);
-  
+
+  Vec3f expected_mult_result(3.0, 4.0, 3.0);
+  CHECK_VECREAL_EQUAL(expected_mult_result,a*b);
+
+  Vec3f expected_div_result((1.0/3.0), 1.0, 3.0);
+  CHECK_VECREAL_EQUAL(expected_div_result,a/b);
+
+  // Scalar Tests
+
+  float val = 10.0;
+
+  expected_mult_result = Vec3f(10.0, 20.0, 30.0);
+  CHECK_VECREAL_EQUAL(expected_mult_result,val*a);
+  CHECK_VECREAL_EQUAL(expected_mult_result,a*val);
+
+  expected_div_result = Vec3f(0.1, 0.2, 0.3);
+  CHECK_VECREAL_EQUAL(expected_div_result, a/val);
+  expected_div_result = Vec3f((10.0/1.0), (10.0/2.0), (10.0/3.0));
+  CHECK_VECREAL_EQUAL(expected_div_result, val/a);
+
 }
