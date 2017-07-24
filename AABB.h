@@ -24,7 +24,9 @@ struct AABB {
 												upper[1] = ext[4];
 												upper[2] = ext[5];}
 
-  inline AABB ( const float low[3], float high[3] ) { lower = Vec3f(low); upper = Vec3f(high); }
+  inline AABB ( const float low[3], const float high[3] ) { lower = Vec3f(low); upper = Vec3f(high); }
+
+  inline AABB ( const Vec3f &l, const Vec3f &u ) { lower = l; upper = u; }
   
   inline AABB& operator=( const AABB& other) { lower = other.lower; upper = other.upper; return *this; }
 
@@ -50,3 +52,5 @@ struct AABB {
 };
 
   inline bool inside ( const AABB &b, const Vec3f& p ) { return all(ge_mask(p,b.lower)) && all(le_mask(p,b.upper)); }  
+
+  inline AABB merge ( const AABB &a, const AABB &b ) { return AABB(min(a.lower,b.lower), max(a.upper,b.upper)); }

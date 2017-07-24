@@ -7,6 +7,8 @@
 void constructor_tests();
 void point_contain_tests();
 void extend_tests();
+void merge_tests();
+
 int main( int argc, char** argv) {
 
   // test AABB constructor
@@ -15,6 +17,8 @@ int main( int argc, char** argv) {
   point_contain_tests();
   // test box extension using another box
   extend_tests();
+  // box merging tests
+  merge_tests();
   
   return 0;
 
@@ -53,6 +57,10 @@ void constructor_tests() {
   CHECK_REAL_EQUAL(y_max, box2.upper[1], 0.0);
   CHECK_REAL_EQUAL(z_max, box2.upper[2], 0.0);
 
+  AABB box3 = AABB(Vec3f(test_lower), Vec3f(test_upper));
+  CHECK_VECREAL_EQUAL(Vec3f(test_lower), box3.lower);
+  CHECK_VECREAL_EQUAL(Vec3f(test_upper), box3.upper);
+  
   // test empty constructor
   AABB empty = AABB();
 }
@@ -84,7 +92,6 @@ void extend_tests() {
   AABB box1 = AABB(0.0, 0.0, 0.0,  5.0,  5.0,  5.0);
   AABB box2 = AABB(5.0, 5.0, 5.0, 10.0, 10.0, 10.0);
 
-
   //extend a copy of box1 to match box2
   AABB result;
 
@@ -104,7 +111,25 @@ void extend_tests() {
   CHECK_VECREAL_EQUAL(box1.lower, result.lower);
   // the resulting box should have the same
   // values as box2's upper extents
+  CHECK_VECREAL_EQUAL(box2.upper, result.upper);  
+}
+
+void merge_tests() {
+
+    // create test boxes
+  AABB box1 = AABB(0.0, 0.0, 0.0,  5.0,  5.0,  5.0);
+  AABB box2 = AABB(5.0, 5.0, 5.0, 10.0, 10.0, 10.0);
+
+  //extend a copy of box1 to match box2
+  AABB result;
+
+  result = merge(box1,box2);
+  // the resulting box should have the same
+  // values as box1's lower extents
+  CHECK_VECREAL_EQUAL(box1.lower, result.lower);
+  // the resulting box should have the same
+  // values as box2's upper extents
   CHECK_VECREAL_EQUAL(box2.upper, result.upper);
-  
+
   
 }
