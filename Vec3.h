@@ -39,6 +39,10 @@ template<typename T> inline Vec3<bool> ge_mask( const Vec3<T> &a, const Vec3<T> 
 
 template<typename T> inline Vec3<bool> le_mask( const Vec3<T> &a, const Vec3<T> &b) { return Vec3<bool>(a.x <= b.x,a.y <= b.y, a.z <= b.z); }
 
+template<typename T> inline Vec3<T> min(const Vec3<T>& a, const Vec3<T>& b) { return Vec3<T>(std::min(a.x,b.x), std::min(a.y,b.y), std::min(a.z,b.z)); }
+
+template<typename T> inline Vec3<T> max(const Vec3<T>& a, const Vec3<T>& b) { return Vec3<T>(std::max(a.x,b.x), std::max(a.y,b.y), std::max(a.z,b.z)); }
+
 inline bool all(bool b[3]) { return b[0] && b[1] && b[2]; }
 
 

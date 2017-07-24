@@ -6,6 +6,7 @@
 void constructor_tests();
 void mask_tests();
 void all_tests();
+void min_max_tests();
 
 int main( int argc, char** argv) {
 
@@ -15,6 +16,9 @@ int main( int argc, char** argv) {
   mask_tests();
   // test all for vec3 mask
   all_tests();
+  // test min max methods
+  min_max_tests();
+  
   return 0;
 }
 
@@ -84,4 +88,22 @@ void all_tests() {
   // and the last one
   all_test[2] = false;
   CHECK(!all(all_test));
+}
+
+void min_max_tests() {
+
+  Vec3f vec1 = Vec3f(1.0,2.0,3.0);
+
+  Vec3f vec2 = Vec3f(-1.0,4.0,-6.0);
+
+  Vec3f expected_min_result, min_result;
+  expected_min_result = Vec3f(vec2[0],vec1[1],vec2[2]);
+  min_result = min(vec1,vec2);
+  CHECK_VECREAL_EQUAL(expected_min_result, min_result);
+
+  Vec3f expected_max_result, max_result;
+  expected_max_result = Vec3f(vec1[0],vec2[1],vec1[2]);
+  max_result = max(vec1,vec2);
+  CHECK_VECREAL_EQUAL(expected_max_result, max_result);
+
 }
