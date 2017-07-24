@@ -8,7 +8,7 @@ void constructor_tests();
 void point_contain_tests();
 void extend_tests();
 void merge_tests();
-
+void property_tests();
 int main( int argc, char** argv) {
 
   // test AABB constructor
@@ -19,6 +19,8 @@ int main( int argc, char** argv) {
   extend_tests();
   // box merging tests
   merge_tests();
+  // testing various property calculations for the box
+  property_tests();
   
   return 0;
 
@@ -132,4 +134,18 @@ void merge_tests() {
   CHECK_VECREAL_EQUAL(box2.upper, result.upper);
 
   
+}
+
+void property_tests() {
+    // create test boxes
+  AABB box = AABB(5.0, -5.0, 3.0, 10.0, 15.0, -4.0);
+
+  Vec3f expected_center(7.5, 5.0, -0.5);
+  CHECK_VECREAL_EQUAL(expected_center, box.center());
+
+  Vec3f expected_center2(15.0, 10.0, -1.0);
+  CHECK_VECREAL_EQUAL(expected_center2, box.center2());
+
+  Vec3f expected_size(5.0, 20.0, -7.0);
+  CHECK_VECREAL_EQUAL(expected_size, box.size());
 }

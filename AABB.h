@@ -48,6 +48,11 @@ struct AABB {
 
   inline const AABB& extend(const AABB& other) { lower = min(lower, other.lower); upper = max(upper, other.upper); return *this; }
 
+  inline Vec3f size() const { return upper - lower; };
+
+  inline Vec3f center() const { return 0.5f*(lower + upper); }
+
+  inline Vec3f center2() const { return lower+upper; }
 
 };
 
