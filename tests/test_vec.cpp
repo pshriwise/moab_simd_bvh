@@ -46,9 +46,6 @@ int main( int argc, char** argv) {
 
   CHECK_VECREAL_EQUAL(expected_result, result);
 
-
-  //  CHECK_ARRAYS_EQUAL( exp_result, 3, result, 3);
-  
   return 0;
 
 }
