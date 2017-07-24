@@ -37,6 +37,13 @@ int main( int argc, char** argv) {
 		   
   AABB empty = AABB();
 
+  Vec3f p(1.5,2.0, 4.0);
+  CHECK(inside(box2,p));
+
+  //update x position to be outside limits
+  p[0] = 3.5;
+  CHECK(!inside(box2,p));
+  
   return 0;
 
 }

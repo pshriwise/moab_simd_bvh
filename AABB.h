@@ -44,8 +44,7 @@ struct AABB {
 										   upper[1] = std::max(upper[1], xyz[1]);
 										   upper[2] = std::max(upper[2], xyz[2]); }
 
-  //  inline bool inside ( const AABB &b, const Vec3f& p ) { 
-  //  return all(ge_mask(p,b.lower)) && all(le_mask(p,b.upper)); }
+
 };
 
-  
+  inline bool inside ( const AABB &b, const Vec3f& p ) { return all(ge_mask(p,b.lower)) && all(le_mask(p,b.upper)); }  
