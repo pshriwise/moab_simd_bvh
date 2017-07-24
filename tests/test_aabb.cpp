@@ -6,13 +6,15 @@
 
 void constructor_tests();
 void point_contain_tests();
-
+void extend_tests();
 int main( int argc, char** argv) {
 
   // test AABB constructor
   constructor_tests();
   // test point containment method
   point_contain_tests();
+  // test box extension using another box
+  extend_tests();
   
   return 0;
 
@@ -74,4 +76,35 @@ void point_contain_tests() {
   // should be inside for single precision
   p = Vec3f(3.0000000000001, 3.0, 3.0);
   CHECK(inside(box,p));
+}
+
+void extend_tests() {
+
+  // create test boxes
+  AABB box1 = AABB(0.0, 0.0, 0.0,  5.0,  5.0,  5.0);
+  AABB box2 = AABB(5.0, 5.0, 5.0, 10.0, 10.0, 10.0);
+
+
+  //extend a copy of box1 to match box2
+  AABB result;
+
+  // extend box1 to box2
+  result = box1.extend(box2);
+  // the resulting box should have the same
+  // values as box1's lower extents
+  CHECK_VECREAL_EQUAL(box1.lower, result.lower);
+  // the resulting box should have the same
+  // values as box2's upper extents
+  CHECK_VECREAL_EQUAL(box2.upper, result.upper);
+
+  // extend box2 to box1
+  result = box2.extend(box1);
+  // the resulting box should have the same
+  // values as box1's lower extents
+  CHECK_VECREAL_EQUAL(box1.lower, result.lower);
+  // the resulting box should have the same
+  // values as box2's upper extents
+  CHECK_VECREAL_EQUAL(box2.upper, result.upper);
+  
+  
 }

@@ -44,6 +44,8 @@ struct AABB {
 										   upper[1] = std::max(upper[1], xyz[1]);
 										   upper[2] = std::max(upper[2], xyz[2]); }
 
+  inline const AABB& extend(const AABB& other) { lower = min(lower, other.lower); upper = max(upper, other.upper); return *this; }
+
 
 };
 
