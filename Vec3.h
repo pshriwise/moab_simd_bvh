@@ -48,3 +48,6 @@ template<typename T>
 inline std::ostream& operator <<(std::ostream &os, Vec3<T> const&v) {
   return os << '[' << v[0] << ' ' << v[1] << ' ' << v[2] << ']';
 }
+
+template<typename T>
+inline bool all(Vec3<T> v) { return v[0] && (v[0] == v[1]) && (v[0] == v[2]); }

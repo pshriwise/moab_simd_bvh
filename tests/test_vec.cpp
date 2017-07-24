@@ -46,6 +46,20 @@ int main( int argc, char** argv) {
 
   CHECK_VECREAL_EQUAL(expected_result, result);
 
+  //test for all true
+  Vec3<bool> all_test(true,true,true);
+  CHECK(all(all_test));
+
+  // flip one entry
+  all_test[0] = false;
+  CHECK(!all(all_test));
+  // and another
+  all_test[1] = false;
+  CHECK(!all(all_test));
+  // and the last one
+  all_test[2] = false;
+  CHECK(!all(all_test));
+  
   return 0;
 
 }
