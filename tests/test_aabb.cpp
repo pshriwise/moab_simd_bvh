@@ -86,6 +86,12 @@ void point_contain_tests() {
   // should be inside for single precision
   p = Vec3f(3.0000000000001, 3.0, 3.0);
   CHECK(inside(box,p));
+
+  // add point just outside box in single precision,
+  // should be outside for single precision
+  p = Vec3f(3.0001, 3.0, 3.0);
+  CHECK(!inside(box,p));
+
 }
 
 void extend_tests() {
