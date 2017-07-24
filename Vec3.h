@@ -72,8 +72,13 @@ template<typename T>
 inline Vec3<T> max(const Vec3<T>& a, const Vec3<T>& b) { return Vec3<T>(std::max(a.x,b.x), std::max(a.y,b.y), std::max(a.z,b.z)); }
 
 template<typename T>
-inline T reduce_mul( const Vec3<T> &v ) { return v.x * v.y * v.z; }
-
+inline T reduce_add( const Vec3<T> &v ) { return v.x + v.y + v.z; }
+template<typename T>
+inline T reduce_mul( const Vec3<T>& v ) { return v.x * v.y * v.z; }
+template<typename T>
+inline T reduce_min( const Vec3<T>& v ) { return std::min(std::min(v.x, v.y), v.z); }
+template<typename T>
+inline T reduce_max( const Vec3<T>& v ) { return std::max(std::max(v.x, v.y), v.z); }
 
 inline bool all(bool b[3]) { return b[0] && b[1] && b[2]; }
 
