@@ -9,7 +9,8 @@ void all_tests();
 void min_max_tests();
 void unary_op_tests();
 void binary_op_tests();
-  
+void convenience_method_tests();
+
 int main( int argc, char** argv) {
 
   // test Vec3 constructors
@@ -24,7 +25,8 @@ int main( int argc, char** argv) {
   unary_op_tests();
   // testing binary operators of Vec3
   binary_op_tests();
-  
+  // tests several convenience methods of Vec3
+  convenience_method_tests();
   return 0;
 }
 
@@ -158,5 +160,18 @@ void binary_op_tests() {
   CHECK_VECREAL_EQUAL(expected_div_result, a/val);
   expected_div_result = Vec3f((10.0/1.0), (10.0/2.0), (10.0/3.0));
   CHECK_VECREAL_EQUAL(expected_div_result, val/a);
+
+}
+
+void convenience_method_tests() {
+
+  Vec3f test_vec(3.0,4.0,-2.0);
+  float expected_result = -24.0;
+  CHECK_REAL_EQUAL(expected_result, reduce_mul(test_vec), 0.0);
+
+  test_vec = Vec3f(4.0,3.0,2.0);
+  expected_result = 24.0;
+  CHECK_REAL_EQUAL(expected_result, reduce_mul(test_vec), 0.0);
+
 
 }
