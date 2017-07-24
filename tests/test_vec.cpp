@@ -7,7 +7,9 @@ void constructor_tests();
 void mask_tests();
 void all_tests();
 void min_max_tests();
-
+void unary_op_tests();
+void binary_op_tests();
+  
 int main( int argc, char** argv) {
 
   // test Vec3 constructors
@@ -18,6 +20,10 @@ int main( int argc, char** argv) {
   all_tests();
   // test min max methods
   min_max_tests();
+  // testing unary operators of Vec3
+  unary_op_tests();
+  // testing binary operators of Vec3
+  binary_op_tests();
   
   return 0;
 }
@@ -106,4 +112,32 @@ void min_max_tests() {
   max_result = max(vec1,vec2);
   CHECK_VECREAL_EQUAL(expected_max_result, max_result);
 
+}
+
+void unary_op_tests() {
+
+  Vec3f a = Vec3f(1.0, 2.0, 3.0);
+  
+  Vec3f expected_neg_result(-1.0, -2.0, -3.0);
+
+  CHECK_VECREAL_EQUAL(expected_neg_result,-a);
+
+  Vec3f expected_pos_result(1.0, 2.0, 3.0);
+
+  std::cout << +a << std::endl;
+  CHECK_VECREAL_EQUAL(expected_pos_result, +a);
+  
+}
+
+void binary_op_tests() {
+
+  Vec3f a = Vec3f(1.0, 2.0, 3.0);
+  Vec3f b = Vec3f(3.0, 2.0, 1.0);
+
+  Vec3f expected_add_result(4.0, 4.0, 4.0);
+  CHECK_VECREAL_EQUAL(expected_add_result, a+b);
+
+  Vec3f expected_sub_result(-2.0,0.0,2.0);
+  CHECK_VECREAL_EQUAL(expected_sub_result, a-b);
+  
 }
