@@ -144,14 +144,14 @@ void merge_tests() {
 
 void property_tests() {
     // create test boxes
-  AABB box = AABB(5.0, -5.0, 3.0, 10.0, 15.0, -4.0);
+  AABB box = AABB(5.0, -5.0, -3.0, 10.0, 15.0, 4.0);
 
-  Vec3f expected_center(7.5, 5.0, -0.5);
+  Vec3f expected_center(7.5, 5.0, 0.5);
   CHECK_VECREAL_EQUAL(expected_center, box.center());
 
-  Vec3f expected_center2(15.0, 10.0, -1.0);
+  Vec3f expected_center2(15.0, 10.0, 1.0);
   CHECK_VECREAL_EQUAL(expected_center2, box.center2());
 
-  Vec3f expected_size(5.0, 20.0, -7.0);
+  Vec3f expected_size(5.0, 20.0, 7.0);
   CHECK_VECREAL_EQUAL(expected_size, box.size());
 }
