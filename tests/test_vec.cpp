@@ -178,17 +178,19 @@ void convenience_method_tests() {
   expected_result = 4.0;
   CHECK_REAL_EQUAL(expected_result, reduce_max(test_vec), 0.0);
 
-  test_vec = Vec3f(4.0,3.0,2.0);
+  Vec3f test_vec1 = Vec3f(4.0,3.0,2.0);
   expected_result = 24.0;
-  CHECK_REAL_EQUAL(expected_result, reduce_mul(test_vec), 0.0);
+  CHECK_REAL_EQUAL(expected_result, reduce_mul(test_vec1), 0.0);
 
   expected_result = 9.0;
-  CHECK_REAL_EQUAL(expected_result, reduce_add(test_vec), 0.0);
+  CHECK_REAL_EQUAL(expected_result, reduce_add(test_vec1), 0.0);
 
   expected_result = 2.0;
-  CHECK_REAL_EQUAL(expected_result, reduce_min(test_vec), 0.0);
+  CHECK_REAL_EQUAL(expected_result, reduce_min(test_vec1), 0.0);
 
   expected_result = 4.0;
-  CHECK_REAL_EQUAL(expected_result, reduce_max(test_vec), 0.0);
+  CHECK_REAL_EQUAL(expected_result, reduce_max(test_vec1), 0.0);
 
+  expected_result = 26.0;
+  CHECK_REAL_EQUAL(expected_result, halfArea(test_vec1), 0.0);
 }
