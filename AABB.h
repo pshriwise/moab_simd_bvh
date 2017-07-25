@@ -63,3 +63,5 @@ inline AABB merge ( const AABB &a, const AABB &b ) { return AABB(min(a.lower,b.l
 inline float volume ( const AABB &box ) { return reduce_mul(box.size()); }
 
 inline float halfArea ( const AABB &box ) { return halfArea(box.size()); }
+
+inline float area ( const AABB &box ) { return 2.0f*halfArea(box); }

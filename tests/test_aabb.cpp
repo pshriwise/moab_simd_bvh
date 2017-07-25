@@ -157,4 +157,7 @@ void property_tests() {
 
   float expected_halfArea = 275.0;
   CHECK_REAL_EQUAL(expected_halfArea, halfArea(box), 0.0);
+
+  float expected_area = 550.0;
+  CHECK_REAL_EQUAL(expected_area, area(box), 0.0);
 }
