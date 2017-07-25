@@ -56,6 +56,10 @@ struct AABB {
 
 };
 
-  inline bool inside ( const AABB &b, const Vec3f& p ) { return all(ge_mask(p,b.lower)) && all(le_mask(p,b.upper)); }  
+inline bool inside ( const AABB &b, const Vec3f& p ) { return all(ge_mask(p,b.lower)) && all(le_mask(p,b.upper)); }  
 
-  inline AABB merge ( const AABB &a, const AABB &b ) { return AABB(min(a.lower,b.lower), max(a.upper,b.upper)); }
+inline AABB merge ( const AABB &a, const AABB &b ) { return AABB(min(a.lower,b.lower), max(a.upper,b.upper)); }
+
+inline float volume ( const AABB &box ) { return reduce_mul(box.size()); }
+
+inline float halfArea ( const AABB &box ) { return halfArea(box.size()); }

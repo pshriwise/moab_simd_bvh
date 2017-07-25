@@ -154,4 +154,7 @@ void property_tests() {
 
   Vec3f expected_size(5.0, 20.0, 7.0);
   CHECK_VECREAL_EQUAL(expected_size, box.size());
+
+  float expected_halfArea = 275.0;
+  CHECK_REAL_EQUAL(expected_halfArea, halfArea(box), 0.0);
 }
