@@ -126,7 +126,6 @@ void unary_op_tests() {
 
   Vec3f expected_pos_result(1.0, 2.0, 3.0);
 
-  std::cout << +a << std::endl;
   CHECK_VECREAL_EQUAL(expected_pos_result, +a);
   
 }
