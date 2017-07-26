@@ -6,5 +6,6 @@ ADD_SUBDIRECTORY(tests)
 
 ADD_TEST(NAME vec3f_test COMMAND test_vec3f)
 ADD_TEST(NAME aabb_test COMMAND test_aabb)
+ADD_TEST(NAME ray_test COMMAND test_ray)
 
 ENABLE_TESTING()

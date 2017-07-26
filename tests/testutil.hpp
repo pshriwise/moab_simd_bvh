@@ -2,6 +2,8 @@
 #define TEST_UTIL_HPP
 
 #include <string>
+#include "constants.h"
+
 //#include "moab/MOABConfig.h"
 /* Define these here because they are used by many tests
  * to find the add directory for input files */
@@ -31,6 +33,8 @@
  *  Argument should be a function with the signature:  void func(void)
  *  Evaluates to zero if test is successful, one otherwise.
  */
+#define CHECK_INF( ACT ) check_inf( (ACT), #ACT, __LINE__, __FILE__ )
+
 #define RUN_TEST( FUNC )           run_test( &FUNC, #FUNC )
 
 
@@ -141,6 +145,13 @@ inline void flag_error()
   printf( "\n" ); \
   flag_error(); \
 }
+
+template<typename T>
+void check_inf(T B, const char* sB, int line, const char* file) {
+  T A = inf;
+  const char* sA = "inf";
+  EQUAL_TEST_IMPL( isinf(B), f )
+   }
 
 void check_equal( int A, int B, const char* sA, const char* sB, int line, const char* file )
   {  EQUAL_TEST_IMPL( A == B, d ) }

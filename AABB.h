@@ -2,7 +2,11 @@
 #include <cstring>
 #include <algorithm>
 
+
 #include "Vec3.h"
+#include "Ray.h"
+#include "constants.h"
+
 
 struct AABB {
 
@@ -65,3 +69,22 @@ inline float volume ( const AABB &box ) { return reduce_mul(box.size()); }
 inline float halfArea ( const AABB &box ) { return halfArea(box.size()); }
 
 inline float area ( const AABB &box ) { return 2.0f*halfArea(box); }
+
+
+inline size_t intersectBox(const AABB &box, const TravRay &ray, const float &tnear, const float &tfar, float &dist) {
+  const float tNearX = (box.lower.x + ray.nearX - ray.org.x) * ray.dir.x;
+  const float tNearY = (box.lower.x + ray.nearY - ray.org.y) * ray.dir.y;
+  const float tNearZ = (box.lower.x + ray.nearZ - ray.org.z) * ray.dir.z;
+  const float tFarX = (box.lower.x + ray.farX - ray.org.x) * ray.dir.x;
+  const float tFarY = (box.lower.x + ray.farY - ray.org.y) * ray.dir.y;
+  const float tFarZ = (box.lower.x + ray.farZ - ray.org.z) * ray.dir.z;
+
+  const float round_down = 1.0f-2.0f*float(ulp); // FIXME: use per instruction rounding for AVX512
+  const float round_up   = 1.0f+2.0f*float(ulp);
+
+  const float tNear = std::min(std::max(tNearX, tNearY), tNearZ);
+  const float tFar = std::max(std::max(tFarX, tFarY), tFarZ);
+  const bool vmask = (round_down*tNear <= round_up*tFar);
+  dist = tNear;
+  return vmask;
+}
