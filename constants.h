@@ -3,6 +3,8 @@
 
 #include <limits>
 
+static const float min_rcp_input = 1E-18f;  // for abs(x) >= min_rcp_input the newton raphson rcp calculation does not fail
+
 static struct UlpTy
 {
   inline operator double( ) const { return std::numeric_limits<double>::epsilon(); }

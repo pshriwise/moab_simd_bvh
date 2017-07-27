@@ -70,28 +70,3 @@ inline float halfArea ( const AABB &box ) { return halfArea(box.size()); }
 
 inline float area ( const AABB &box ) { return 2.0f*halfArea(box); }
 
-
-inline size_t intersectBox(const AABB &box, const TravRay &ray, const float &tnear, const float &tfar, float &dist) {
-  const float tNearX = (*(float*)((const char*)&box.lower + ray.nearX));// - ray.org.x) * ray.rdir.x;
-  const float tNearY = (*(float*)((const char*)&box.lower + ray.nearY));// - ray.org.y) * ray.rdir.y;
-  const float tNearZ = (*(float*)((const char*)&box.lower + ray.nearZ)); // - ray.org.z) * ray.rdir.z;
-  const float tFarX = (*(float*)((const char*)&box.lower + ray.farX));// - ray.org.x) * ray.rdir.x;
-  const float tFarY = (*(float*)((const char*)&box.lower + ray.farY)); // - ray.org.y) * ray.rdir.y;
-  const float tFarZ = (*(float*)((const char*)&box.lower + ray.farZ));// - ray.org.z) * ray.rdir.z;
-
-  std::cout << tNearX << std::endl;
-  std::cout << tNearY << std::endl;
-  std::cout << tNearZ << std::endl;
-  std::cout << tFarX << std::endl;
-  std::cout << tFarY << std::endl;
-  std::cout << tFarZ << std::endl;
-
-  const float round_down = 1.0f-2.0f*float(ulp); // FIXME: use per instruction rounding for AVX512
-  const float round_up   = 1.0f+2.0f*float(ulp);
-
-  const float tNear = std::min(std::max(tNearX, tNearY), tNearZ);
-  const float tFar = std::max(std::max(tFarX, tFarY), tFarZ);
-  const bool vmask = (round_down*tNear <= round_up*tFar);
-  dist = tNear;
-  return vmask;
-}

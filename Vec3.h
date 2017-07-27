@@ -97,4 +97,18 @@ inline bool all(Vec3<T> v) { return v[0] && (v[0] == v[1]) && (v[0] == v[2]); }
 template<typename T>
 inline T halfArea(Vec3<T> v) { return v.x*(v.y+v.z)+(v.y*v.z); }
 
-inline Vec3f rcp( Vec3f& v ) { return Vec3f(v.x == 0 ? inf : 1.0f/v.x, v.y == 0 ? inf : 1.0f/v.y, v.z == 0 ? inf : 1.0f/v.z); }
+template<typename T>
+inline Vec3<T> zero_fix( const Vec3<T>& a )
+  {
+    return Vec3<T>(fabs(a.x) < min_rcp_input ? T(min_rcp_input) : a.x,
+                   fabs(a.y) < min_rcp_input ?  T(min_rcp_input) : a.y,
+                   fabs(a.z) < min_rcp_input ? T(min_rcp_input) : a.z);
+  }
+
+template<typename T>
+inline const Vec3<T> rcp(const Vec3<T>& v ) { return Vec3<T>(v.x == 0 ? inf : 1.0f/v.x,
+						v.y == 0 ? inf : 1.0f/v.y,
+						v.z == 0 ? inf : 1.0f/v.z); }
+
+template<typename T>
+inline const Vec3<T> rcp_safe(const Vec3<T>& a) { return rcp(zero_fix(a)); }

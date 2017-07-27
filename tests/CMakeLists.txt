@@ -3,7 +3,7 @@ SET(SRC_FILES)
 LIST(APPEND SRC_FILES)
 
 SET(HEADERS)
-LIST(APPEND HEADERS testutil.hpp Vec3f.h AABB.h Ray.h constants.h)
+LIST(APPEND HEADERS testutil.hpp Vec3f.h AABB.h Ray.h Node.h constants.h)
 
 INCLUDE_DIRECTORIES(..)
 
