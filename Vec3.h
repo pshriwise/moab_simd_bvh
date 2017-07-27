@@ -4,8 +4,7 @@
 #include <assert.h>
 #include <iostream>
 #include <math.h>
-
-//struct Vec3f;
+#include "constants.h"
 
 template<typename T> struct Vec3 {
 
@@ -97,3 +96,5 @@ inline bool all(Vec3<T> v) { return v[0] && (v[0] == v[1]) && (v[0] == v[2]); }
 
 template<typename T>
 inline T halfArea(Vec3<T> v) { return v.x*(v.y+v.z)+(v.y*v.z); }
+
+inline Vec3f rcp( Vec3f& v ) { return Vec3f(v.x == 0 ? inf : 1.0f/v.x, v.y == 0 ? inf : 1.0f/v.y, v.z == 0 ? inf : 1.0f/v.z); }

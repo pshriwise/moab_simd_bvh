@@ -1,4 +1,4 @@
-
+#pragma once
 
 
 #include "Vec3.h"
@@ -32,7 +32,6 @@ struct Ray {
 
 };
 
-
   struct TravRay {
 
     /* Empty constructor */
@@ -40,7 +39,7 @@ struct Ray {
 
     inline TravRay(const Vec3f &ray_org, const Vec3f& ray_dir)
       : org_xyz(ray_org), dir_xyz(ray_dir) {
-
+      rdir = rcp(dir_xyz);
       org = ray_org;
       dir = ray_dir;
       nearX = ray_dir.x >= 0.0f ? 0*sizeof(float) : 1*sizeof(float);
@@ -48,11 +47,12 @@ struct Ray {
       nearZ = ray_dir.z >= 0.0f ? 4*sizeof(float) : 5*sizeof(float);
       farX  = nearX ^ sizeof(float);
       farY  = nearY ^ sizeof(float);
-      farZ  = nearZ ^ sizeof(float);                                                                                                    
+      farZ  = nearZ ^ sizeof(float);
     }
+
     
     Vec3f org_xyz, dir_xyz;
-    Vec3f org, dir;
+    Vec3f org, dir, rdir;
     size_t nearX, nearY, nearZ;
     size_t farX, farY, farZ;
   };

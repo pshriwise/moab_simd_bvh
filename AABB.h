@@ -72,12 +72,19 @@ inline float area ( const AABB &box ) { return 2.0f*halfArea(box); }
 
 
 inline size_t intersectBox(const AABB &box, const TravRay &ray, const float &tnear, const float &tfar, float &dist) {
-  const float tNearX = (box.lower.x + ray.nearX - ray.org.x) * ray.dir.x;
-  const float tNearY = (box.lower.x + ray.nearY - ray.org.y) * ray.dir.y;
-  const float tNearZ = (box.lower.x + ray.nearZ - ray.org.z) * ray.dir.z;
-  const float tFarX = (box.lower.x + ray.farX - ray.org.x) * ray.dir.x;
-  const float tFarY = (box.lower.x + ray.farY - ray.org.y) * ray.dir.y;
-  const float tFarZ = (box.lower.x + ray.farZ - ray.org.z) * ray.dir.z;
+  const float tNearX = (*(float*)((const char*)&box.lower + ray.nearX));// - ray.org.x) * ray.rdir.x;
+  const float tNearY = (*(float*)((const char*)&box.lower + ray.nearY));// - ray.org.y) * ray.rdir.y;
+  const float tNearZ = (*(float*)((const char*)&box.lower + ray.nearZ)); // - ray.org.z) * ray.rdir.z;
+  const float tFarX = (*(float*)((const char*)&box.lower + ray.farX));// - ray.org.x) * ray.rdir.x;
+  const float tFarY = (*(float*)((const char*)&box.lower + ray.farY)); // - ray.org.y) * ray.rdir.y;
+  const float tFarZ = (*(float*)((const char*)&box.lower + ray.farZ));// - ray.org.z) * ray.rdir.z;
+
+  std::cout << tNearX << std::endl;
+  std::cout << tNearY << std::endl;
+  std::cout << tNearZ << std::endl;
+  std::cout << tFarX << std::endl;
+  std::cout << tFarY << std::endl;
+  std::cout << tFarZ << std::endl;
 
   const float round_down = 1.0f-2.0f*float(ulp); // FIXME: use per instruction rounding for AVX512
   const float round_up   = 1.0f+2.0f*float(ulp);
