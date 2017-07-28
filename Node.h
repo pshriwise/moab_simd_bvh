@@ -2,6 +2,7 @@
 
 #include "Vec3.h"
 #include "constants.h"
+#include "vfloat.h"
 
 #define N 4
 
@@ -82,13 +83,11 @@ struct AANode : public Node
   inline void setBounds(const AABB& bounds) { lower_x = bounds.lower.x; lower_y = bounds.lower.y; lower_z = bounds.lower.z;
                                               upper_x = bounds.upper.x; upper_y = bounds.upper.y; upper_z = bounds.upper.z; }
   
-  inline AABB bounds() const { const Vec3f lower(lower_x, lower_y, lower_z);
-                               const Vec3f upper(upper_x, upper_y, upper_z);
-			       return AABB(lower, upper); }
+  inline AABB bounds() const { const Vec3f lower(min(lower_x), min(lower_y),min(lower_z));
+                               const Vec3f upper(max(upper_x), max(upper_y), max(upper_z));
+  			       return AABB(lower, upper); }
   
-  float lower_x, upper_x, lower_y, upper_y, lower_z, upper_z;
-
-  //  AANode children[N]; 
+  vfloat4 lower_x, upper_x, lower_y, upper_y, lower_z, upper_z;
   
 };
 
