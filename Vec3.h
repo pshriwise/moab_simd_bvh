@@ -75,10 +75,13 @@ inline Vec3<T> max(const Vec3<T>& a, const Vec3<T>& b) { return Vec3<T>(std::max
 
 template<typename T>
 inline T reduce_add( const Vec3<T> &v ) { return v.x + v.y + v.z; }
+
 template<typename T>
 inline T reduce_mul( const Vec3<T>& v ) { return v.x * v.y * v.z; }
+
 template<typename T>
 inline T reduce_min( const Vec3<T>& v ) { return std::min(std::min(v.x, v.y), v.z); }
+
 template<typename T>
 inline T reduce_max( const Vec3<T>& v ) { return std::max(std::max(v.x, v.y), v.z); }
 
@@ -105,10 +108,15 @@ inline Vec3<T> zero_fix( const Vec3<T>& a )
                    fabs(a.z) < min_rcp_input ? T(min_rcp_input) : a.z);
   }
 
+/* template<typename T> */
+/* inline const Vec3<T> rcp(const Vec3<T>& v ) { return Vec3<T>(v.x == 0 ? inf : 1.0f/v.x, */
+/* 						v.y == 0 ? inf : 1.0f/v.y, */
+/* 						v.z == 0 ? inf : 1.0f/v.z); } */
+
 template<typename T>
-inline const Vec3<T> rcp(const Vec3<T>& v ) { return Vec3<T>(v.x == 0 ? inf : 1.0f/v.x,
-						v.y == 0 ? inf : 1.0f/v.y,
-						v.z == 0 ? inf : 1.0f/v.z); }
+inline const Vec3<T> rcp(const Vec3<T>& v ) { return Vec3<T>(1.0f/v.x,
+							     1.0f/v.y,
+							     1.0f/v.z); }
 
 template<typename T>
 inline const Vec3<T> rcp_safe(const Vec3<T>& a) { return rcp(zero_fix(a)); }

@@ -24,7 +24,7 @@ void test_intersect() {
 
   n.setBounds(box);
   
-  Vec3f org = Vec3f( 9.0, 2.5, 2.5);
+  Vec3f org = Vec3f( 9.0, 3.0, 3.0);
   Vec3f dir = Vec3f(-1.0, 0.0, 0.0);
 
   TravRay r(org, dir);
@@ -33,8 +33,14 @@ void test_intersect() {
   
   float dist = 100.0;
   bool result;
+  
+  float expected_dist = 4.0;
   result = intersectBox(n, r, zero, inf, dist);
-  std::cout << "Dist: " << dist << std::endl;
+  CHECK_REAL_EQUAL(expected_dist, dist, 0.0);
   CHECK(result);
+
+  r = TravRay(org,-dir);
+  result = intersectBox(n, r, zero, inf, dist);
+  CHECK(!result);
 
 }

@@ -39,7 +39,7 @@ struct Ray {
 
     inline TravRay(const Vec3f &ray_org, const Vec3f& ray_dir)
       : org_xyz(ray_org), dir_xyz(ray_dir) {
-      rdir = rcp_safe(dir_xyz);
+      rdir = rcp(dir_xyz);
       org = ray_org;
       dir = ray_dir;
       nearX = ray_dir.x >= 0.0f ? 0*sizeof(float) : 1*sizeof(float);
