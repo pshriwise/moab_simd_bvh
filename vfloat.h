@@ -28,5 +28,46 @@ struct vfloat4
   
 
 };
-  
-  
+
+
+////////// Unary Ops //////////
+inline const vfloat4 operator +( const vfloat4& a ) { return a; }
+inline const vfloat4 operator -( const vfloat4& a ) { return vfloat4(-a[0],-a[1],-a[2],-a[3]); }
+
+////////// Binary Ops //////////
+inline const vfloat4 operator +( const vfloat4& a, const vfloat4& b ) { return vfloat4(a[0]+b[0],a[1]+b[1],a[2]+b[2],a[3]+b[3]); }
+inline const vfloat4 operator +( const vfloat4& a, const float& b ) { return a+ vfloat4(b); }
+inline const vfloat4 operator +( const float& a, const vfloat4& b ) { return vfloat4(a)+b; }
+
+inline const vfloat4 operator -( const vfloat4& a, const vfloat4& b ) { return vfloat4(a[0]-b[0],a[1]-b[1],a[2]-b[2],a[3]-b[3]); }
+inline const vfloat4 operator -( const vfloat4& a, const float& b ) { return a-vfloat4(b); }
+inline const vfloat4 operator -( const float& a, const vfloat4& b ) { return vfloat4(a)-b; }
+
+inline const vfloat4 operator *( const vfloat4& a, const vfloat4& b ) { return vfloat4(a[0]*b[0],a[1]*b[1],a[2]*b[2],a[3]*b[3]); }
+inline const vfloat4 operator *( const vfloat4& a, const float& b ) { return a*vfloat4(b); }
+inline const vfloat4 operator *( const float& a, const vfloat4& b ) { return vfloat4(a)*b; }
+
+inline const vfloat4 operator /( const vfloat4& a, const vfloat4& b ) { return vfloat4(a[0]/b[0],a[1]/b[1],a[2]/b[2],a[3]/b[3]); }
+inline const vfloat4 operator /( const vfloat4& a, const float& b ) { return a/vfloat4(b); }
+inline const vfloat4 operator /( const float& a, const vfloat4& b ) { return vfloat4(a)/b; }
+
+////////// Assignment Ops //////////
+inline vfloat4& operator +=( vfloat4& a, const vfloat4& b ) { return a = a + b; }
+inline vfloat4& operator +=( vfloat4& a, const float&   b ) { return a = a + b; }
+
+inline vfloat4& operator -=( vfloat4& a, const vfloat4& b ) { return a = a - b; }
+inline vfloat4& operator -=( vfloat4& a, const float&   b ) { return a = a - b; }
+
+inline vfloat4& operator *=( vfloat4& a, const vfloat4& b ) { return a = a * b; }
+inline vfloat4& operator *=( vfloat4& a, const float&   b ) { return a = a * b; }
+
+inline vfloat4& operator /=( vfloat4& a, const vfloat4& b ) { return a = a / b; }
+inline vfloat4& operator /=( vfloat4& a, const float&   b ) { return a = a / b; }                       
+
+////////// Other Common Ops //////////
+inline const vfloat4 madd  ( const vfloat4& a, const vfloat4& b, const vfloat4& c) { return a*b+c; }
+inline const vfloat4 msub  ( const vfloat4& a, const vfloat4& b, const vfloat4& c) { return a*b-c; }
+inline const vfloat4 nmadd ( const vfloat4& a, const vfloat4& b, const vfloat4& c) { return -a*b+c;}
+inline const vfloat4 nmsub ( const vfloat4& a, const vfloat4& b, const vfloat4& c) { return -a*b-c; }       
+
+
