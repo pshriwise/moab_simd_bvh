@@ -6,10 +6,64 @@
 #define N 4
 
 static const size_t emptyNode = 8;
+static const size_t tyLeaf = 8;
 
-struct AANode
+struct NodeRef {
+  inline NodeRef () {}
+
+  inline NodeRef(size_t ptr) : ptr(ptr) {}
+
+  inline operator size_t() const { return ptr; }
+  
+  inline size_t isLeaf() const { return ptr & tyLeaf; }
+
+  /* inline char* leaf(size_t& num) const { */
+  /*   assert(isLeaf()); */
+  /*   num = (ptr & (size_t)items_mask)-tyLeaf; */
+  /*   return (char*)(ptr & ~(size_t)align_mask); */
+  /* } */
+
+private:
+  size_t ptr;
+		   
+
+};
+
+struct Node {
+  inline Node () {}
+
+  inline void clear() { for(size_t i=0; i < N; i++) children[i] = emptyNode; }
+
+  inline bool verify() {
+    for (size_t i=0; i < N; i++) {
+      if (child(i) == emptyNode) {
+	for(; i < N; i++) {
+	  if (child(i) != emptyNode)
+	    return false;
+	}
+	break;
+      }
+    }
+    return true;
+  }
+
+  
+
+  
+  inline NodeRef& child(size_t i) { assert(i<N); return children[i]; }
+  inline const NodeRef& child(size_t i) const { assert(i<N); return children[i]; }
+
+  NodeRef children[N];
+  
+};
+
+
+
+struct AANode : public Node
 {
- 
+
+  using::Node::children;
+  
   //  inline AANode& child(size_t i) { assert(i<N); return children[i]; }
   //inline const AANode& child(size_t i) const { assert(i<N); return children[i]; }
 
@@ -18,8 +72,12 @@ struct AANode
 
 
   inline void clear() { lower_x = lower_y = lower_z = neg_inf;
-    upper_x = upper_y = upper_z = inf; }
-			//			for(size_t i=0; i < N ; i++) children[i] = emptyNode; }
+                        upper_x = upper_y = upper_z = inf;
+			Node::clear();
+                        }
+
+  inline void setRef (size_t i, const NodeRef& ref) { assert(i<N); children[i] = ref; }
+    
 
   inline void setBounds(const AABB& bounds) { lower_x = bounds.lower.x; lower_y = bounds.lower.y; lower_z = bounds.lower.z;
                                               upper_x = bounds.upper.x; upper_y = bounds.upper.y; upper_z = bounds.upper.z; }
