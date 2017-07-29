@@ -35,15 +35,20 @@ void test_intersect() {
   vfloat4 dist(100.0);
   bool result;
 
-  vfloat4 z(zero), i(inf);
+  vfloat4 z(zero), i(inf), ni(neg_inf);
   vfloat4 expected_dist(4.0);
   result = intersectBox(n, r, z, i, dist);
   CHECK(all(expected_dist==dist));
-  std::cout << result << std::endl;
   CHECK(result);
 
   r = TravRay(org,-dir);
   result = intersectBox(n, r, z, i, dist);
-  std::cout << result << std::endl;
   CHECK(!result);
+
+  expected_dist = vfloat4(-9.0);
+  r = TravRay(org,-dir);
+  result = intersectBox(n, r, ni, i, dist);
+  CHECK(all(expected_dist==dist));
+  CHECK(result);
+
 }
