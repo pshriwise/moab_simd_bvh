@@ -23,7 +23,7 @@ int main( int argc, char** argv ) {
   CHECK_REAL_EQUAL(vals[3], v[3], 0.0);
 
   const void* const p = (void*)vals;
-  v = v.load(p);
+  v = vfloat4::load(p);
   
   CHECK_REAL_EQUAL(vals[0], v[0], 0.0); 
   CHECK_REAL_EQUAL(vals[1], v[1], 0.0);

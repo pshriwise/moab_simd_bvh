@@ -3,6 +3,7 @@
 
 #include "Vec3.h"
 #include "constants.h"
+#include "vfloat.h"
 
 struct Ray {
 
@@ -39,15 +40,15 @@ struct Ray {
 
     inline TravRay(const Vec3f &ray_org, const Vec3f& ray_dir)
       : org_xyz(ray_org), dir_xyz(ray_dir) {
-      rdir = rcp(dir_xyz);
+      rdir = rcp_safe(dir_xyz);
       org = ray_org;
       dir = ray_dir;
-      nearX = ray_dir.x >= 0.0f ? 0*sizeof(float) : 1*sizeof(float);
-      nearY = ray_dir.y >= 0.0f ? 2*sizeof(float) : 3*sizeof(float);
-      nearZ = ray_dir.z >= 0.0f ? 4*sizeof(float) : 5*sizeof(float);
-      farX  = nearX ^ sizeof(float);
-      farY  = nearY ^ sizeof(float);
-      farZ  = nearZ ^ sizeof(float);
+      nearX = ray_dir.x >= 0.0f ? 0*sizeof(vfloat4) : 1*sizeof(vfloat4);
+      nearY = ray_dir.y >= 0.0f ? 2*sizeof(vfloat4) : 3*sizeof(vfloat4);
+      nearZ = ray_dir.z >= 0.0f ? 4*sizeof(vfloat4) : 5*sizeof(vfloat4);
+      farX  = nearX ^ sizeof(vfloat4);
+      farY  = nearY ^ sizeof(vfloat4);
+      farZ  = nearZ ^ sizeof(vfloat4);
     }
 
     

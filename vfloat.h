@@ -4,6 +4,7 @@
 #include "constants.h"
 #include "Vec3.h"
 #include "math.h"
+#include "vbool.h"
 
 struct vfloat4
 {
@@ -22,13 +23,14 @@ struct vfloat4
   inline vfloat4( float a )                            { f[0] = a; f[1] = a; f[2] = a; f[3] = a; }
   inline vfloat4( float a, float b, float c, float d) {  f[0] = a; f[1] = b; f[2] = c; f[3] = d; }
 
-  inline vfloat4 load ( const void* const a) { for(size_t i=0; i < 4; i++) f[i] = *(float*)((const char*)a+i*sizeof(float)); }
-  //[0] = (float*)a[0]; f[1] = (float*)a[1]; f[2] = (float*)a[2]; f[3] = (float*)a[3]; }
-
   inline const float& operator [](const size_t index) const { assert(index < 4); return f[index]; }
   inline       float& operator [](const size_t index)       { assert(index < 4); return f[index]; }
 
-  
+  static inline vfloat4 load ( const void* const a) { vfloat4 v;
+                                               for(size_t i=0; i < 4; i++) {
+						 v.f[i] = *(float*)((const char*)a+i*sizeof(float));
+					       }
+					       return v; }
 
 };
 
@@ -75,6 +77,44 @@ inline const vfloat4 nmsub ( const vfloat4& a, const vfloat4& b, const vfloat4& 
 
 inline float min(const vfloat4& v ) { return std::min(std::min(v.f[0],v.f[1]),std::min(v.f[2],v.f[3])); }
 inline float max(const vfloat4& v ) { return std::max(std::max(v.f[0],v.f[1]),std::max(v.f[2],v.f[3])); }
+
+inline vfloat4 min(const vfloat4& a, const vfloat4&b) { return vfloat4(std::min(a.f[0],b.f[0]),
+				                                       std::min(a.f[1],b.f[1]),
+								       std::min(a.f[2],b.f[2]),
+								       std::min(a.f[3],b.f[3])); }
+
+inline const vbool4 operator ==( const vfloat4& a, const vfloat4&b ) { return vbool4(a.f[0]==b.f[0],
+										     a.f[1]==b.f[1],
+										     a.f[2]==b.f[2],
+										     a.f[3]==b.f[3]); }
+inline const vbool4 operator !=( const vfloat4& a, const vfloat4&b ) { return vbool4(a.f[0]!=b.f[0],
+										     a.f[1]!=b.f[1],
+										     a.f[2]!=b.f[2],
+										     a.f[3]!=b.f[3]); }
+inline const vbool4 operator <( const vfloat4& a, const vfloat4&b ) { return vbool4(a.f[0]<b.f[0],
+										     a.f[1]<b.f[1],
+										     a.f[2]<b.f[2],
+										     a.f[3]<b.f[3]); }
+inline const vbool4 operator >=( const vfloat4& a, const vfloat4&b ) { return vbool4(a.f[0]>=b.f[0],
+										     a.f[1]>=b.f[1],
+										     a.f[2]>=b.f[2],
+										     a.f[3]>=b.f[3]); }
+inline const vbool4 operator >( const vfloat4& a, const vfloat4&b ) { return vbool4(a.f[0]>b.f[0],
+										     a.f[1]>b.f[1],
+										     a.f[2]>b.f[2],
+										     a.f[3]>b.f[3]); }
+inline const vbool4 operator <=( const vfloat4& a, const vfloat4&b ) { return vbool4(a.f[0]<=b.f[0],
+										     a.f[1]<=b.f[1],
+										     a.f[2]<=b.f[2],
+										     a.f[3]<=b.f[3]); }
+
+inline vfloat4 max(const vfloat4& a, const vfloat4&b) { vfloat4 v;
+                                                        v.f[0] = std::max(a.f[0],b.f[0]);
+                                                        v.f[1] = std::max(a.f[1],b.f[1]);
+                                                        v.f[2] = std::max(a.f[2],b.f[2]);
+                                                        v.f[3] = std::max(a.f[3],b.f[3]);
+							return v;
+                                                       }
 
 
 inline std::ostream& operator<<(std::ostream& cout, const vfloat4& a) {

@@ -92,21 +92,24 @@ struct AANode : public Node
 };
 
   
-inline size_t intersectBox(const AANode &node, const TravRay &ray, const float &tnear, const float &tfar, float &dist) {
-  const float tNearX = (*(float*)((const char*)&node.lower_x + ray.nearX)- ray.org.x) * ray.rdir.x;
-  const float tNearY = (*(float*)((const char*)&node.lower_x + ray.nearY) - ray.org.y) * ray.rdir.y;
-  const float tNearZ = (*(float*)((const char*)&node.lower_x + ray.nearZ) - ray.org.z) * ray.rdir.z;
-  const float tFarX = (*(float*)((const char*)&node.lower_x + ray.farX) - ray.org.x) * ray.rdir.x;
-  const float tFarY = (*(float*)((const char*)&node.lower_x + ray.farY) - ray.org.y) * ray.rdir.y;
-  const float tFarZ = (*(float*)((const char*)&node.lower_x + ray.farZ) - ray.org.z) * ray.rdir.z;
-
+inline size_t intersectBox(const AANode &node, const TravRay &ray, const float &tnear, const float &tfar, vfloat4 &dist) {
+  const vfloat4 tNearX = (vfloat4::load((void*)((const char*)&node.lower_x + ray.nearX))- ray.org.x) * ray.rdir.x;
+  const vfloat4 tNearY = (vfloat4::load((void*)((const char*)&node.lower_x + ray.nearY)) - ray.org.y) * ray.rdir.y;
+  const vfloat4 tNearZ = (vfloat4::load((void*)((const char*)&node.lower_x + ray.nearZ)) - ray.org.z) * ray.rdir.z;
+  const vfloat4 tFarX = (vfloat4::load((void*)((const char*)&node.lower_x + ray.farX)) - ray.org.x) * ray.rdir.x;
+  const vfloat4 tFarY = (vfloat4::load((void*)((const char*)&node.lower_x + ray.farY)) - ray.org.y) * ray.rdir.y;
+  const vfloat4 tFarZ = (vfloat4::load((void*)((const char*)&node.lower_x + ray.farZ)) - ray.org.z) * ray.rdir.z;
+  
   const float round_down = 1.0f-2.0f*float(ulp); // FIXME: use per instruction rounding for AVX512
   const float round_up   = 1.0f+2.0f*float(ulp);
 
-  const float tNear = std::max(std::max(tNearX, tNearY), tNearZ);
-  const float tFar = std::min(std::min(tFarX, tFarY), tFarZ);
-  const bool vmask = (round_down*tNear <= round_up*tFar);
+  const vfloat4 tNear = max(max(tNearX, tNearY), tNearZ);
+  const vfloat4 tFar = min(min(tFarX, tFarY), tFarZ);
+  std::cout << tNear << std::endl;
+  std::cout << tFar << std::endl;
+  const vbool4 vmask = (round_down*tNear <= round_up*tFar);
   dist = tNear;
-  return vmask;
+  const size_t mask = movemask(vmask);
+  return mask;
 };
 

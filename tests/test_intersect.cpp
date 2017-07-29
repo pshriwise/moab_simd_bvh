@@ -4,6 +4,7 @@
 #include "Ray.h"
 #include "testutil.hpp"
 #include "Node.h"
+#include "vfloat.h"
 
 void test_intersect();
 
@@ -31,16 +32,17 @@ void test_intersect() {
 
   CHECK(!inside(box,org));
   
-  float dist = 100.0;
+  vfloat4 dist(100.0);
   bool result;
   
-  float expected_dist = 4.0;
+  vfloat4 expected_dist(4.0);
   result = intersectBox(n, r, zero, inf, dist);
-  CHECK_REAL_EQUAL(expected_dist, dist, 0.0);
+  CHECK(all(expected_dist==dist));
+  std::cout << result << std::endl;
   CHECK(result);
 
   r = TravRay(org,-dir);
   result = intersectBox(n, r, zero, inf, dist);
+  std::cout << result << std::endl;
   CHECK(!result);
-
 }
