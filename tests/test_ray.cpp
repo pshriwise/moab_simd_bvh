@@ -61,24 +61,24 @@ void test_constructors() {
   CHECK_VECREAL_EQUAL(direction, tr.dir_xyz);
   CHECK_VECREAL_EQUAL(origin, tr.org);
   CHECK_VECREAL_EQUAL(direction, tr.dir);
-  CHECK_EQUAL(0*sizeof(float), tr.nearX);
-  CHECK_EQUAL(2*sizeof(float), tr.nearY);
-  CHECK_EQUAL(4*sizeof(float), tr.nearZ);
-  CHECK_EQUAL(4,(int)tr.farX);
-  CHECK_EQUAL(12,(int)tr.farY);
-  CHECK_EQUAL(20,(int)tr.farZ);
+  CHECK_EQUAL(0*sizeof(vfloat4), tr.nearX);
+  CHECK_EQUAL(2*sizeof(vfloat4), tr.nearY);
+  CHECK_EQUAL(4*sizeof(vfloat4), tr.nearZ);
+  CHECK_EQUAL(16,(int)tr.farX);
+  CHECK_EQUAL(48,(int)tr.farY);
+  CHECK_EQUAL(80,(int)tr.farZ);
 
   tr = TravRay(origin, -direction);
   CHECK_VECREAL_EQUAL(origin, tr.org_xyz);
   CHECK_VECREAL_EQUAL(-direction, tr.dir_xyz);
   CHECK_VECREAL_EQUAL(origin, tr.org);
   CHECK_VECREAL_EQUAL(-direction, tr.dir);
-  CHECK_EQUAL(1*sizeof(float), tr.nearX);
-  CHECK_EQUAL(2*sizeof(float), tr.nearY);
-  CHECK_EQUAL(4*sizeof(float), tr.nearZ);
+  CHECK_EQUAL(1*sizeof(vfloat4), tr.nearX);
+  CHECK_EQUAL(2*sizeof(vfloat4), tr.nearY);
+  CHECK_EQUAL(4*sizeof(vfloat4), tr.nearZ);
   CHECK_EQUAL(0,(int)tr.farX);
-  CHECK_EQUAL(12,(int)tr.farY);
-  CHECK_EQUAL(20,(int)tr.farZ);
+  CHECK_EQUAL(48,(int)tr.farY);
+  CHECK_EQUAL(80,(int)tr.farZ);
 
 }
 
