@@ -41,6 +41,9 @@ void test_intersect() {
   CHECK(all(expected_dist==dist));
   CHECK(result);
 
+  result = intersectBox(n, r, z, z, dist);
+  CHECK(!result);
+
   r = TravRay(org,-dir);
   result = intersectBox(n, r, z, i, dist);
   CHECK(!result);
