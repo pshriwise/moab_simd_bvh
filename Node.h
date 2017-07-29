@@ -65,8 +65,8 @@ struct AANode : public Node
 
   using::Node::children;
   
-  //  inline AANode& child(size_t i) { assert(i<N); return children[i]; }
-  //inline const AANode& child(size_t i) const { assert(i<N); return children[i]; }
+  // inline AANode& child(size_t i) { assert(i<N); return children[i]; }
+  //  inline const AANode& child(size_t i) const { assert(i<N); return children[i]; }
 
   // empty constructor
   inline AANode() {}
@@ -92,7 +92,7 @@ struct AANode : public Node
 };
 
   
-inline size_t intersectBox(const AANode &node, const TravRay &ray, const float &tnear, const float &tfar, vfloat4 &dist) {
+inline size_t intersectBox(const AANode &node, const TravRay &ray, const vfloat4 &tnear, const vfloat4 &tfar, vfloat4 &dist) {
   const vfloat4 tNearX = (vfloat4::load((void*)((const char*)&node.lower_x + ray.nearX))- ray.org.x) * ray.rdir.x;
   const vfloat4 tNearY = (vfloat4::load((void*)((const char*)&node.lower_x + ray.nearY)) - ray.org.y) * ray.rdir.y;
   const vfloat4 tNearZ = (vfloat4::load((void*)((const char*)&node.lower_x + ray.nearZ)) - ray.org.z) * ray.rdir.z;
@@ -103,10 +103,9 @@ inline size_t intersectBox(const AANode &node, const TravRay &ray, const float &
   const float round_down = 1.0f-2.0f*float(ulp); // FIXME: use per instruction rounding for AVX512
   const float round_up   = 1.0f+2.0f*float(ulp);
 
-  const vfloat4 tNear = max(max(tNearX, tNearY), tNearZ);
-  const vfloat4 tFar = min(min(tFarX, tFarY), tFarZ);
-  std::cout << tNear << std::endl;
-  std::cout << tFar << std::endl;
+  const vfloat4 tNear = max(tNearX, tNearY, tNearZ, tnear);
+  const vfloat4 tFar = min(tFarX, tFarY, tFarZ, tfar);
+
   const vbool4 vmask = (round_down*tNear <= round_up*tFar);
   dist = tNear;
   const size_t mask = movemask(vmask);

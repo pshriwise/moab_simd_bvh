@@ -83,6 +83,10 @@ inline vfloat4 min(const vfloat4& a, const vfloat4&b) { return vfloat4(std::min(
 								       std::min(a.f[2],b.f[2]),
 								       std::min(a.f[3],b.f[3])); }
 
+inline vfloat4 min(const vfloat4& a, const vfloat4&b, const vfloat4& c) { return min(min(a,b),c); }
+
+inline vfloat4 min(const vfloat4& a, const vfloat4&b, const vfloat4& c, const vfloat4& d) { return min(min(a,b),c,d); }
+
 inline const vbool4 operator ==( const vfloat4& a, const vfloat4&b ) { return vbool4(a.f[0]==b.f[0],
 										     a.f[1]==b.f[1],
 										     a.f[2]==b.f[2],
@@ -116,6 +120,9 @@ inline vfloat4 max(const vfloat4& a, const vfloat4&b) { vfloat4 v;
 							return v;
                                                        }
 
+inline vfloat4 max(const vfloat4& a, const vfloat4&b, const vfloat4& c) { return max(max(a,b),c); }
+
+inline vfloat4 max(const vfloat4& a, const vfloat4&b, const vfloat4& c, const vfloat4& d) { return max(max(a,b),c,d); }
 
 inline std::ostream& operator<<(std::ostream& cout, const vfloat4& a) {
    return cout << "<" << a[0] << ", " << a[1] << ", " << a[2] << ", " << a[3] << ">";
