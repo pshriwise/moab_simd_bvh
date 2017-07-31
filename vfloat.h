@@ -69,24 +69,8 @@ inline vfloat4& operator *=( vfloat4& a, const float&   b ) { return a = a * b; 
 inline vfloat4& operator /=( vfloat4& a, const vfloat4& b ) { return a = a / b; }
 inline vfloat4& operator /=( vfloat4& a, const float&   b ) { return a = a / b; }                       
 
-////////// Other Common Ops //////////
-inline const vfloat4 madd  ( const vfloat4& a, const vfloat4& b, const vfloat4& c) { return a*b+c; }
-inline const vfloat4 msub  ( const vfloat4& a, const vfloat4& b, const vfloat4& c) { return a*b-c; }
-inline const vfloat4 nmadd ( const vfloat4& a, const vfloat4& b, const vfloat4& c) { return -a*b+c;}
-inline const vfloat4 nmsub ( const vfloat4& a, const vfloat4& b, const vfloat4& c) { return -a*b-c; }       
 
-inline float min(const vfloat4& v ) { return std::min(std::min(v.f[0],v.f[1]),std::min(v.f[2],v.f[3])); }
-inline float max(const vfloat4& v ) { return std::max(std::max(v.f[0],v.f[1]),std::max(v.f[2],v.f[3])); }
-
-inline vfloat4 min(const vfloat4& a, const vfloat4&b) { return vfloat4(std::min(a.f[0],b.f[0]),
-				                                       std::min(a.f[1],b.f[1]),
-								       std::min(a.f[2],b.f[2]),
-								       std::min(a.f[3],b.f[3])); }
-
-inline vfloat4 min(const vfloat4& a, const vfloat4&b, const vfloat4& c) { return min(min(a,b),c); }
-
-inline vfloat4 min(const vfloat4& a, const vfloat4&b, const vfloat4& c, const vfloat4& d) { return min(min(a,b),c,d); }
-
+////////// Comparators //////////
 inline const vbool4 operator ==( const vfloat4& a, const vfloat4&b ) { return vbool4(a.f[0]==b.f[0],
 										     a.f[1]==b.f[1],
 										     a.f[2]==b.f[2],
@@ -111,6 +95,25 @@ inline const vbool4 operator <=( const vfloat4& a, const vfloat4&b ) { return vb
 										     a.f[1]<=b.f[1],
 										     a.f[2]<=b.f[2],
 										     a.f[3]<=b.f[3]); }
+
+////////// Other Common Ops //////////
+inline const vfloat4 madd  ( const vfloat4& a, const vfloat4& b, const vfloat4& c) { return a*b+c; }
+inline const vfloat4 msub  ( const vfloat4& a, const vfloat4& b, const vfloat4& c) { return a*b-c; }
+inline const vfloat4 nmadd ( const vfloat4& a, const vfloat4& b, const vfloat4& c) { return -a*b+c;}
+inline const vfloat4 nmsub ( const vfloat4& a, const vfloat4& b, const vfloat4& c) { return -a*b-c; }       
+
+inline float min(const vfloat4& v ) { return std::min(std::min(v.f[0],v.f[1]),std::min(v.f[2],v.f[3])); }
+inline float max(const vfloat4& v ) { return std::max(std::max(v.f[0],v.f[1]),std::max(v.f[2],v.f[3])); }
+
+inline vfloat4 min(const vfloat4& a, const vfloat4&b) { return vfloat4(std::min(a.f[0],b.f[0]),
+				                                       std::min(a.f[1],b.f[1]),
+								       std::min(a.f[2],b.f[2]),
+								       std::min(a.f[3],b.f[3])); }
+
+inline vfloat4 min(const vfloat4& a, const vfloat4&b, const vfloat4& c) { return min(min(a,b),c); }
+
+inline vfloat4 min(const vfloat4& a, const vfloat4&b, const vfloat4& c, const vfloat4& d) { return min(min(a,b),c,d); }
+
 
 inline vfloat4 max(const vfloat4& a, const vfloat4&b) { vfloat4 v;
                                                         v.f[0] = std::max(a.f[0],b.f[0]);
