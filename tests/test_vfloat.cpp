@@ -41,6 +41,14 @@ void test_vfloat4_constructors() {
   CHECK_REAL_EQUAL(vals[1], v[1], 0.0);
   CHECK_REAL_EQUAL(vals[2], v[2], 0.0);
   CHECK_REAL_EQUAL(vals[3], v[3], 0.0);
+
+  // test copy
+  vfloat4 v1 = vfloat4(v);
+  
+  CHECK_REAL_EQUAL(vals[0], v1[0], 0.0); 
+  CHECK_REAL_EQUAL(vals[1], v1[1], 0.0);
+  CHECK_REAL_EQUAL(vals[2], v1[2], 0.0);
+  CHECK_REAL_EQUAL(vals[3], v1[3], 0.0);
   
   const void* const p = (void*)vals;
   v = vfloat4::load(p);

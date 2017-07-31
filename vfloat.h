@@ -16,7 +16,7 @@ struct vfloat4
   inline vfloat4 (const vfloat4& other) { f[0] = other.f[0];
                                           f[1] = other.f[1];
 					  f[2] = other.f[2];
-					  f[3] = other.f[2]; }
+					  f[3] = other.f[3]; }
 
   inline vfloat4& operator =( const float& a ) { f[0] = a; f[1] = a; f[2] = a; f[3] = a; }
     
