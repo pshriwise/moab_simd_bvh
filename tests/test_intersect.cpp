@@ -35,23 +35,33 @@ void test_intersect() {
   vfloat4 dist(100.0);
   bool result;
 
+  // setup values for testing rays
   vfloat4 z(zero), i(inf), ni(neg_inf);
   vfloat4 expected_dist(4.0);
+
+  // test ray incident on box, infinite length
+  // (intersection)
   result = intersectBox(n, r, z, i, dist);
-  CHECK(all(expected_dist==dist));
+  CHECK_VFLOATREAL_EQUAL(expected_dist, dist);
   CHECK(result);
 
+  // test ray incident on box, zero length
+  // (no intersection)
   result = intersectBox(n, r, z, z, dist);
   CHECK(!result);
 
+  // test ray going away from box, infinite length
+  // (no intersection)
   r = TravRay(org,-dir);
   result = intersectBox(n, r, z, i, dist);
   CHECK(!result);
 
+  // test ray going away from box, infinite positive
+  // and negative lengths
+  // (intersection)
   expected_dist = vfloat4(-9.0);
   r = TravRay(org,-dir);
   result = intersectBox(n, r, ni, i, dist);
-  CHECK(all(expected_dist==dist));
+  CHECK_VFLOATREAL_EQUAL(expected_dist, dist);
   CHECK(result);
 
-}

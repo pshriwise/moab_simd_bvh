@@ -3,6 +3,7 @@
 
 #include <string>
 #include "constants.h"
+#include "vfloat.h"
 
 //#include "moab/MOABConfig.h"
 /* Define these here because they are used by many tests
@@ -27,8 +28,12 @@
 #define CHECK_REAL_EQUAL( EXP, ACT, EPS ) check_equal( (EXP), (ACT), (EPS), #EXP, #ACT, __LINE__, __FILE__ )
 /** Check that two arrays contain the same values in the same order */
 #define CHECK_ARRAYS_EQUAL( EXP, EXP_LEN, ACT, ACT_LEN ) check_array_equal( (EXP), (EXP_LEN), (ACT), (ACT_LEN), #EXP, #ACT, __LINE__, __FILE__ )
-/** Check that two CartVect objects contain same values */
-#define CHECK_VECREAL_EQUAL( EXP, ACT) check_equal_Vec3( (EXP), (ACT), #EXP, #ACT, __LINE__, __FILE__ ) 
+/** Check that two Vec3 objects contain same values */
+#define CHECK_VECREAL_EQUAL( EXP, ACT) check_equal_Vec3( (EXP), (ACT), #EXP, #ACT, __LINE__, __FILE__ )
+
+/** Check that two vfloat4 objects contain same values */
+#define CHECK_VFLOATREAL_EQUAL( EXP, ACT) check_equal_vfloat4( (EXP), (ACT), #EXP, #ACT, __LINE__, __FILE__ ) 
+
 /** Run a test
  *  Argument should be a function with the signature:  void func(void)
  *  Evaluates to zero if test is successful, one otherwise.
@@ -219,13 +224,33 @@ void check_true( bool cond, const char* str, int line, const char* file )
 
 template<typename T>
 void check_equal_Vec3( const Vec3<T>& A,
-			   const Vec3<T>& B,
-                        const char* sA, const char* sB, 
-                        int line, const char* file )
+		       const Vec3<T>& B,
+		       const char* sA, const char* sB, 
+		       int line, const char* file )
 {
   check_equal( A.length(), B.length(), 0.0, sA, sB, line, file);
 
   if( (A[0] == B[0]) && (A[1] == B[1]) && (A[2] == B[2]) )
+    return;
+  
+  std::cout << "Equality Test Failed: " << sA << " == " << sB << std::endl;
+  std::cout << "  at line " << line << " of '" << file << "'" << std::endl;
+   
+  std::cout << "  Expected: ";
+  std::cout << A << std::endl;
+  
+  std::cout << "  Actual:   ";
+  std::cout << B << std::endl;
+  
+  flag_error(); 
+}
+
+void check_equal_vfloat4( const vfloat4& A,
+		       const vfloat4& B,
+		       const char* sA, const char* sB, 
+		       int line, const char* file )
+{
+  if( (A[0] == B[0]) && (A[1] == B[1]) && (A[2] == B[2]) && (A[3] == B[3]) )
     return;
   
   std::cout << "Equality Test Failed: " << sA << " == " << sB << std::endl;
