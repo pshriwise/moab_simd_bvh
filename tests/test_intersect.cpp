@@ -65,3 +65,4 @@ void test_intersect() {
   CHECK_VFLOATREAL_EQUAL(expected_dist, dist);
   CHECK(result);
 
+}
