@@ -73,13 +73,15 @@ void test_vbool4_mask() {
   v = vbool4(false,false,false,false);
   result = movemask(v);
   expected_result = 0;
+  CHECK_EQUAL(expected_result,result);
   
   v = vbool4(true,false,true,false);
   result = movemask(v);
   expected_result = 5;
-
+  CHECK_EQUAL(expected_result,result);
+  
   v = vbool4(false,true,false,true);
   result = movemask(v);
   expected_result = 10;
-
+  CHECK_EQUAL(expected_result,result);
 }
