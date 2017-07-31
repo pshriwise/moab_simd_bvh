@@ -12,5 +12,6 @@ ADD_EXECUTABLE(test_aabb test_aabb.cpp ${SRC_FILES})
 ADD_EXECUTABLE(test_ray test_ray.cpp ${SRC_FILES})
 ADD_EXECUTABLE(test_intersect test_intersect.cpp ${SRC_FILES})
 ADD_EXECUTABLE(test_vfloat test_vfloat.cpp ${SRC_FILES})
+ADD_EXECUTABLE(test_vbool test_vbool.cpp ${SRC_FILES})
 
 

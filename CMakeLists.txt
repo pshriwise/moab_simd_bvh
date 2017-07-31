@@ -9,5 +9,6 @@ ADD_TEST(NAME aabb_test COMMAND test_aabb)
 ADD_TEST(NAME ray_test COMMAND test_ray)
 ADD_TEST(NAME intersect_test COMMAND test_intersect)
 ADD_TEST(NAME vfloat_test COMMAND test_vfloat)
+ADD_TEST(NAME vbool_test COMMAND test_vbool)
 
 ENABLE_TESTING()
