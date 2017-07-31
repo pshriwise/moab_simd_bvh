@@ -71,7 +71,20 @@ struct AANode : public Node
   // empty constructor
   inline AANode() {}
 
-
+  inline AANode( const vfloat4& low_x, const vfloat4& up_x,
+		 const vfloat4& low_y, const vfloat4& up_y,
+		 const vfloat4& low_z, const vfloat4& up_z,
+		 const NodeRef* child_ptr = NULL) : lower_x(low_x), upper_x(up_x),
+                                                    lower_y(low_y), upper_y(up_y),
+                                                    lower_z(low_z), upper_z(up_z) {
+                                                    if (child_ptr) {
+                                                      children[0] = *child_ptr;
+					              children[1] = *(child_ptr+1);
+					              children[2] = *(child_ptr+2);
+					              children[3] = *(child_ptr+3);
+						    }
+                                                   }
+  
   inline void clear() { lower_x = lower_y = lower_z = neg_inf;
                         upper_x = upper_y = upper_z = inf;
 			Node::clear();
