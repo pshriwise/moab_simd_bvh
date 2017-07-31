@@ -24,7 +24,10 @@ template<typename T> struct Vec3 {
   inline const T& operator []( const size_t axis) const { assert(axis < 3); return (&x)[axis]; }
   inline       T& operator []( const size_t axis)       { assert(axis < 3); return (&x)[axis]; }
 
-      
+  inline void normalize() { T len = length();
+                            len = len < min_rcp_input ? min_rcp_input : len;
+                            x /= len; y /= len; z /= len; }
+
   inline Vec3( const T x, const T y, const T z) : x(x), y(y), z(z) {}
   
   inline Vec3( const T v[3] ) : x(v[0]), y(v[1]), z(v[2]) {}

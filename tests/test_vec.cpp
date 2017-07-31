@@ -27,6 +27,7 @@ int main( int argc, char** argv) {
   binary_op_tests();
   // tests several convenience methods of Vec3
   convenience_method_tests();
+  
   return 0;
 }
 
@@ -192,4 +193,13 @@ void convenience_method_tests() {
 
   expected_result = 26.0;
   CHECK_REAL_EQUAL(expected_result, halfArea(test_vec1), 0.0);
+
+  test_vec = Vec3f(5.0, 5.0, 5.0);
+  float expected_length = sqrt(75.0);
+  CHECK_REAL_EQUAL(expected_length, test_vec.length(), 0.0);
+
+  // make into a vector of unit length
+  test_vec.normalize();
+  expected_length = 1.0;
+  CHECK_REAL_EQUAL(expected_length, test_vec.length(), ulp);  
 }
