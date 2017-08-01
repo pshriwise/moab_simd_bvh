@@ -1,5 +1,4 @@
 
-#include "AABB.h"
 #include "Ray.h"
 #include "testutil.hpp"
 #include "Node.h"
@@ -67,8 +66,10 @@ void test_intersect() {
   // test node with different bounds for each box
   vfloat4 lower_x(0.0, 1.0, 2.0, 5.0);
   vfloat4 upper_x(1.0, 2.0, 3.0, 5.0);
+  
   vfloat4 lower_y(0.0, 1.0, 2.0, 5.0);
   vfloat4 upper_y(1.0, 2.0, 3.0, 5.0);
+
   vfloat4 lower_z(0.0, 1.0, 2.0, 5.0);
   vfloat4 upper_z(1.0, 2.0, 3.0, 5.0);
 
@@ -131,4 +132,32 @@ void test_intersect() {
   expected_result = 15;
   CHECK_EQUAL(expected_result, result);
 
+  // setup a glancing hit with the lowest box
+  org = Vec3f(-0.5, -0.5, -0.5);
+  dir = Vec3f(0.0, 0.0, 1.0) - org;
+  float exp_dist = dir.length();
+  dir.normalize();
+
+  // construct a new traversal ray
+  r = TravRay(org, dir);
+
+  // intersect ray of infinite length
+  result = intersectBox(man_n, r, z, i, dist);
+  // should only intersect the first box
+  expected_result = 1;
+  CHECK_EQUAL(expected_result, result);
+  CHECK_REAL_EQUAL(exp_dist, dist[0], eps);
+  
+  // setup parallel hit
+  org = Vec3f(-0.5, 0.5, 1.0);
+  dir = Vec3f( 1.0, 0.0, 0.0);
+  dir.normalize();
+
+  r = TravRay(org, dir);
+  // intersect ray of infinite length
+  result = intersectBox(man_n, r, z, i, dist);
+  // should intersect only the first box
+  expected_result = 1;
+  CHECK_EQUAL(expected_result, result);
+  CHECK_REAL_EQUAL(0.5, dist[0], eps);
 }

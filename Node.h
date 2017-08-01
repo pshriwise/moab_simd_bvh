@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vec3.h"
+#include "AABB.h"
 #include "constants.h"
 #include "vfloat.h"
 
