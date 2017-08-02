@@ -5,7 +5,7 @@
 #include <vector>
 
 
-int generate_tree(int current_depth, int split_axis, AABB box, int depth, std::vector<AANode>& nodes);
+size_t generate_tree(int current_depth, int split_axis, AABB box, int depth, std::vector<AANode>& nodes);
 
 int main(int argc, char** argv) {
 
@@ -14,7 +14,6 @@ int main(int argc, char** argv) {
   int result = generate_tree(0, 0, bbox, 3, nodes);
   std::cout << "Num_nodes: " << nodes.size() << std::endl;
   
-  assert(!result);
   return 0;
 
 }
@@ -32,7 +31,7 @@ int main(int argc, char** argv) {
  obtained. The nodes at this level are then declared leaf nodes and the root
  node of the tree is returned.
  */
-int generate_tree(int current_depth, int split_axis, AABB box, int depth, std::vector<AANode>& nodes) {
+size_t generate_tree(int current_depth, int split_axis, AABB box, int depth, std::vector<AANode>& nodes) {
 
 
   
@@ -88,7 +87,8 @@ int generate_tree(int current_depth, int split_axis, AABB box, int depth, std::v
 		     Vec3f(bounds[1][3],bounds[3][3],bounds[5][3]));
     this_node.children[3] = NodeRef(generate_tree(current_depth, new_split_axis, box3, depth, nodes));
 
-    return node_idx;	      
+    // cast address of node to size_t and return
+    return (size_t)&this_node;	      
   }
   else {
     return -1;
