@@ -5,15 +5,16 @@
 #include <vector>
 
 
-size_t generate_tree(int current_depth, int split_axis, AABB box, int depth, std::vector<AANode>& nodes);
+size_t generate_tree(int current_depth, int split_axis, AABB box, int depth);
+void print_tree(AANode root, int depth);
 
 int main(int argc, char** argv) {
 
   AABB bbox(Vec3f(0.0, 0.0, 0.0),Vec3f(5.0, 5.0, 5.0));
-  std::vector<AANode> nodes;
-  int result = generate_tree(0, 0, bbox, 3, nodes);
-  std::cout << "Num_nodes: " << nodes.size() << std::endl;
-  
+  NodeRef root_ref = generate_tree(0, 0, bbox, 4);
+  AANode root = *root_ref.node();
+  print_tree(root, 0);
+ 
   return 0;
 
 }
@@ -31,17 +32,13 @@ int main(int argc, char** argv) {
  obtained. The nodes at this level are then declared leaf nodes and the root
  node of the tree is returned.
  */
-size_t generate_tree(int current_depth, int split_axis, AABB box, int depth, std::vector<AANode>& nodes) {
-
-
+size_t generate_tree(int current_depth, int split_axis, AABB box, int depth) {
   
-  Vec3f dxdydz = (box.upper - box.lower)/4.0f;
   
-  int node_idx = 0;
+  
   if(current_depth <= depth) {
-    // std::cout << "Here" << std::endl;
-    // std::cout << "Split axis: " << split_axis << std::endl;
-    // std::cout << "Delta " << dxdydz << std::endl;
+    // determine the child box interval in each dimension
+    Vec3f dxdydz = (box.upper - box.lower)/4.0f;
 
     //create new child bounds
     vfloat4 bounds[6];
@@ -59,39 +56,41 @@ size_t generate_tree(int current_depth, int split_axis, AABB box, int depth, std
     bounds[2*split_axis+1] = vfloat4(lb + delta, lb + 2*delta, lb + 3*delta, lb + 4*delta);
 
     // set the node bounds
-    AANode this_node = AANode(bounds[0], bounds[1], bounds[2], bounds[3], bounds[4], bounds[5]);
-    node_idx = nodes.size();
-    nodes.push_back(this_node);
+    AANode* this_node = new AANode(bounds[0], bounds[1], bounds[2], bounds[3], bounds[4], bounds[5]);
 
     //generate children
     int new_split_axis = split_axis == 2 ? 0 : split_axis+1;    
     current_depth++;
+    
+    // create child nodes/leaves
+    for(unsigned int i=0; i < N; i++){
+      AABB box = AABB(Vec3f(bounds[0][i],bounds[2][i],bounds[4][i]),
+		      Vec3f(bounds[1][i],bounds[3][i],bounds[5][i]));
+      this_node->children[i] = generate_tree(current_depth, new_split_axis, box, depth);
+    }
 
-    // child zero
-    AABB box0 = AABB(Vec3f(bounds[0][0],bounds[2][0],bounds[4][0]),
-		     Vec3f(bounds[1][0],bounds[3][0],bounds[5][0]));
-    this_node.children[0] = NodeRef(generate_tree(current_depth, new_split_axis, box0, depth, nodes));
-
-    // child one
-    AABB box1 = AABB(Vec3f(bounds[0][1],bounds[2][1],bounds[4][1]),
-		     Vec3f(bounds[1][1],bounds[3][1],bounds[5][1]));
-    this_node.children[1] = NodeRef(generate_tree(current_depth, new_split_axis, box1, depth, nodes));
-
-    // child two
-    AABB box2 = AABB(Vec3f(bounds[0][2],bounds[2][2],bounds[4][2]),
-		     Vec3f(bounds[1][2],bounds[3][2],bounds[5][2]));
-    this_node.children[2] = NodeRef(generate_tree(current_depth, new_split_axis, box2, depth, nodes));
-
-    // child three
-    AABB box3 = AABB(Vec3f(bounds[0][3],bounds[2][3],bounds[4][3]),
-		     Vec3f(bounds[1][3],bounds[3][3],bounds[5][3]));
-    this_node.children[3] = NodeRef(generate_tree(current_depth, new_split_axis, box3, depth, nodes));
-
-    // cast address of node to size_t and return
-    return (size_t)&this_node;	      
+    // return a reference to this node
+    return NodeRef((size_t) this_node);	      
   }
   else {
-    return -1;
+    return tyLeaf;
   }
 }
 
+void print_tree(AANode node, int depth) {
+
+  // print the depth
+  std::cout << "Depth: " << depth << std::endl;
+  // print the current node
+  std::cout << node << std::endl;
+
+  // print child nodes (if not leaves)
+  for(unsigned int i = 0; i < 4; i++) {
+    if (node.child(i) != tyLeaf) {
+      AANode n = *node.child(i).node();
+      std::cout << n << std::endl;
+      print_tree(n,depth+1);
+    }
+  }
+  
+}

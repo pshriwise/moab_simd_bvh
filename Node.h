@@ -10,14 +10,26 @@
 static const size_t emptyNode = 8;
 static const size_t tyLeaf = 8;
 
+ // forward declarations
+struct AANode;
+struct Node;
+ 
 struct NodeRef {
+
+
+  
   inline NodeRef () {}
 
   inline NodeRef(size_t ptr) : ptr(ptr) {}
 
   inline operator size_t() const { return ptr; }
+
+  inline size_t pointer () const { return ptr; }
   
   inline size_t isLeaf() const { return ptr & tyLeaf; }
+
+  inline       AANode* node()       { return (AANode*)ptr; }
+  inline const AANode* node() const { return (const AANode*)ptr; }
 
   /* inline char* leaf(size_t& num) const { */
   /*   assert(isLeaf()); */
@@ -33,7 +45,7 @@ private:
 
 struct Node {
   inline Node () {}
-
+  
   inline void clear() { for(size_t i=0; i < N; i++) children[i] = emptyNode; }
 
   inline bool verify() {
@@ -65,7 +77,8 @@ struct AANode : public Node
 {
 
   using::Node::children;
-  
+
+
   // inline AANode& child(size_t i) { assert(i<N); return children[i]; }
   //  inline const AANode& child(size_t i) const { assert(i<N); return children[i]; }
 
@@ -85,7 +98,22 @@ struct AANode : public Node
 					              children[3] = *(child_ptr+3);
 						    }
                                                    }
-  
+
+  inline void set( const vfloat4& low_x, const vfloat4& up_x,
+		  const vfloat4& low_y, const vfloat4& up_y,
+		  const vfloat4& low_z, const vfloat4& up_z,
+		   const NodeRef* child_ptr = NULL) {
+                                                      lower_x = low_x; upper_x = up_x;
+                                                      lower_y = low_y; upper_y = up_y;
+                                                      lower_z = low_z; upper_z = up_z;
+                                                      if (child_ptr) {
+                                                        children[0] = *child_ptr;
+					                children[1] = *(child_ptr+1);
+					                children[2] = *(child_ptr+2);
+					                children[3] = *(child_ptr+3);
+						      }
+                                                   }
+
   inline void clear() { lower_x = lower_y = lower_z = neg_inf;
                         upper_x = upper_y = upper_z = inf;
 			Node::clear();
@@ -104,6 +132,16 @@ struct AANode : public Node
   vfloat4 lower_x, upper_x, lower_y, upper_y, lower_z, upper_z;
   
 };
+
+inline std::ostream& operator<<(std::ostream& cout, const AANode &n) {
+  return cout <<
+         "Lower X's: " << n.lower_x << std::endl <<
+         "Upper X's: " << n.upper_x << std::endl <<
+         "Lower Y's: " << n.lower_y << std::endl <<
+         "Upper Y's: " << n.upper_y << std::endl <<
+         "Lower Z's: " << n.lower_z << std::endl <<
+         "Upper Z's: " << n.upper_z << std::endl;
+}
 
   
 inline size_t intersectBox(const AANode &node, const TravRay &ray, const vfloat4 &tnear, const vfloat4 &tfar, vfloat4 &dist) {
