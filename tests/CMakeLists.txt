@@ -1,9 +1,9 @@
 
 SET(SRC_FILES)
-LIST(APPEND SRC_FILES)
+LIST(APPEND SRC_FILES ../Intersector.cpp)
 
 SET(HEADERS)
-LIST(APPEND HEADERS testutil.hpp Vec3f.h AABB.h Ray.h Node.h constants.h ops.h Traverser.h Stack.h)
+LIST(APPEND HEADERS testutil.hpp Vec3f.h AABB.h Ray.h Node.h constants.h ops.h Traverser.h Stack.h Intersector.h)
 
 INCLUDE_DIRECTORIES(..)
 

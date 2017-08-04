@@ -16,6 +16,16 @@ struct Ray {
 	     const int mask = -1)
     : org(org), dir(dir), tnear(tnear), tfar(tfar), mask(mask), geomID(-1), primID(-1), instID(-1) {}
 
+  
+  inline bool valid() const {
+    bool vx = (fabs(org.x) <= FLT_LARGE) & (fabs(dir.x) <= FLT_LARGE);
+    bool vy = (fabs(org.y) <= FLT_LARGE) & (fabs(dir.y) <= FLT_LARGE);
+    bool vz = (fabs(org.z) <= FLT_LARGE) & (fabs(dir.z) <= FLT_LARGE);
+    bool vn = fabs(tnear) <= (float)inf;
+    bool vf = fabs(tnear) <= (float)inf;
+    return vx & vy & vz & vn & vf;
+  }
+
   /* Ray data */
   Vec3f org;
   Vec3f dir;
@@ -51,7 +61,7 @@ struct Ray {
       farZ  = nearZ ^ sizeof(vfloat4);
     }
 
-    
+
     Vec3f org_xyz, dir_xyz;
     Vec3f org, dir, rdir;
     size_t nearX, nearY, nearZ;

@@ -8,11 +8,13 @@
 
 
 class BVHTraverser {
+ public:
 
-  inline void traverseClosest(NodeRef& current_node, const vfloat4& tNear,
-			      size_t mask,
-			      StackItemT<NodeRef>*& stackPtr,
-			      StackItemT<NodeRef>* stackEnd)
+  static inline void traverseClosest(NodeRef& current_node, 
+			             size_t mask,
+				     const vfloat4& tNear,
+				     StackItemT<NodeRef>*& stackPtr,
+				     StackItemT<NodeRef>* stackEnd)
   {
     assert(mask != 0);
 
@@ -66,5 +68,10 @@ class BVHTraverser {
     current_node = (NodeRef) stackPtr[-1].ptr; stackPtr--;
   }
     
-	    
+  static inline bool intersect(NodeRef& node, const TravRay& ray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& dist, size_t& mask) {
+    if(node.isLeaf()) return false;
+    mask = intersectBox(*node.node(),ray,tnear,tfar,dist);
+    return true;
+  }
+  
 };
