@@ -2,6 +2,7 @@
 
 #include "Node.h"
 #include "Vec3.h"
+#include "Traverser.h"
 #include <vector>
 
 

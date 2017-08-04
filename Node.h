@@ -31,6 +31,9 @@ struct NodeRef {
   inline       AANode* node()       { return (AANode*)ptr; }
   inline const AANode* node() const { return (const AANode*)ptr; }
 
+  inline       Node* bnode()       { return (Node*)ptr; }
+  inline const Node* bnode() const { return (const Node*)ptr; }
+
   /* inline char* leaf(size_t& num) const { */
   /*   assert(isLeaf()); */
   /*   num = (ptr & (size_t)items_mask)-tyLeaf; */

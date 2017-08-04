@@ -32,6 +32,13 @@ struct vfloat4
 					       }
 					       return v; }
 
+  static inline void store ( void* ptr, const vfloat4&v ) {
+                                               vfloat4* p = (vfloat4*) ptr;
+                                               for(size_t i=0; i < 4; i++) {
+						 (*p).f[i] = v[i];
+					       }
+                            } 
+
 };
 
 
