@@ -4,7 +4,9 @@
 #include "Traverser.h"
 #include "Stack.h"
 
-void BVHIntersector::intersect(NodeRef root, Ray& ray) {
+class BVHTraverser;
+
+void BVHIntersector::intersectRay(NodeRef root, Ray& ray) {
 
   /* initialiez stack state */
   StackItemT<NodeRef> stack[stackSize];
@@ -21,6 +23,8 @@ void BVHIntersector::intersect(NodeRef root, Ray& ray) {
   vfloat4 ray_near = max(ray.tnear, 0.0f);
   vfloat4 ray_far = max(ray.tfar, 0.0f);
 
+  BVHTraverser nodeTraverser;
+  
   while (true) pop:
     {
       
@@ -35,14 +39,14 @@ void BVHIntersector::intersect(NodeRef root, Ray& ray) {
       while (true)
 	{
 	  size_t mask; vfloat4 tNear;
-	  bool nodeIntersected = BVHTraverser::intersect(root, vray, ray_near, ray_far, tNear, mask);
+	  bool nodeIntersected = intersect(root, vray, ray_near, ray_far, tNear, mask);
 	  // if no intersection, move on to the next node in the stack
 	  if (!nodeIntersected) { break; }
 	  
 	  // if no children were hit, pop next node
 	  if (mask == 0) { goto pop; }
 
-	  BVHTraverser::traverseClosest(cur, mask, tNear, stackPtr, stackEnd);
+	  nodeTraverser.traverseClosest(cur, mask, tNear, stackPtr, stackEnd);
 	}
 
       // leaf node - to be implemented later
@@ -52,3 +56,5 @@ void BVHIntersector::intersect(NodeRef root, Ray& ray) {
   
 
 }
+
+
