@@ -4,6 +4,7 @@
 #include "Vec3.h"
 #include "Traverser.h"
 #include "Intersector.h"
+#include "Ray.h"
 
 #include <vector>
 
@@ -17,7 +18,15 @@ int main(int argc, char** argv) {
   NodeRef root_ref = generate_tree(0, 0, bbox, 4);
   AANode root = *root_ref.node();
   print_tree(root, 0);
- 
+
+  // create a ray for intersection with the hierarchy
+  Vec3f org(10.0, 10.0, 10.0), dir(-1.0, 0.0, 0.0);
+  Ray r(org, dir);
+  
+  BVHIntersector BVH;
+
+  BVH.intersectRay(root_ref, r);
+  
   return 0;
 
 }
