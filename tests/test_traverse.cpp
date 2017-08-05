@@ -17,15 +17,16 @@ int main(int argc, char** argv) {
   AABB bbox(Vec3f(0.0, 0.0, 0.0),Vec3f(5.0, 5.0, 5.0));
   NodeRef root_ref = generate_tree(0, 0, bbox, 4);
   AANode root = *root_ref.node();
-  print_tree(root, 0);
+  //print_tree(root, 0);
 
   // create a ray for intersection with the hierarchy
-  Vec3f org(10.0, 10.0, 10.0), dir(-1.0, 0.0, 0.0);
+  Vec3f org(10.0, 2.5, 2.5), dir(-1.0, 0.0, 0.0);
   Ray r(org, dir);
   
   BVHIntersector BVH;
-
+  
   BVH.intersectRay(root_ref, r);
+  std::cout << r << std::endl;
   
   return 0;
 
@@ -85,7 +86,7 @@ size_t generate_tree(int current_depth, int split_axis, AABB box, int depth) {
     return NodeRef((size_t) this_node);	      
   }
   else {
-    return tyLeaf;
+    return NodeRef(tyLeaf);
   }
 }
 

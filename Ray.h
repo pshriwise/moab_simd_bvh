@@ -43,6 +43,21 @@ struct Ray {
 
 };
 
+inline std::ostream& operator <<(std::ostream &os, Ray const &r) {
+  return os << "Origin: " << r.org << std::endl
+            << "Direction: " << r.dir << std::endl
+            << "tNear: " << r.tnear << std::endl
+            << "tFar: " << r.tfar << std::endl
+	    << "--------" << std::endl
+            << "Hit Info" << std::endl
+            << "--------" << std::endl
+	    << "Triangle Normal: " << r.Ng << std::endl
+            << "Barycentric Coords: " << Vec3f(r.u,r.v,1-r.u-r.v) << std::endl
+    	    << "Instance ID: " << r.instID << std::endl
+	    << "Primitive ID: " << r.primID << std::endl
+            << "Geometry ID: " << r.geomID << std::endl;
+}
+
   struct TravRay {
 
     /* Empty constructor */

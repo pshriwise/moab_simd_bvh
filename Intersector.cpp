@@ -39,8 +39,12 @@ void BVHIntersector::intersectRay(NodeRef root, Ray& ray) {
 	{
 	  size_t mask; vfloat4 tNear;
 	  bool nodeIntersected = intersect(cur, vray, ray_near, ray_far, tNear, mask);
-	  // if no intersection, move on to the next node in the stack
-	  if (!nodeIntersected) { break; }
+	  // if no intersection, this is a leaf - check primitives
+	  if (!nodeIntersected) {
+	    // temporary setting of ray values
+	    ray.tnear = min(tNear);
+	    ray.tfar = max(tNear);
+	    break; }
 	  
 	  // if no children were hit, pop next node
 	  if (mask == 0) { goto pop; }
