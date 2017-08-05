@@ -14,7 +14,7 @@ void print_tree(AANode root, int depth);
 
 int main(int argc, char** argv) {
 
-  AABB bbox(Vec3f(0.0, 0.0, 0.0),Vec3f(5.0, 5.0, 5.0));
+  AABB bbox(Vec3f(0.0, 0.0, 0.0),Vec3f(4.0, 4.0, 4.0));
   NodeRef root_ref = generate_tree(0, 0, bbox, 4);
   AANode root = *root_ref.node();
   //print_tree(root, 0);
