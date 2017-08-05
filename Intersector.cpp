@@ -27,7 +27,6 @@ void BVHIntersector::intersectRay(NodeRef root, Ray& ray) {
   
   while (true) pop:
     {
-      
       if(stackPtr == stack) break;
       stackPtr--;
       NodeRef cur = NodeRef(stackPtr->ptr);
@@ -39,7 +38,7 @@ void BVHIntersector::intersectRay(NodeRef root, Ray& ray) {
       while (true)
 	{
 	  size_t mask; vfloat4 tNear;
-	  bool nodeIntersected = intersect(root, vray, ray_near, ray_far, tNear, mask);
+	  bool nodeIntersected = intersect(cur, vray, ray_near, ray_far, tNear, mask);
 	  // if no intersection, move on to the next node in the stack
 	  if (!nodeIntersected) { break; }
 	  
@@ -49,8 +48,7 @@ void BVHIntersector::intersectRay(NodeRef root, Ray& ray) {
 	  nodeTraverser.traverseClosest(cur, mask, tNear, stackPtr, stackEnd);
 	}
 
-      // leaf node - to be implemented later
-      
+      // leaf (set distance to nearest/farthest box intersection for now)
       
     }
   
