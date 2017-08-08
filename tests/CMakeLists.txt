@@ -1,11 +1,6 @@
 
-SET(SRC_FILES)
-LIST(APPEND SRC_FILES ../Intersector.cpp)
 
-SET(HEADERS)
-LIST(APPEND HEADERS testutil.hpp Vec3f.h AABB.h Ray.h Node.h constants.h ops.h Traverser.h Stack.h Intersector.h)
-
-INCLUDE_DIRECTORIES(..)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src)
 
 ADD_EXECUTABLE(test_vec3f test_vec.cpp ${SRC_FILES})
 ADD_EXECUTABLE(test_aabb test_aabb.cpp ${SRC_FILES})
