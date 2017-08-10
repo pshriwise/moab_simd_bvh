@@ -8,25 +8,16 @@
 
 #include <vector>
 
+#include "testutil.hpp"
 
 size_t generate_tree(int current_depth, int split_axis, AABB box, int depth);
 void print_tree(AANode root, int depth);
 
+void test_intersect();
+
 int main(int argc, char** argv) {
 
-  AABB bbox(Vec3f(0.0, 0.0, 0.0),Vec3f(4.0, 4.0, 4.0));
-  NodeRef root_ref = generate_tree(0, 0, bbox, 4);
-  AANode root = *root_ref.node();
-  //print_tree(root, 0);
-
-  // create a ray for intersection with the hierarchy
-  Vec3f org(10.0, 2.5, 2.5), dir(-1.0, 0.0, 0.0);
-  Ray r(org, dir);
-  
-  BVHIntersector BVH;
-  
-  BVH.intersectRay(root_ref, r);
-  std::cout << r << std::endl;
+  test_intersect();
   
   return 0;
 
@@ -106,4 +97,25 @@ void print_tree(AANode node, int depth) {
     }
   }
   
+}
+
+void test_intersect() {
+  // create an initial box
+  AABB bbox(Vec3f(0.0, 0.0, 0.0),Vec3f(4.0, 4.0, 4.0));
+
+  // generate the tree for this box
+  NodeRef root_ref = generate_tree(0, 0, bbox, 4);
+
+  // create a ray for intersection with the hierarchy
+  Vec3f org(10.0, 2.5, 2.5), dir(-1.0, 0.0, 0.0);
+  Ray r(org, dir);
+
+  // use the root reference node to traverse the ray
+  BVHIntersector BVH;
+  BVH.intersectRay(root_ref, r);
+
+  // ensure the ray's tfar value has been clipped to
+  // the edge of the bbox
+  float exp_dist = 6.0;
+  CHECK_REAL_EQUAL(exp_dist, r.tfar, 0.0);
 }
