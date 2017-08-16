@@ -158,7 +158,7 @@ template<typename T>
 void check_inf(T B, const char* sB, int line, const char* file) {
   T A = inf;
   const char* sA = "inf";
-  EQUAL_TEST_IMPL( isinf(B), f )
+  EQUAL_TEST_IMPL( std::isinf(B), f )
    }
 
 void check_equal( int A, int B, const char* sA, const char* sB, int line, const char* file )
