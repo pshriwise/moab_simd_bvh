@@ -5,6 +5,7 @@
 #include "Traverser.h"
 #include "Intersector.h"
 #include "Ray.h"
+#include "Builder.h"
 
 #include <vector>
 

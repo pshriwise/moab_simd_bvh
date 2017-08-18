@@ -18,7 +18,8 @@ LIST(APPEND HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/src/ops.h
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Traverser.h
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Stack.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/Intersector.h)
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Intersector.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Builder.h)
 
 
 
