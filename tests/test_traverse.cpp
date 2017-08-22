@@ -6,7 +6,7 @@
 #include "Intersector.h"
 #include "Ray.h"
 #include "Vec3fa.h"
-//#include "Builder.h"
+#include "Builder.h"
 
 #include <vector>
 

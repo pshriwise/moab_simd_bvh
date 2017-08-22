@@ -1,6 +1,6 @@
 
 #include <vector>
-
+#include <set>
 
 
 enum BuildQuality {
@@ -154,12 +154,13 @@ struct PrimRef{
 
 struct Set{
   
-  inline Set(PrimRef* prim_ptr) : prims(prim_ptr) {}
-  
-  
-  
+  inline Set(std::set<PrimRef>& prims) : prims(prims) {}
 
-  PrimRef* const prims;
+  inline Set() {}
+
+  inline Set(EmptyTy) {}
+			      
+  std::set<PrimRef> prims;
 };
 
 struct BuildState
@@ -199,4 +200,4 @@ class BVHBuilder {
     createNode(node);
     
   } // end builder
-}
+};
