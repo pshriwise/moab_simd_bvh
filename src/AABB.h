@@ -6,11 +6,11 @@
 #include "Vec3.h"
 #include "Ray.h"
 #include "constants.h"
-
+#include "Vec3fa.h"
 
 struct AABB {
 
-  Vec3f lower, upper;
+  Vec3fa lower, upper;
 
   inline AABB() {}
 
@@ -28,10 +28,12 @@ struct AABB {
 												upper[1] = ext[4];
 												upper[2] = ext[5];}
 
-  inline AABB ( const float low[3], const float high[3] ) { lower = Vec3f(low); upper = Vec3f(high); }
+  inline AABB ( const float low[3], const float high[3] ) { lower = Vec3fa(low); upper = Vec3fa(high); }
 
-  inline AABB ( const Vec3f &l, const Vec3f &u ) { lower = l; upper = u; }
-  
+  inline AABB ( const Vec3fa &l, const Vec3fa &u ) { lower = l; upper = u; }
+
+  inline AABB ( const Vec3f &l, const Vec3f &u ) { lower = Vec3fa(l.x,l.y,l.z); upper = Vec3fa(u.x,u.y,u.z); }
+
   inline AABB& operator=( const AABB& other) { lower = other.lower; upper = other.upper; return *this; }
 
   inline AABB ( const AABB& other) { lower = other.lower; upper = other.upper; }
@@ -52,15 +54,15 @@ struct AABB {
 
   inline const AABB& extend(const AABB& other) { lower = min(lower, other.lower); upper = max(upper, other.upper); return *this; }
 
-  inline Vec3f size() const { return upper - lower; };
+  inline Vec3fa size() const { return upper - lower; };
 
-  inline Vec3f center() const { return 0.5f*(lower + upper); }
+  inline Vec3fa center() const { return 0.5f*(lower + upper); }
 
-  inline Vec3f center2() const { return lower+upper; }
+  inline Vec3fa center2() const { return lower+upper; }
 
 };
 
-inline bool inside ( const AABB &b, const Vec3f& p ) { return all(ge_mask(p,b.lower)) && all(le_mask(p,b.upper)); }  
+inline bool inside ( const AABB &b, const Vec3fa& p ) { return all(ge_mask(p,b.lower)) && all(le_mask(p,b.upper)); }  
 
 inline AABB merge ( const AABB &a, const AABB &b ) { return AABB(min(a.lower,b.lower), max(a.upper,b.upper)); }
 

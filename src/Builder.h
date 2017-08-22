@@ -116,21 +116,87 @@ void splitNode(NodeRef* node, const size_t numChildren, const BuildPrimitive* pr
     sortPrimitives(ax,plane_values[0],primitives,numPrimitives,left_list,numLeft,right_list,numRight);
       
   }
-  
 }
 
+
+struct PrimRef{
+  inline PrimRef () {}
+
+  inline PrimRef (const AABB& bounds, unsigned int geomID, unsigned int primID)
+  {
+    lower = bounds.lower; upper.a = geomID;
+    upper = bounds.upper; upper.a = primID;
+  }
+
+  inline const Vec3fa center2() const {
+    return lower+upper;
+  }
+
+  inline const AABB bounds() const {
+    return AABB(lower,upper);
+  }
+
+  inline unsigned size() const {
+    return 1;
+  }
+
+  inline unsigned geomID() const {
+    return lower.a;
+  }
+
+  inline unsigned primID() const {
+    return upper.a;
+  }
+
+  public:
+    Vec3fa lower, upper;
+};
+
+struct Set{
   
-NodeRef* Build(const BuildSettings& settings,
-	    BuildPrimitive* primitives,
-	    size_t numPrimitives,
-	       //	    createNodeFunc createNode,
-	       //	    linkChildrenFunc linkChildren,
-	       //	    setNodeBoundsFunc setNodeBounds,
-	    createLeafFunc createLeaf) {
-
-  NodeRef* node;
-  createNode(node);
-
+  inline Set(PrimRef* prim_ptr) : prims(prim_ptr) {}
+  
+  
   
 
+  PrimRef* const prims;
+};
+
+struct BuildState
+{
+  
+  inline BuildState() {}
+
+  inline BuildState(size_t depth)
+  : depth(depth), prims(empty) {}
+
+  inline BuildState(size_t depth, Set primitives)
+  : depth(depth), prims(primitives) {}
+
+  Set prims;
+  size_t depth;  
+};
+  
+
+class BVHBuilder {
+
+ private:
+  std::vector<BuildPrimitive> primitive_vec;
+
+ public:
+  
+  NodeRef Build(const BuildSettings& settings,
+		 BuildPrimitive* primitives,
+		 size_t numPrimitives,
+		 //	    createNodeFunc createNode,
+		 //	    linkChildrenFunc linkChildren,
+		 //	    setNodeBoundsFunc setNodeBounds,
+		 createLeafFunc createLeaf) {
+    
+    primitive_vec.resize(numPrimitives);
+    
+    NodeRef* node;
+    createNode(node);
+    
+  } // end builder
 }

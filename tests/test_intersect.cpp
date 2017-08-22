@@ -25,8 +25,8 @@ void test_intersect() {
 
   n.setBounds(box);
   
-  Vec3f org = Vec3f( 9.0, 3.0, 3.0);
-  Vec3f dir = Vec3f(-1.0, 0.0, 0.0);
+  Vec3fa org = Vec3fa( 9.0, 3.0, 3.0);
+  Vec3fa dir = Vec3fa(-1.0, 0.0, 0.0);
 
   TravRay r(org, dir);
 
@@ -76,16 +76,16 @@ void test_intersect() {
   vfloat4 upper_z(1.0, 2.0, 3.0, 5.0);
 
   // longest diagonal of unit box
-  float diag = Vec3f(1.0, 1.0, 1.0).length();
+  float diag = Vec3fa(1.0, 1.0, 1.0).length();
 
   AANode man_n(lower_x, upper_x,
 	       lower_y, upper_y,
 	       lower_z, upper_z);
 
   // intersect lowest box only
-  org = Vec3f(-0.5, -0.5, -0.5);
+  org = Vec3fa(-0.5, -0.5, -0.5);
   // ray goes through low and high corner of each box
-  dir = Vec3f(1.0, 1.0, 1.0);
+  dir = Vec3fa(1.0, 1.0, 1.0);
   dir.normalize();
   r = TravRay(org, dir);
   vfloat4 len = vfloat4(diag);
@@ -135,8 +135,8 @@ void test_intersect() {
   CHECK_EQUAL(expected_result, result);
 
   // setup a glancing hit with the lowest box
-  org = Vec3f(-0.5, -0.5, -0.5);
-  dir = Vec3f(0.0, 0.0, 1.0) - org;
+  org = Vec3fa(-0.5, -0.5, -0.5);
+  dir = Vec3fa(0.0, 0.0, 1.0) - org;
   float exp_dist = dir.length();
   dir.normalize();
 
@@ -151,8 +151,8 @@ void test_intersect() {
   CHECK_REAL_EQUAL(exp_dist, dist[0], eps);
   
   // setup parallel hit
-  org = Vec3f(-0.5, 0.5, 1.0);
-  dir = Vec3f( 1.0, 0.0, 0.0);
+  org = Vec3fa(-0.5, 0.5, 1.0);
+  dir = Vec3fa( 1.0, 0.0, 0.0);
   dir.normalize();
 
   r = TravRay(org, dir);
@@ -163,8 +163,8 @@ void test_intersect() {
   CHECK_EQUAL(expected_result, result);
 
   // setup parallel hit
-  org = Vec3f(-0.5, 0.5, 0.0);
-  dir = Vec3f( 1.0, 0.0, 0.0);
+  org = Vec3fa(-0.5, 0.5, 0.0);
+  dir = Vec3fa( 1.0, 0.0, 0.0);
   dir.normalize();
 
   r = TravRay(org, dir);
@@ -192,8 +192,8 @@ void test_parallel_hits() {
 
   // create ray aligned between boxes 1 & 2
   // y coordinate of ray coincident with box bounds
-  Vec3f org(2.0, 1.0, 0.5);
-  Vec3f dir(-1.0, 0.0, 0.0);
+  Vec3fa org(2.0, 1.0, 0.5);
+  Vec3fa dir(-1.0, 0.0, 0.0);
   TravRay r(org, dir);
 
   vfloat4 z(zero), i(inf);
@@ -208,7 +208,7 @@ void test_parallel_hits() {
   CHECK_REAL_EQUAL(expected_dist, dist[1], eps);
 
   // move ray origin - fire between boxes 2 & 3
-  org = Vec3f(2.0, 1.5, 1.0);
+  org = Vec3fa(2.0, 1.5, 1.0);
   r = TravRay(org, dir);
   result = intersectBox(n, r, z, i, dist);
   // expected to hit box higher in z coordinate (box 3)
@@ -218,7 +218,7 @@ void test_parallel_hits() {
   CHECK_REAL_EQUAL(expected_dist, dist[2], eps);
 
   // move ray origin - fire between boxes 3 & 4
-  org = Vec3f(2.0, 1.0, 1.5);
+  org = Vec3fa(2.0, 1.0, 1.5);
   r = TravRay(org, dir);
   result = intersectBox(n, r, z, i, dist);
   // expected to hit box higher in y coordinate (box 3)
@@ -229,8 +229,8 @@ void test_parallel_hits() {
 
   // move ray origin - fire between boxes 2 & 3 (and between 1 & 4)
   // now z coordinate of ray is coincident with box planes
-  org = Vec3f(0.5, 3.0, 1.0);
-  dir = Vec3f(0.0, -1.0, 0.0);
+  org = Vec3fa(0.5, 3.0, 1.0);
+  dir = Vec3fa(0.0, -1.0, 0.0);
   r = TravRay(org, dir);
   result = intersectBox(n, r, z, i, dist);
   // expected to hit boxes higher in z coordinates (boxes 3 & 4)
@@ -243,8 +243,8 @@ void test_parallel_hits() {
   
   // move ray - fire along the meeting edge of all four boxes
   // y & z coordinates of ray coincident with all boxes
-  org = Vec3f(2.0, 1.0, 1.0);
-  dir = Vec3f(-1.0, 0.0, 0.0);
+  org = Vec3fa(2.0, 1.0, 1.0);
+  dir = Vec3fa(-1.0, 0.0, 0.0);
   r = TravRay(org, dir);
   result = intersectBox(n, r, z, i, dist);
   // expected to hit box higher in BOTH the y & z coordinates (box 3)

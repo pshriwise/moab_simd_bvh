@@ -20,8 +20,8 @@ void BVHIntersector::intersectRay(NodeRef root, Ray& ray) {
   assert(ray.tnear >= 0.0f);
 
   TravRay vray = TravRay(ray.org, ray.dir);
-  vfloat4 ray_near = max(ray.tnear, 0.0f);
-  vfloat4 ray_far = max(ray.tfar, 0.0f);
+  vfloat4 ray_near = std::max(ray.tnear, 0.0f);
+  vfloat4 ray_far = std::max(ray.tfar, 0.0f);
 
   BVHTraverser nodeTraverser;
   
@@ -34,6 +34,7 @@ void BVHIntersector::intersectRay(NodeRef root, Ray& ray) {
       // if the ray doesn't reach this node, move to next
       if(*(float*)&stackPtr->dist > ray.tfar) { continue; }
       
+
       
       while (true)
 	{

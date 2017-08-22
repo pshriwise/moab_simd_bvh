@@ -6,6 +6,7 @@
 #include <math.h>
 #include "constants.h"
 
+
 template<typename T> struct Vec3 {
 
   T x,y,z;
@@ -15,11 +16,21 @@ template<typename T> struct Vec3 {
   inline Vec3( const Vec3 &other) { x = other.x;
                                     y = other.y;
 				    z = other.z; }
-      
+  
+  /* inline Vec3( const Vec3fa& other) { x = other.x; */
+  /*                                     y = other.y; */
+  /* 				      z = other.z; ) */
+  
   inline Vec3& operator =( const Vec3& other ) { x = other.x;
 						 y = other.y;
 						 z = other.z;
 						 return *this; }
+
+  /* inline Vec3& operator =( const Vec3fa& other ) { x = other.x; */
+  /* 						 y = other.y; */
+  /* 						 z = other.z; */
+  /* 						 return *this; } */
+
 
   inline const T& operator []( const size_t axis) const { assert(axis < 3); return (&x)[axis]; }
   inline       T& operator []( const size_t axis)       { assert(axis < 3); return (&x)[axis]; }
@@ -27,6 +38,8 @@ template<typename T> struct Vec3 {
   inline void normalize() { T len = length();
                             len = len < min_rcp_input ? min_rcp_input : len;
                             x /= len; y /= len; z /= len; }
+
+
 
   inline Vec3( const T x, const T y, const T z) : x(x), y(y), z(z) {}
   
@@ -93,7 +106,7 @@ inline bool all(bool b[3]) { return b[0] && b[1] && b[2]; }
 typedef Vec3<float> Vec3f;
 
 template<typename T>
-inline std::ostream& operator <<(std::ostream &os, Vec3<T> const&v) {
+inline std::ostream& operator <<(std::ostream &os, Vec3<T> const& v) {
   return os << '[' << v[0] << ' ' << v[1] << ' ' << v[2] << ']';
 }
 
@@ -123,3 +136,6 @@ inline const Vec3<T> rcp(const Vec3<T>& v ) { return Vec3<T>(1.0f/v.x,
 
 template<typename T>
 inline const Vec3<T> rcp_safe(const Vec3<T>& a) { return rcp(zero_fix(a)); }
+
+
+

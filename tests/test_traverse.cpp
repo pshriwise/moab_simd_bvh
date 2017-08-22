@@ -5,7 +5,8 @@
 #include "Traverser.h"
 #include "Intersector.h"
 #include "Ray.h"
-#include "Builder.h"
+#include "Vec3fa.h"
+//#include "Builder.h"
 
 #include <vector>
 
@@ -43,7 +44,7 @@ size_t generate_tree(int current_depth, int split_axis, AABB box, int depth) {
   
   if(current_depth <= depth) {
     // determine the child box interval in each dimension
-    Vec3f dxdydz = (box.upper - box.lower)/4.0f;
+    Vec3fa dxdydz = (box.upper - box.lower)/4.0f;
 
     //create new child bounds
     vfloat4 bounds[6];
@@ -69,8 +70,8 @@ size_t generate_tree(int current_depth, int split_axis, AABB box, int depth) {
     
     // create child nodes/leaves
     for(unsigned int i=0; i < N; i++){
-      AABB box = AABB(Vec3f(bounds[0][i],bounds[2][i],bounds[4][i]),
-		      Vec3f(bounds[1][i],bounds[3][i],bounds[5][i]));
+      AABB box = AABB(Vec3fa(bounds[0][i],bounds[2][i],bounds[4][i]),
+		      Vec3fa(bounds[1][i],bounds[3][i],bounds[5][i]));
       this_node->children[i] = generate_tree(current_depth, new_split_axis, box, depth);
     }
 
@@ -102,13 +103,14 @@ void print_tree(AANode node, int depth) {
 
 void test_intersect() {
   // create an initial box
-  AABB bbox(Vec3f(0.0, 0.0, 0.0),Vec3f(4.0, 4.0, 4.0));
+  AABB bbox(Vec3fa(0.0, 0.0, 0.0),Vec3fa(4.0, 4.0, 4.0));
 
   // generate the tree for this box
   NodeRef root_ref = generate_tree(0, 0, bbox, 4);
-
+  print_tree(*root_ref.node(),0);
+  
   // create a ray for intersection with the hierarchy
-  Vec3f org(10.0, 2.5, 2.5), dir(-1.0, 0.0, 0.0);
+  Vec3fa org(10.0, 2.5, 2.5), dir(-1.0, 0.0, 0.0);
   Ray r(org, dir);
 
   // use the root reference node to traverse the ray

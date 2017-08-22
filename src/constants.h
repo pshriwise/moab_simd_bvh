@@ -32,6 +32,9 @@ static struct NegInfTy
 
 } neg_inf;
 
+static struct EmptyTy {
+} empty;
+  
 static struct PosInfTy
 {
   inline operator          double   ( ) const { return std::numeric_limits<double>::infinity(); }
@@ -64,3 +67,11 @@ static struct ZeroTy
   inline operator          char     ( ) const { return 0; }
   inline operator unsigned char     ( ) const { return 0; }
 } zero;
+
+static struct TrueTy {
+  inline operator bool( ) const { return true; }
+} True;
+
+static struct FalseTy {
+  inline operator bool( ) const { return false; }
+} False;

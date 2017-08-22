@@ -37,8 +37,8 @@ void constructor_tests() {
 
   // create AABB using an array
   AABB box = AABB(test_extents);
-  CHECK_VECREAL_EQUAL(Vec3f(test_lower), box.lower);
-  CHECK_VECREAL_EQUAL(Vec3f(test_upper), box.upper);
+  CHECK_VECREAL_EQUAL(Vec3fa(test_lower), box.lower);
+  CHECK_VECREAL_EQUAL(Vec3fa(test_upper), box.upper);
   
   // test copy constructor
   AABB box1 = box;
@@ -46,8 +46,8 @@ void constructor_tests() {
   CHECK_VECREAL_EQUAL(box.lower, box1.lower);
   CHECK_VECREAL_EQUAL(box.upper, box1.upper);
   // test that extents equal oritinal values
-  CHECK_VECREAL_EQUAL(Vec3f(test_lower), box1.lower);
-  CHECK_VECREAL_EQUAL(Vec3f(test_upper), box1.upper);
+  CHECK_VECREAL_EQUAL(Vec3fa(test_lower), box1.lower);
+  CHECK_VECREAL_EQUAL(Vec3fa(test_upper), box1.upper);
 
   // test 'explicit' min/max constructor
   AABB box2 = AABB(x_min, y_min, z_min, x_max, y_max, z_max);
@@ -59,9 +59,9 @@ void constructor_tests() {
   CHECK_REAL_EQUAL(y_max, box2.upper[1], 0.0);
   CHECK_REAL_EQUAL(z_max, box2.upper[2], 0.0);
 
-  AABB box3 = AABB(Vec3f(test_lower), Vec3f(test_upper));
-  CHECK_VECREAL_EQUAL(Vec3f(test_lower), box3.lower);
-  CHECK_VECREAL_EQUAL(Vec3f(test_upper), box3.upper);
+  AABB box3 = AABB(Vec3fa(test_lower), Vec3fa(test_upper));
+  CHECK_VECREAL_EQUAL(Vec3fa(test_lower), box3.lower);
+  CHECK_VECREAL_EQUAL(Vec3fa(test_upper), box3.upper);
   
   // test empty constructor
   AABB empty = AABB();
@@ -75,7 +75,7 @@ void point_contain_tests() {
   AABB box = AABB(x_min, y_min, z_min, x_max, y_max, z_max);
 
   //create test point inside box
-  Vec3f p(1.5,2.0, 4.0);
+  Vec3fa p(1.5,2.0, 4.0);
   CHECK(inside(box,p));
 
   //update x position to be outside limits
@@ -84,12 +84,12 @@ void point_contain_tests() {
 
   // add point just outside box in double,
   // should be inside for single precision
-  p = Vec3f(3.0000000000001, 3.0, 3.0);
+  p = Vec3fa(3.0000000000001, 3.0, 3.0);
   CHECK(inside(box,p));
 
   // add point just outside box in single precision,
   // should be outside for single precision
-  p = Vec3f(3.0001, 3.0, 3.0);
+  p = Vec3fa(3.0001, 3.0, 3.0);
   CHECK(!inside(box,p));
 
 }
@@ -146,13 +146,13 @@ void property_tests() {
     // create test boxes
   AABB box = AABB(5.0, -5.0, -3.0, 10.0, 15.0, 4.0);
 
-  Vec3f expected_center(7.5, 5.0, 0.5);
+  Vec3fa expected_center(7.5, 5.0, 0.5);
   CHECK_VECREAL_EQUAL(expected_center, box.center());
 
-  Vec3f expected_center2(15.0, 10.0, 1.0);
+  Vec3fa expected_center2(15.0, 10.0, 1.0);
   CHECK_VECREAL_EQUAL(expected_center2, box.center2());
 
-  Vec3f expected_size(5.0, 20.0, 7.0);
+  Vec3fa expected_size(5.0, 20.0, 7.0);
   CHECK_VECREAL_EQUAL(expected_size, box.size());
 
   float expected_halfArea = 275.0;

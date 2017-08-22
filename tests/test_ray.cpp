@@ -14,8 +14,8 @@ int main ( int agc, char** argv ) {
 
 void test_constructors() {
 
-  Vec3f origin(6.0, 6.0, 6.0);
-  Vec3f direction(1.0, 0.0, 0.0);
+  Vec3fa origin(6.0, 6.0, 6.0);
+  Vec3fa direction(1.0, 0.0, 0.0);
   
   // test minimal  constructor
   Ray r = Ray(origin, direction);
