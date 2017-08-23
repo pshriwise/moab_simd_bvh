@@ -13,7 +13,7 @@ struct BuildPrimitive {
   float lower_x, lower_y, lower_z;
   float upper_x, upper_y, upper_z;
 
-  Vec3f center() const { return (Vec3f(lower_x,lower_y,lower_z)+Vec3f(upper_x,upper_y,upper_z))/2.0f; }
+  Vec3fa center() const { return (Vec3fa(lower_x,lower_y,lower_z)+Vec3fa(upper_x,upper_y,upper_z))/2.0f; }
 };
 
 struct BBounds{
@@ -90,34 +90,64 @@ void sortPrimitives(const int dim, const float coord,
 }
 
 
-void splitNode(NodeRef* node, const size_t numChildren, const BuildPrimitive* primitives, const size_t numPrimitives){
+
+
+
+
+void splitNode(NodeRef* node, size_t split_axis, const BuildPrimitive* primitives, const size_t numPrimitives) {
+
+  assert(split_axis >= 0 && split_axis <= 2);
 
   //get the bounds of the node
   AABB box;
-
   for(size_t i=0; i<numPrimitives; i++) {
     box.extend((AABB&)primitives[i]);
   }
 
-  //split along each dimension and pick best split
-  size_t num_planes = numChildren-1;
-  float pval = 1.0f/(float)num_planes;
-  std::vector<float> plane_values;
+  Vec3fa dxdydz = (box.upper - box.lower) / 4.0f;
+
+  //create new child bounds
+  vfloat4 bounds[6];
   
-  for(int ax=0; ax<3; ax++) {
-    plane_values.clear();
-    //create plane coordinates
-    for(size_t j=0; j<num_planes; j++) {
-      plane_values.push_back(pval*(box.upper[ax]-box.lower[ax]));
+  bounds[0] = vfloat4(box.lower[0]); // lower x
+  bounds[1] = vfloat4(box.upper[0]); // upper x
+  bounds[2] = vfloat4(box.lower[1]); // lower y
+  bounds[3] = vfloat4(box.upper[1]); // upper y
+  bounds[4] = vfloat4(box.lower[2]); // lower z
+  bounds[5] = vfloat4(box.upper[2]); // upper z
+
+  float lb = box.lower[split_axis];
+  float delta = dxdydz[split_axis];
+  bounds[2*split_axis] = vfloat4(lb, lb + delta, lb + 2*delta, lb + 3*delta);
+  bounds[2*split_axis+1] = vfloat4(lb + delta, lb + 2*delta, lb + 3*delta, lb + 4*delta);
+
+  AABB boxes[4];
+  boxes[0] = AABB(bounds[0][0], bounds[2][0], bounds[4][0], bounds[1][0], bounds[3][0], bounds[5][0]);
+  boxes[1] = AABB(bounds[0][1], bounds[2][1], bounds[4][1], bounds[1][1], bounds[3][1], bounds[5][1]);
+  boxes[2] = AABB(bounds[0][2], bounds[2][2], bounds[4][2], bounds[1][2], bounds[3][2], bounds[5][2]);
+  boxes[3] = AABB(bounds[0][3], bounds[2][3], bounds[4][3], bounds[1][3], bounds[3][3], bounds[5][3]);
+
+
+  // sort primitives into boxes by their centroid
+  for(size_t i = 0; i < numPrimitives; i++) {
+    BuildPrimitive p = primitives[i];
+    bool placed = false;
+    for(size_t j = 0; j < 4 ; j++) {
+      // if the centroid is in the box, place it there
+      if( inside(boxes[j], p.center()) ){
+	placed = true;
+      }
     }
-    //sort primitives
-    BuildPrimitive *left_list, *right_list;
-    size_t numLeft, numRight;
-    sortPrimitives(ax,plane_values[0],primitives,numPrimitives,left_list,numLeft,right_list,numRight);
-      
+    assert(placed);
   }
 }
 
+struct TempNode {
+  AABB box;
+  std::vector<BuildPrimitive> prims;
+
+  float sah_contribution() { return area(box)*(float)prims.size(); }
+};
 
 struct PrimRef{
   inline PrimRef () {}
@@ -193,9 +223,18 @@ class BVHBuilder {
 		 //	    linkChildrenFunc linkChildren,
 		 //	    setNodeBoundsFunc setNodeBounds,
 		 createLeafFunc createLeaf) {
-    
+
+    // create a vector for the primitives to reside in
     primitive_vec.resize(numPrimitives);
+    BuildPrimitive* vptr = primitive_vec.data();
+    vptr = primitives;
+
     
+    
+    
+    
+    
+
     NodeRef* node;
     createNode(node);
     
