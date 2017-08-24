@@ -175,7 +175,7 @@ void splitNode(NodeRef* node, size_t split_axis, const BuildPrimitive* primitive
 }
 
 
-void splitNode(NodeRef* node, const BuildPrimitive* primitives, const size_t numPrimitives) {
+void splitNode(NodeRef* node, const BuildPrimitive* primitives, const size_t numPrimitives, TempNode tempNodes[N]) {
 
   // split node along each axis
   float max_cost = 0.0;
@@ -187,8 +187,6 @@ void splitNode(NodeRef* node, const BuildPrimitive* primitives, const size_t num
   AANode* this_node = node->node();
 
   AABB node_box = this_node->bounds();
-  
-  TempNode tempNodes[4];
   
   // split along each axis and get lowest cost
   for(size_t i = 0; i < 3; i++) {
@@ -271,7 +269,8 @@ struct BuildState
 
 class BVHBuilder {
 
- BVHBuilder() : maxLeafSize(8) {}
+ public:
+  inline BVHBuilder() : maxLeafSize(8) {}
   
  private:
   std::vector<BuildPrimitive> primitive_vec;
@@ -296,16 +295,24 @@ class BVHBuilder {
     if(numPrimitives <= maxLeafSize) {
       return (NodeRef*)createLeaf(primitives, numPrimitives);
     }
-    else{
-      AANode* aanode = new AANode();
-      AABB box;
-      for(size_t i = 0; i < numPrimitives; i++) {
-	box.extend(*(AABB*)(void*)&(primitives[i]));
-      }
-      aanode->setBounds(box);
-      NodeRef* this_node = new NodeRef((size_t)aanode);
-      splitNode(this_node, primitives, numPrimitives);
+
+    AANode* aanode = new AANode();
+    AABB box;
+    for(size_t i = 0; i < numPrimitives; i++) {
+      box.extend(*(AABB*)(void*)&(primitives[i]));
     }
-        
-  } // end builder
+    aanode->setBounds(box);
+    NodeRef* this_node = new NodeRef((size_t)aanode);
+    TempNode tempNodes[4];
+    splitNode(this_node, primitives, numPrimitives, tempNodes);
+    
+    for(size_t i = 0; i < N ; i++){
+      NodeRef* child_node = Build(settings, &(tempNodes[i].prims[0]), (size_t)tempNodes[i].prims.size(), createLeaf);
+      // link the child node
+      aanode->setRef(i, *child_node);
+    }
+    
+  } // end build
+
+  
 };
