@@ -280,11 +280,13 @@ struct BuildState
 class BVHBuilder {
 
  public:
-  inline BVHBuilder() : maxLeafSize(8) {}
+  inline BVHBuilder() : maxLeafSize(8), maxDepth(15) {}
   
  private:
   std::vector<BuildPrimitive> primitive_vec;
   size_t maxLeafSize;
+  size_t depth;
+  size_t maxDepth;
   
  public:
   
@@ -302,7 +304,7 @@ class BVHBuilder {
     vptr = primitives;
 
     
-    if(numPrimitives <= maxLeafSize) {
+    if(numPrimitives <= maxLeafSize || depth > maxDepth) {
       return (NodeRef*)createLeaf(primitives, numPrimitives);
     }
 
@@ -313,6 +315,7 @@ class BVHBuilder {
       box.update(primitives[i].upper_x,primitives[i].upper_y,primitives[i].upper_z);
 
     }
+    depth++;
     aanode->setBounds(box);
     NodeRef* this_node = new NodeRef((size_t)aanode);
     TempNode tempNodes[4];
@@ -323,8 +326,10 @@ class BVHBuilder {
       // link the child node
       aanode->setRef(i, *child_node);
     }
-    
+
+    return this_node;
   } // end build
+
 
   
 };
