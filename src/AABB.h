@@ -20,6 +20,9 @@ struct AABB {
 											       upper[0] = x_max;
 											       upper[1] = y_max;
 											       upper[2] = z_max; }
+
+  inline AABB( const float low, const float high) { lower = low; upper = high; }
+  
   
   inline AABB ( const float ext[6] )                                                          { lower[0] = ext[0];
                                                                                                 lower[1] = ext[1];

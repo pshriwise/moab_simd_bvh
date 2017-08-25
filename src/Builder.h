@@ -43,7 +43,7 @@ struct Heuristic {
 		     BuildPrimitive* leftPrimitives, size_t numLeftPrimitives) = 0;
 
   AABB bounds(BuildPrimitive* primitives, size_t numPrimitives) {
-    AABB b;
+    AABB b((float)inf,(float)neg_inf);
     for(size_t i=0; i<numPrimitives; i++) {
       b.update(primitives[i].lower_x,primitives[i].lower_y,primitives[i].lower_z);
       b.update(primitives[i].upper_x,primitives[i].upper_y,primitives[i].upper_z);
@@ -99,6 +99,8 @@ struct TempNode {
   AABB box;
   std::vector<BuildPrimitive> prims;
 
+  inline TempNode() : box(AABB((float)inf,(float)neg_inf)) {}
+
   float sah_contribution() { return area(box)*(float)prims.size(); }
 };
 
@@ -108,7 +110,7 @@ void splitNode(NodeRef* node, size_t split_axis, const BuildPrimitive* primitive
   assert(split_axis >= 0 && split_axis <= 2);
 
   //get the bounds of the node
-  AABB box;
+  AABB box((float)inf,(float)neg_inf);
   for(size_t i=0; i<numPrimitives; i++) {
     box.update(primitives[i].lower_x,primitives[i].lower_y,primitives[i].lower_z);
     box.update(primitives[i].upper_x,primitives[i].upper_y,primitives[i].upper_z);
@@ -305,7 +307,7 @@ class BVHBuilder {
     }
 
     AANode* aanode = new AANode();
-    AABB box = AABB();
+    AABB box((float)inf, (float)neg_inf);
     for(size_t i = 0; i < numPrimitives; i++) {
       box.update(primitives[i].lower_x,primitives[i].lower_y,primitives[i].lower_z);
       box.update(primitives[i].upper_x,primitives[i].upper_y,primitives[i].upper_z);
