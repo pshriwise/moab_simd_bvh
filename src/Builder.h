@@ -45,7 +45,9 @@ struct Heuristic {
   AABB bounds(BuildPrimitive* primitives, size_t numPrimitives) {
     AABB b;
     for(size_t i=0; i<numPrimitives; i++) {
-      b.extend((AABB&)primitives[i]);
+      b.update(primitives[i].lower_x,primitives[i].lower_y,primitives[i].lower_z);
+      b.update(primitives[i].upper_x,primitives[i].upper_y,primitives[i].upper_z);
+
     }
     return b;
   }
@@ -108,7 +110,9 @@ void splitNode(NodeRef* node, size_t split_axis, const BuildPrimitive* primitive
   //get the bounds of the node
   AABB box;
   for(size_t i=0; i<numPrimitives; i++) {
-    box.extend((AABB&)primitives[i]);
+    box.update(primitives[i].lower_x,primitives[i].lower_y,primitives[i].lower_z);
+    box.update(primitives[i].upper_x,primitives[i].upper_y,primitives[i].upper_z);
+
   }
 
   Vec3fa dxdydz = (box.upper - box.lower) / 4.0f;
@@ -155,6 +159,10 @@ void splitNode(NodeRef* node, size_t split_axis, const BuildPrimitive* primitive
 		   bounds[3][3],
 		   bounds[5][3]);
 
+  tn[0] = TempNode();
+  tn[1] = TempNode();
+  tn[2] = TempNode();
+  tn[3] = TempNode();
   
   // sort primitives into boxes by their centroid
   for(size_t i = 0; i < numPrimitives; i++) {
@@ -162,7 +170,7 @@ void splitNode(NodeRef* node, size_t split_axis, const BuildPrimitive* primitive
     bool placed = false;
     for(size_t j = 0; j < 4 ; j++) {
       // if the centroid is in the box, place it there
-      if( inside(tn[j].box, p.center()) ){
+      if( inside(boxes[j], p.center()) ){
 	placed = true;
 	tn[j].prims.push_back(p);
 	tn[j].box.update(p.lower_x, p.lower_y, p.lower_z);
@@ -178,8 +186,8 @@ void splitNode(NodeRef* node, size_t split_axis, const BuildPrimitive* primitive
 void splitNode(NodeRef* node, const BuildPrimitive* primitives, const size_t numPrimitives, TempNode tempNodes[N]) {
 
   // split node along each axis
-  float max_cost = 0.0;
-  float min_cost = 1.0;
+  float max_cost = 1.0;
+  float min_cost = 0.0;
   
   float best_cost = max_cost;
   float cost;
@@ -297,9 +305,11 @@ class BVHBuilder {
     }
 
     AANode* aanode = new AANode();
-    AABB box;
+    AABB box = AABB();
     for(size_t i = 0; i < numPrimitives; i++) {
-      box.extend(*(AABB*)(void*)&(primitives[i]));
+      box.update(primitives[i].lower_x,primitives[i].lower_y,primitives[i].lower_z);
+      box.update(primitives[i].upper_x,primitives[i].upper_y,primitives[i].upper_z);
+
     }
     aanode->setBounds(box);
     NodeRef* this_node = new NodeRef((size_t)aanode);

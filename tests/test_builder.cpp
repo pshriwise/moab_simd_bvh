@@ -24,7 +24,7 @@ void*  createLeaf (const BuildPrimitive *primitives, size_t numPrimitives) {
 int main(int argc, char** argv) {
 
   test_single_primitive();
-  test_random_primitives(10);
+  test_random_primitives(20);
   return 0;
   
 
