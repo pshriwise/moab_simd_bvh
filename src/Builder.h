@@ -101,7 +101,7 @@ struct TempNode {
 
   inline TempNode() : box(AABB((float)inf,(float)neg_inf)) {}
 
-  float sah_contribution() { return area(box)*(float)prims.size(); }
+  float sah_contribution() { return (0 == prims.size()) ? 0.0 : area(box)*(float)prims.size(); }
 };
 
 
@@ -188,7 +188,7 @@ void splitNode(NodeRef* node, size_t split_axis, const BuildPrimitive* primitive
 void splitNode(NodeRef* node, const BuildPrimitive* primitives, const size_t numPrimitives, TempNode tempNodes[N]) {
 
   // split node along each axis
-  float max_cost = 1.0;
+  float max_cost = 2.0;
   float min_cost = 0.0;
   
   float best_cost = max_cost;
