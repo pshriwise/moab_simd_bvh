@@ -7,6 +7,7 @@
 #include "Ray.h"
 #include "Vec3fa.h"
 #include "Builder.h"
+#include "Intersector.h"
 
 #include <vector>
 
@@ -24,10 +25,9 @@ void*  createLeaf (const BuildPrimitive *primitives, size_t numPrimitives) {
 int main(int argc, char** argv) {
 
   test_single_primitive();
-  test_random_primitives(100);
+  test_random_primitives(1E7);
   return 0;
   
-
 }
 
 void test_single_primitive() {
@@ -64,4 +64,15 @@ void test_random_primitives(int numPrimitives) {
   BuildSettings settings;
 
   NodeRef* root = bvh.Build(settings,&(primitives[0]),(size_t)primitives.size(),createLeaf);
+  
+  // create a ray for intersection with the hierarchy
+  Vec3fa org(10.0, 2.5, 2.5), dir(-1.0, 0.0, 0.0);
+  Ray r(org, dir);
+  std::cout << r << std::endl;
+  
+  // use the root reference node to traverse the ray
+  BVHIntersector BVH;
+  BVH.intersectRay(*root, r);
+
+  std::cout << r << std::endl;
 }

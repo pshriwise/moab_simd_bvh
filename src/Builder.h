@@ -280,7 +280,7 @@ struct BuildState
 class BVHBuilder {
 
  public:
-  inline BVHBuilder() : maxLeafSize(8), maxDepth(15) {}
+  inline BVHBuilder() : maxLeafSize(8), maxDepth(100) {}
   
  private:
   std::vector<BuildPrimitive> primitive_vec;
