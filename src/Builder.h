@@ -209,6 +209,13 @@ void splitNode(NodeRef* node, const BuildPrimitive* primitives, const size_t num
   
 }
 
+void* create_leaf(const BuildPrimitive *primitives, size_t numPrimitives) {
+  NodeRef* leaf = new NodeRef(tyLeaf);
+  // set leaf primitives here
+  
+  return (void*) leaf;
+}
+
 struct PrimRef{
   inline PrimRef () {}
 
@@ -295,18 +302,22 @@ class BVHBuilder {
     BuildPrimitive* vptr = primitive_vec.data();
     vptr = primitives;
 
-    
+
+    // if the end conditions for the tree are met, then create a leaf
     if(numPrimitives <= maxLeafSize || depth > maxDepth) {
       return (NodeRef*)createLeaf(primitives, numPrimitives);
     }
 
+
+    // created a new node and set the bounds
     AANode* aanode = new AANode();
     AABB box((float)inf, (float)neg_inf);
     for(size_t i = 0; i < numPrimitives; i++) {
       box.update(primitives[i].lower_x,primitives[i].lower_y,primitives[i].lower_z);
       box.update(primitives[i].upper_x,primitives[i].upper_y,primitives[i].upper_z);
-
     }
+
+    // increment depth and recur here
     depth++;
     aanode->setBounds(box);
     NodeRef* this_node = new NodeRef((size_t)aanode);

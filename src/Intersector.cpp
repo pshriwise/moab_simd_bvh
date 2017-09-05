@@ -3,6 +3,7 @@
 #include "Intersector.h"
 #include "Traverser.h"
 #include "Stack.h"
+#include "Primitive.h"
 
 class BVHTraverser;
 
