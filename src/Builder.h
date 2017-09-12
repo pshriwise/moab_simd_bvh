@@ -27,6 +27,32 @@ struct BuildSettings {
   float intCost;
 };
 
+template<typename T>
+struct BuildRecordT {
+public:
+  BuildRecordT () {}
+
+  BuildRecordT (size_t depth) : depth(depth) { prims.clear(); }
+
+  BuildRecordT (size_t depth, const std::vector<T> &prims)
+  : depth(depth), prims(prims) {}
+
+  BuildRecordT (size_t depth, T* primitives, size_t numPrimitives)
+  : depth(depth) { prims.assign(primitives, primitives + numPrimitives); }
+
+  friend bool  operator< (const BuildRecordT& a, const BuildRecordT& b) { return a.prims.size() < b.prims.size(); }
+
+  friend bool operator> (const BuildRecordT& a, const BuildRecordT& b) { return a.prims.size() > b.prims.size(); }
+
+  size_t size() const { return prims.size(); }
+
+public:
+  size_t depth;
+  
+  std::vector<T> prims;
+};
+
+typedef BuildRecordT<BuildPrimitive> BuildRecord;
 
 NodeRef* encodeLeaf(void *prim_arr, size_t num) {
   //  assert(numPrimitives < MAX_LEAF_SIZE); needs to be re-added later
