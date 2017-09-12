@@ -13,14 +13,19 @@
 
 #include "testutil.hpp"
 
+#define MAX_LEAF_SIZE 8
+
 void test_single_primitive();
 void test_random_primitives(int numPrimitives);
 
 void*  createLeaf (const BuildPrimitive *primitives, size_t numPrimitives) {
-  NodeRef* leaf = new NodeRef(tyLeaf);
+  //  assert(numPrimitives < MAX_LEAF_SIZE); needs to be re-added later
+  std::vector<BuildPrimitive> p;
+  p.assign(primitives, primitives+numPrimitives);
+
+  NodeRef* leaf = encodeLeaf(&p.front(), numPrimitives); 
   return (void*)leaf;
 }
-
 
 int main(int argc, char** argv) {
 
