@@ -28,6 +28,31 @@ struct BuildSettings {
 };
 
 template<typename T>
+struct SetT{
+  
+  inline SetT(std::set<T>& prims) : prims(prims) {}
+
+  inline SetT() {}
+
+  inline SetT(EmptyTy) {}
+
+  inline AABB bounds() {
+    AABB box;
+    for(size_t i = 0; i < prims.size(); i++ ) {
+      box.extend(prims[i].lower.x,prims[i].lower.y,prims[i].lower.z);
+      box.extend(prims[i].upper.x,prims[i].upper.y,prims[i].upper.z);
+    }
+  }
+
+  inline void clear() { prims.clear(); }
+
+  inline size_t size() const { prims.size(); }
+  
+  std::set<T> prims;
+};
+typedef SetT<BuildPrimitive> Set;
+
+template<typename T>
 struct BuildRecordT {
 public:
   BuildRecordT () {}
@@ -38,7 +63,7 @@ public:
   : depth(depth), prims(prims) {}
 
   BuildRecordT (size_t depth, T* primitives, size_t numPrimitives)
-  : depth(depth) { prims.assign(primitives, primitives + numPrimitives); }
+  : depth(depth) { prims = std::set<T>(primitives, primitives + numPrimitives); }
 
   friend bool  operator< (const BuildRecordT& a, const BuildRecordT& b) { return a.prims.size() < b.prims.size(); }
 
@@ -49,7 +74,7 @@ public:
 public:
   size_t depth;
   
-  std::vector<T> prims;
+  Set prims;
 };
 
 typedef BuildRecordT<BuildPrimitive> BuildRecord;
@@ -280,32 +305,7 @@ struct PrimRef{
     Vec3fa lower, upper;
 };
 
-struct Set{
-  
-  inline Set(std::set<PrimRef>& prims) : prims(prims) {}
 
-  inline Set() {}
-
-  inline Set(EmptyTy) {}
-			      
-  std::set<PrimRef> prims;
-};
-
-struct BuildState
-{
-  
-  inline BuildState() {}
-
-  inline BuildState(size_t depth)
-  : depth(depth), prims(empty) {}
-
-  inline BuildState(size_t depth, Set primitives)
-  : depth(depth), prims(primitives) {}
-
-  Set prims;
-  size_t depth;  
-};
-  
 
 class BVHBuilder {
 
