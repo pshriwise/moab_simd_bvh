@@ -27,57 +27,6 @@ struct BuildSettings {
   float intCost;
 };
 
-template<typename T>
-struct SetT{
-  
-  inline SetT(std::set<T>& prims) : prims(prims) {}
-
-  inline SetT() {}
-
-  inline SetT(EmptyTy) {}
-
-  inline AABB bounds() {
-    AABB box;
-    for(size_t i = 0; i < prims.size(); i++ ) {
-      box.extend(prims[i].lower.x,prims[i].lower.y,prims[i].lower.z);
-      box.extend(prims[i].upper.x,prims[i].upper.y,prims[i].upper.z);
-    }
-  }
-
-  inline void clear() { prims.clear(); }
-
-  inline size_t size() const { prims.size(); }
-  
-  std::set<T> prims;
-};
-typedef SetT<BuildPrimitive> Set;
-
-template<typename T>
-struct BuildRecordT {
-public:
-  BuildRecordT () {}
-
-  BuildRecordT (size_t depth) : depth(depth) { prims.clear(); }
-
-  BuildRecordT (size_t depth, const std::vector<T> &prims)
-  : depth(depth), prims(prims) {}
-
-  BuildRecordT (size_t depth, T* primitives, size_t numPrimitives)
-  : depth(depth) { prims = std::set<T>(primitives, primitives + numPrimitives); }
-
-  friend bool  operator< (const BuildRecordT& a, const BuildRecordT& b) { return a.prims.size() < b.prims.size(); }
-
-  friend bool operator> (const BuildRecordT& a, const BuildRecordT& b) { return a.prims.size() > b.prims.size(); }
-
-  size_t size() const { return prims.size(); }
-
-public:
-  size_t depth;
-  
-  Set prims;
-};
-
-typedef BuildRecordT<BuildPrimitive> BuildRecord;
 
 NodeRef* encodeLeaf(void *prim_arr, size_t num) {
   //  assert(numPrimitives < MAX_LEAF_SIZE); needs to be re-added later
@@ -151,6 +100,71 @@ struct TempNode {
 
   float sah_contribution() { return (0 == prims.size()) ? 0.0 : area(box)*(float)prims.size(); }
 };
+
+template<typename T>
+struct SetT{
+  
+  inline SetT(std::set<T>& prims) : prims(prims) {}
+
+  inline SetT(const std::vector<T>& p) { prims = std::set<T>(p.begin(), p.end()); }
+  
+  inline SetT() {}
+
+  inline SetT(EmptyTy) {}
+
+  inline AABB bounds() {
+    AABB box;
+    for(size_t i = 0; i < prims.size(); i++ ) {
+      box.extend(prims[i].lower.x,prims[i].lower.y,prims[i].lower.z);
+      box.extend(prims[i].upper.x,prims[i].upper.y,prims[i].upper.z);
+    }
+  }
+
+  inline void clear() { prims.clear(); }
+
+  inline size_t size() const { prims.size(); }
+
+  inline const T* ptr () { return &(*prims.begin()); }
+  
+  std::set<T> prims;
+};
+typedef SetT<BuildPrimitive> Set;
+
+template<typename T>
+struct BuildRecordT {
+public:
+  BuildRecordT () {}
+
+  BuildRecordT (size_t depth) : depth(depth) { prims.clear(); }
+
+  BuildRecordT (size_t depth, const std::vector<T> &prims)
+  : depth(depth), prims(prims) {}
+
+  BuildRecordT (const std::vector<T> &prims)
+  : depth(0), prims(prims) {}
+
+  BuildRecordT (size_t depth, T* primitives, size_t numPrimitives)
+  : depth(depth) { prims = Set(std::set<T>(primitives, primitives + numPrimitives)); }
+
+  BuildRecordT (T* primitives, size_t numPrimitives)
+  : depth(0) { std::set<T> s(primitives, primitives + numPrimitives);
+    prims = SetT<T>(s);}
+
+  friend bool  operator< (const BuildRecordT& a, const BuildRecordT& b) { return a.prims.size() < b.prims.size(); }
+
+  friend bool operator> (const BuildRecordT& a, const BuildRecordT& b) { return a.prims.size() > b.prims.size(); }
+
+  size_t size() const { return prims.size(); }
+
+  inline const T* ptr () { return prims.ptr(); }
+  
+public:
+  size_t depth;
+  
+  SetT<T> prims;
+};
+
+typedef BuildRecordT<BuildPrimitive> BuildRecord;
 
 
 void splitNode(NodeRef* node, size_t split_axis, const BuildPrimitive* primitives, const size_t numPrimitives, TempNode tn[N]) {
@@ -313,7 +327,6 @@ class BVHBuilder {
   inline BVHBuilder() : maxLeafSize(8), maxDepth(100) {}
   
  private:
-  std::vector<BuildPrimitive> primitive_vec;
   size_t maxLeafSize;
   size_t depth;
   size_t maxDepth;
@@ -321,19 +334,16 @@ class BVHBuilder {
  public:
   
   NodeRef* Build(const BuildSettings& settings,
-		 BuildPrimitive* primitives,
-		 size_t numPrimitives,
+		 BuildRecord current,
 		 //	    createNodeFunc createNode,
 		 //	    linkChildrenFunc linkChildren,
 		 //	    setNodeBoundsFunc setNodeBounds,
 		 createLeafFunc createLeaf) {
 
-    // create a vector for the primitives to reside in
-    primitive_vec.resize(numPrimitives);
-    BuildPrimitive* vptr = primitive_vec.data();
-    vptr = primitives;
 
-
+    const BuildPrimitive* primitives = current.ptr();
+    size_t numPrimitives = current.size();
+    
     // if the end conditions for the tree are met, then create a leaf
     if(numPrimitives <= maxLeafSize || depth > maxDepth) {
       return (NodeRef*)createLeaf(primitives, numPrimitives);
@@ -356,7 +366,8 @@ class BVHBuilder {
     splitNode(this_node, primitives, numPrimitives, tempNodes);
     
     for(size_t i = 0; i < N ; i++){
-      NodeRef* child_node = Build(settings, &(tempNodes[i].prims[0]), (size_t)tempNodes[i].prims.size(), createLeaf);
+      BuildRecord br(depth, tempNodes[i].prims);
+      NodeRef* child_node = Build(settings, br, createLeaf);
       // link the child node
       aanode->setRef(i, *child_node);
     }

@@ -47,7 +47,7 @@ void test_single_primitive() {
 
   BuildSettings settings;
 
-  NodeRef* root = bvh.Build(settings,&p,1,createLeaf);
+  NodeRef* root = bvh.Build(settings,BuildRecord(&p,1),createLeaf);
 }
 
 void test_random_primitives(int numPrimitives) {
@@ -68,7 +68,9 @@ void test_random_primitives(int numPrimitives) {
 
   BuildSettings settings;
 
-  NodeRef* root = bvh.Build(settings,&(primitives[0]),(size_t)primitives.size(),createLeaf);
+  BuildRecord br(0, primitives); 
+  
+  NodeRef* root = bvh.Build(settings,br,createLeaf);
   
   // create a ray for intersection with the hierarchy
   Vec3fa org(10.0, 2.5, 2.5), dir(-1.0, 0.0, 0.0);
