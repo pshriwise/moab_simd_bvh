@@ -104,9 +104,11 @@ struct TempNode {
 template<typename T>
 struct SetT{
   
-  inline SetT(std::set<T>& prims) : prims(prims) {}
+  inline SetT(std::set<T>& p) { std::vector<T> v(prims.begin(), prims.end());
+                                  prims = v;
+                              }
 
-  inline SetT(const std::vector<T>& p) { prims = std::set<T>(p.begin(), p.end()); }
+  inline SetT(const std::vector<T>& p) : prims(p) {}
   
   inline SetT() {}
 
@@ -126,8 +128,9 @@ struct SetT{
 
   inline const T* ptr () { return &(*prims.begin()); }
   
-  std::set<T> prims;
+  std::vector<T> prims;
 };
+
 typedef SetT<BuildPrimitive> Set;
 
 template<typename T>
@@ -138,20 +141,19 @@ public:
   BuildRecordT (size_t depth) : depth(depth) { prims.clear(); }
 
   BuildRecordT (size_t depth, const std::vector<T> &p)
-  : depth(depth) { std::set<T> s(&(*p.begin()), &(*p.end()));
-                   prims = SetT<T>(s);
+  : depth(depth) { prims = SetT<T>(p);
                  }
 
   BuildRecordT (const std::vector<T> &prims)
   : depth(0), prims(prims) {}
 
   BuildRecordT (size_t depth, T* primitives, size_t numPrimitives)
-  : depth(depth) { std::set<T> s(primitives, primitives + numPrimitives);
+  : depth(depth) { std::vector<T> s(primitives, primitives + numPrimitives);
                    prims = SetT<T>(s);
                  }
 
   BuildRecordT (T* primitives, size_t numPrimitives)
-  : depth(0) { std::set<T> s(primitives, primitives + numPrimitives);
+  : depth(0) { std::vector<T> s(primitives, primitives + numPrimitives);
                prims = SetT<T>(s);
              }
 
