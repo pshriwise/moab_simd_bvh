@@ -18,7 +18,7 @@
 void test_single_primitive();
 void test_random_primitives(int numPrimitives);
 
-void*  createLeaf (const BuildPrimitive *primitives, size_t numPrimitives) {
+void* createLeaf (const BuildPrimitive *primitives, size_t numPrimitives) {
   //  assert(numPrimitives < MAX_LEAF_SIZE); needs to be re-added later
   std::vector<BuildPrimitive> p;
   p.assign(primitives, primitives+numPrimitives);
@@ -27,9 +27,12 @@ void*  createLeaf (const BuildPrimitive *primitives, size_t numPrimitives) {
   return (void*)leaf;
 }
 
+
 int main(int argc, char** argv) {
 
+  std::cout << "Single Primitive Test" << std::endl;
   test_single_primitive();
+  std::cout << "Random Primitives Test" << std::endl;
   test_random_primitives(1E7);
   return 0;
   
@@ -43,11 +46,11 @@ void test_single_primitive() {
   p.lower_y = 0.0; p.upper_y = 4.0;
   p.lower_z = 0.0; p.upper_z = 4.0;
 
-  BVHBuilder bvh;
+  BVHBuilder bvh(createLeaf);
 
   BuildSettings settings;
 
-  NodeRef* root = bvh.Build(settings,BuildRecord(&p,1),createLeaf);
+  NodeRef* root = bvh.Build(settings,BuildRecord(0,&p,1));
 }
 
 void test_random_primitives(int numPrimitives) {
@@ -64,13 +67,13 @@ void test_random_primitives(int numPrimitives) {
     primitives.push_back(p);
   }
   
-  BVHBuilder bvh;
+  BVHBuilder bvh(createLeaf);
 
   BuildSettings settings;
 
   BuildRecord br(0, primitives); 
   
-  NodeRef* root = bvh.Build(settings,br,createLeaf);
+  NodeRef* root = bvh.Build(settings,br);
   
   // create a ray for intersection with the hierarchy
   Vec3fa org(10.0, 2.5, 2.5), dir(-1.0, 0.0, 0.0);

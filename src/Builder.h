@@ -144,11 +144,14 @@ public:
   : depth(0), prims(prims) {}
 
   BuildRecordT (size_t depth, T* primitives, size_t numPrimitives)
-  : depth(depth) { prims = Set(std::set<T>(primitives, primitives + numPrimitives)); }
+  : depth(depth) { std::set<T> s(primitives, primitives + numPrimitives);
+                   prims = SetT<T>(s);
+                 }
 
   BuildRecordT (T* primitives, size_t numPrimitives)
   : depth(0) { std::set<T> s(primitives, primitives + numPrimitives);
-    prims = SetT<T>(s);}
+               prims = SetT<T>(s);
+             }
 
   friend bool  operator< (const BuildRecordT& a, const BuildRecordT& b) { return a.prims.size() < b.prims.size(); }
 
@@ -157,7 +160,7 @@ public:
   size_t size() const { return prims.size(); }
 
   inline const T* ptr () { return prims.ptr(); }
-  
+
 public:
   size_t depth;
   
@@ -324,21 +327,36 @@ struct PrimRef{
 class BVHBuilder {
 
  public:
-  inline BVHBuilder() : maxLeafSize(8), maxDepth(100) {}
+  inline BVHBuilder(createLeafFunc createLeaf) : maxLeafSize(8), maxDepth(1024), createLeaf(createLeaf) {}
   
  private:
   size_t maxLeafSize;
   size_t depth;
   size_t maxDepth;
+  createLeafFunc createLeaf;
   
  public:
-  
+
+  NodeRef* createLargeLeaf(BuildRecord& current) {
+    
+    if(depth > maxDepth) {
+      std::cerr << "Maximum depth reached" << std::endl;
+      std::cerr << "Current depth: " << depth << std::endl;
+      std::cerr << "Maximum allowed depth: " << maxDepth << std::endl;
+      std::cerr << "Number of primitives remaining: " << current.size() << std::endl;
+      assert(false);
+    }
+
+    if (current.size() <= maxLeafSize)
+      return (NodeRef*) createLeaf(current.ptr(), current.size());
+  }
+
   NodeRef* Build(const BuildSettings& settings,
-		 BuildRecord current,
+		 BuildRecord current
 		 //	    createNodeFunc createNode,
 		 //	    linkChildrenFunc linkChildren,
 		 //	    setNodeBoundsFunc setNodeBounds,
-		 createLeafFunc createLeaf) {
+		 ) {
 
 
     const BuildPrimitive* primitives = current.ptr();
@@ -346,7 +364,7 @@ class BVHBuilder {
     
     // if the end conditions for the tree are met, then create a leaf
     if(numPrimitives <= maxLeafSize || depth > maxDepth) {
-      return (NodeRef*)createLeaf(primitives, numPrimitives);
+      return createLargeLeaf(current);
     }
 
 
@@ -367,7 +385,7 @@ class BVHBuilder {
     
     for(size_t i = 0; i < N ; i++){
       BuildRecord br(depth, tempNodes[i].prims);
-      NodeRef* child_node = Build(settings, br, createLeaf);
+      NodeRef* child_node = Build(settings, br);
       // link the child node
       aanode->setRef(i, *child_node);
     }
