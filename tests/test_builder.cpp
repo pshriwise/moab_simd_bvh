@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
   std::cout << "Single Primitive Test" << std::endl;
   test_single_primitive();
   std::cout << "Random Primitives Test" << std::endl;
-  test_random_primitives(1E7);
+  test_random_primitives(1E6);
   return 0;
   
 }
@@ -50,20 +50,24 @@ void test_single_primitive() {
 
   BuildSettings settings;
 
-  NodeRef* root = bvh.Build(settings,BuildRecord(0,&p,1));
+  BuildRecord br(0, &p, 1);
+  
+  NodeRef* root = bvh.Build(settings,br);
 }
 
 void test_random_primitives(int numPrimitives) {
 
   std::vector<BuildPrimitive> primitives;
-
+  int primID = 0;
   for(int i = 0; i < numPrimitives; i++){  
     BuildPrimitive p;
 
     p.lower_x = float(drand48()); p.upper_x = float(drand48());
     p.lower_y = float(drand48()); p.upper_y = float(drand48());
     p.lower_z = float(drand48()); p.upper_z = float(drand48());
-
+    p.primID = primID++;
+    p.sceneID = 0;
+    
     primitives.push_back(p);
   }
   
