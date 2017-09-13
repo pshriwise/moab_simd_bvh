@@ -137,8 +137,10 @@ public:
 
   BuildRecordT (size_t depth) : depth(depth) { prims.clear(); }
 
-  BuildRecordT (size_t depth, const std::vector<T> &prims)
-  : depth(depth), prims(prims) {}
+  BuildRecordT (size_t depth, const std::vector<T> &p)
+  : depth(depth) { std::set<T> s(&(*p.begin()), &(*p.end()));
+                   prims = SetT<T>(s);
+                 }
 
   BuildRecordT (const std::vector<T> &prims)
   : depth(0), prims(prims) {}
@@ -367,7 +369,7 @@ class BVHBuilder {
   }
 
   NodeRef* Build(const BuildSettings& settings,
-		 BuildRecord current
+		 BuildRecord& current
 		 //	    createNodeFunc createNode,
 		 //	    linkChildrenFunc linkChildren,
 		 //	    setNodeBoundsFunc setNodeBounds,
