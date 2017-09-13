@@ -71,7 +71,7 @@ void test_random_primitives(int numPrimitives) {
 
   BuildSettings settings;
 
-  BuildRecord br(0, primitives); 
+  BuildRecord br(0, primitives);
   
   NodeRef* root = bvh.Build(settings,br);
   
@@ -84,5 +84,7 @@ void test_random_primitives(int numPrimitives) {
   BVHIntersector BVH;
   BVH.intersectRay(*root, r);
 
+  bvh.stats();
+  
   std::cout << r << std::endl;
 }

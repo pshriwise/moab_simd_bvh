@@ -327,19 +327,27 @@ struct PrimRef{
 class BVHBuilder {
 
  public:
-  inline BVHBuilder(createLeafFunc createLeaf) : maxLeafSize(8), maxDepth(1024), createLeaf(createLeaf) {}
+  inline BVHBuilder(createLeafFunc createLeaf) : maxLeafSize(8), depth(0), maxDepth(1024), createLeaf(createLeaf), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0) {}
   
  private:
   size_t maxLeafSize;
   size_t depth;
   size_t maxDepth;
   createLeafFunc createLeaf;
+  size_t largest_leaf_size, smallest_leaf_size;
+  size_t numLeaves;
   
  public:
 
+  void stats () { std::cout << "Depth: " << depth << std::endl;
+    std::cout << "Largest leaf: " << largest_leaf_size << std::endl;
+    std::cout <<  "Smallest leaf: " << smallest_leaf_size << std::endl;
+    std::cout << "Number of leaves: " << numLeaves << std::endl;  
+  }
+  
   NodeRef* createLargeLeaf(BuildRecord& current) {
     
-    if(depth > maxDepth) {
+    if(current.depth > maxDepth) {
       std::cerr << "Maximum depth reached" << std::endl;
       std::cerr << "Current depth: " << depth << std::endl;
       std::cerr << "Maximum allowed depth: " << maxDepth << std::endl;
@@ -347,8 +355,15 @@ class BVHBuilder {
       assert(false);
     }
 
-    if (current.size() <= maxLeafSize)
+    if (current.size() <= maxLeafSize) {
+      if (current.size() > largest_leaf_size) largest_leaf_size = current.size();
+      if (current.size() < smallest_leaf_size) smallest_leaf_size = current.size();
+      numLeaves++;
       return (NodeRef*) createLeaf(current.ptr(), current.size());
+    }
+
+    std::cerr << "Not handling large leaves yet" << std::endl;
+    assert(false);
   }
 
   NodeRef* Build(const BuildSettings& settings,
@@ -393,6 +408,4 @@ class BVHBuilder {
     return this_node;
   } // end build
 
-
-  
 };
