@@ -96,8 +96,17 @@ struct TempNode {
   AABB box;
   std::vector<BuildPrimitive> prims;
 
+  inline TempNode (AABB& b, std::vector<BuildPrimitive>& p) : box(b), prims(p) {}
+  
   inline TempNode() : box(AABB((float)inf,(float)neg_inf)) {}
 
+  void update_box() {
+    for (size_t i = 0; i < prims.size() ; i++) {
+      box.update(prims[i].lower_x,prims[i].lower_y,prims[i].lower_z);
+      box.update(prims[i].upper_x,prims[i].upper_y,prims[i].upper_z);
+    }
+  }
+  
   float sah_contribution() { return (0 == prims.size()) ? 0.0 : area(box)*(float)prims.size(); }
 };
 
@@ -117,8 +126,8 @@ struct SetT{
   inline AABB bounds() {
     AABB box;
     for(size_t i = 0; i < prims.size(); i++ ) {
-      box.extend(prims[i].lower.x,prims[i].lower.y,prims[i].lower.z);
-      box.extend(prims[i].upper.x,prims[i].upper.y,prims[i].upper.z);
+      box.update(prims[i].lower_x,prims[i].lower_y,prims[i].lower_z);
+      box.update(prims[i].upper_x,prims[i].upper_y,prims[i].upper_z);
     }
   }
 
@@ -127,6 +136,11 @@ struct SetT{
   inline size_t size() const { prims.size(); }
 
   inline const T* ptr () { return &(*prims.begin()); }
+
+  inline const T& operator []( const size_t index) const { assert(index < prims.size()); return prims[index];}
+  inline       T& operator []( const size_t index)       { assert(index < prims.size()); return prims[index]; }
+
+  inline void push_back(const T& p) { prims.push_back(p); }
   
   std::vector<T> prims;
 };
@@ -261,6 +275,7 @@ void splitNode(NodeRef* node, const BuildPrimitive* primitives, const size_t num
   float min_cost = 0.0;
   
   float best_cost = max_cost;
+  int best_dim = -1;
   float cost;
 
   AANode* this_node = node->node();
@@ -281,8 +296,15 @@ void splitNode(NodeRef* node, const BuildPrimitive* primitives, const size_t num
     // update cost
     if (cost < best_cost) {
       best_cost = cost;
+      best_dim = i;
     }
   }
+
+  assert(best_dim != -1);
+
+  splitNode(node, best_dim, primitives, numPrimitives, tempNodes);
+
+  return;
   
 }
 
@@ -348,6 +370,25 @@ class BVHBuilder {
     std::cout <<  "Smallest leaf: " << smallest_leaf_size << std::endl;
     std::cout << "Number of leaves: " << numLeaves << std::endl;  
   }
+
+  void splitFallback(const BuildRecord& current, BuildRecord& left, BuildRecord& right) {
+    const size_t begin_id = current.prims.prims.front().primID;
+    const size_t end_id = current.prims.prims.back().primID;
+    const size_t center_id = (begin_id + end_id)/2;
+
+    size_t numPrimitives = current.prims.size();
+    for (size_t i = 0; i < current.prims.size(); i++) {
+      if (current.prims[i].primID < center_id) {
+	left.prims.push_back(current.prims[i]);
+      }
+      else {
+	right.prims.push_back(current.prims[i]);
+      }
+
+    }
+
+      return;
+  }
   
   NodeRef* createLargeLeaf(BuildRecord& current) {
     
@@ -366,8 +407,62 @@ class BVHBuilder {
       return (NodeRef*) createLeaf(current.ptr(), current.size());
     }
 
-    std::cerr << "Not handling large leaves yet" << std::endl;
-    assert(false);
+
+    BuildRecord tempChildren[N];
+    size_t numChildren = 1;
+    AABB bounds = current.prims.bounds();
+    tempChildren[0] = current;
+    for( size_t i = 1; i < numChildren; i++) {
+      tempChildren[i] = BuildRecord();
+    }
+    
+    do {
+
+      size_t best_child = -1;
+      size_t best_size = 0;
+      for (size_t i = 0; i < numChildren; i++) {
+	/* ignore leaf if under the limit */
+	if(tempChildren[i].prims.size() < maxLeafSize)
+	  continue;
+
+	/* track child with largest size */
+	if (tempChildren[i].prims.size() > best_size) {
+	  best_size = tempChildren[i].prims.size();
+	  best_child = i;
+	}
+      }
+
+      /* if no child over maxLeafSize, then we're done */
+      if(best_child == (size_t)-1) break;
+
+      BuildRecord left;
+      BuildRecord right;
+      /* split the best child into left and right */
+      splitFallback(tempChildren[best_child], left, right);
+
+      /* add new children */
+      tempChildren[best_child] = tempChildren[numChildren-1];
+      tempChildren[numChildren-1] = left;
+      tempChildren[numChildren+0]= right;
+      numChildren++;
+      
+      /* find child with largest bounding box area */
+    } while (numChildren < N);
+
+    /* get children bounds */
+    vfloat4 x_min, y_min, z_min, x_max, y_max, z_max;
+    
+    for (size_t i = 0; i < numChildren; i++) {
+      AABB b = tempChildren[i].prims.bounds();
+      x_min[i] = b.lower.x; y_min[i] = b.lower.y; z_min[i] = b.lower.z;
+      x_max[i] = b.upper.x; y_max[i] = b.upper.y; z_max[i] = b.upper.z;
+      
+    }
+    
+    /* create node */
+    AANode* node = new AANode(x_min, y_min, z_min, x_max, y_max, z_max);
+
+    /* recurse into each child and perform reduction */
   }
 
   NodeRef* Build(const BuildSettings& settings,
