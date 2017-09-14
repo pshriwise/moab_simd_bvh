@@ -394,7 +394,7 @@ class BVHBuilder {
     
     if(current.depth > maxDepth) {
       std::cerr << "Maximum depth reached" << std::endl;
-      std::cerr << "Current depth: " << depth << std::endl;
+      std::cerr << "Current depth: " << current.depth << std::endl;
       std::cerr << "Maximum allowed depth: " << maxDepth << std::endl;
       std::cerr << "Number of primitives remaining: " << current.size() << std::endl;
       assert(false);
@@ -413,7 +413,7 @@ class BVHBuilder {
     AABB bounds = current.prims.bounds();
     tempChildren[0] = current;
     for( size_t i = 1; i < numChildren; i++) {
-      tempChildren[i] = BuildRecord();
+      tempChildren[i] = BuildRecord(current.depth+1);
     }
     
     do {
@@ -435,8 +435,8 @@ class BVHBuilder {
       /* if no child over maxLeafSize, then we're done */
       if(best_child == (size_t)-1) break;
 
-      BuildRecord left;
-      BuildRecord right;
+      BuildRecord left(current.depth+1);
+      BuildRecord right(current.depth+1);
       /* split the best child into left and right */
       splitFallback(tempChildren[best_child], left, right);
 
@@ -460,7 +460,16 @@ class BVHBuilder {
     }
     
     /* create node */
-    AANode* node = new AANode(x_min, y_min, z_min, x_max, y_max, z_max);
+    AANode* aanode = new AANode(x_min, y_min, z_min, x_max, y_max, z_max);
+
+    NodeRef* node = new NodeRef((size_t)aanode);
+
+    for (size_t i = 0; i < numChildren; i++) {
+      NodeRef* child_node = createLargeLeaf(tempChildren[i]);
+      aanode->setRef(i, *child_node);
+    }
+
+    return node;
 
     /* recurse into each child and perform reduction */
   }
@@ -477,7 +486,7 @@ class BVHBuilder {
     size_t numPrimitives = current.size();
     
     // if the end conditions for the tree are met, then create a leaf
-    if(numPrimitives <= maxLeafSize || depth > maxDepth) {
+    if(numPrimitives <= maxLeafSize || current.depth > maxDepth-20) {
       return createLargeLeaf(current);
     }
 
@@ -498,7 +507,7 @@ class BVHBuilder {
     splitNode(this_node, primitives, numPrimitives, tempNodes);
     
     for(size_t i = 0; i < N ; i++){
-      BuildRecord br(depth, tempNodes[i].prims);
+      BuildRecord br(current.depth+1, tempNodes[i].prims);
       NodeRef* child_node = Build(settings, br);
       // link the child node
       aanode->setRef(i, *child_node);
