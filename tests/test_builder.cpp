@@ -9,6 +9,7 @@
 #include "Builder.h"
 #include "Intersector.h"
 
+
 #include <vector>
 
 #include "testutil.hpp"
@@ -17,21 +18,74 @@
 
 void test_single_primitive();
 void test_random_primitives(int numPrimitives);
+void test_hollow_box();
+
+void build_hollow_cube(const float& x_min, const float& x_width, const size_t& x_prims,
+		       const float& y_min, const float& y_width, const size_t& y_prims,
+		       const float& z_min, const float& z_width, const size_t& z_prims,
+		       std::vector<BuildPrimitive>& primitives) {
+
+  std::vector<BuildPrimitive> prims;
+  
+  float x_step = x_width/(float)x_prims;
+  float y_step = y_width/(float)y_prims;
+  float z_step = z_width/(float)z_prims;
+
+  int prim_id = 0;
+  
+  for(size_t i = 0; i <= x_prims; i++) {
+    for(size_t j = 0; j <= y_prims; j++) {
+      for(size_t k = 0; k <= z_prims;) {
+
+	if ( !((i == 0 || i == x_prims) &&
+	       (j == 0 || j == y_prims)) ) {	  
+	  if (k == 1) {
+	    k = z_prims; continue;
+	  }
+	}
+
+        BuildPrimitive p = BuildPrimitive(x_min+i*x_step,
+					  y_min+j*y_step,
+					  z_min+k*y_step,
+					  0,
+					  x_min+(i+1)*x_step,
+					  y_min+(j+1)*y_step,
+					  z_min+(k+1)*z_step,
+					  prim_id++);
+
+	prims.push_back(p);
+
+	k++;
+	
+      }
+    }
+  }
+
+  primitives = prims;
+
+
+  return;
+}
+
+
+
 
 void* createLeaf (const BuildPrimitive *primitives, size_t numPrimitives) {
   //  assert(numPrimitives < MAX_LEAF_SIZE); needs to be re-added later
   std::vector<BuildPrimitive> p;
   p.assign(primitives, primitives+numPrimitives);
-
   NodeRef* leaf = encodeLeaf(&p.front(), numPrimitives); 
   return (void*)leaf;
 }
+
 
 
 int main(int argc, char** argv) {
 
   std::cout << "Single Primitive Test" << std::endl;
   test_single_primitive();
+  std::cout << "Hollow Box Primitives Test" << std::endl;
+  test_hollow_box();
   std::cout << "Random Primitives Test" << std::endl;
   test_random_primitives(1E6);
   return 0;
@@ -92,3 +146,35 @@ void test_random_primitives(int numPrimitives) {
   
   std::cout << r << std::endl;
 }
+
+
+void test_hollow_box() {
+
+  std::vector<BuildPrimitive> primitives;
+  
+  build_hollow_cube(0.0, 10.0, 20,
+		    0.0, 10.0, 20,
+		    0.0, 10.0, 20,
+		    primitives);
+
+  BVHBuilder bvh(createLeaf);
+
+  BuildSettings settings;
+
+  BuildRecord br(0, primitives);
+  
+  NodeRef* root = bvh.Build(settings,br);
+
+    // create a ray for intersection with the hierarchy
+  Vec3fa org(5.0,5.0,5.0), dir(-1.0, 0.0, 0.0);
+  Ray r(org, dir);
+  std::cout << r << std::endl;
+  
+  // use the root reference node to traverse the ray
+  BVHIntersector BVH;
+  BVH.intersectRay(*root, r);
+
+  bvh.stats();
+  
+}
+  

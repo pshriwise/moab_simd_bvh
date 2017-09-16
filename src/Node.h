@@ -10,6 +10,9 @@
 static const size_t emptyNode = 8;
 static const size_t tyLeaf = 8;
 
+static const size_t items_mask = 15;
+static const size_t align_mask = 15;
+
  // forward declarations
 struct AANode;
 struct Node;
@@ -34,6 +37,12 @@ struct NodeRef {
   inline       Node* bnode()       { return (Node*)ptr; }
   inline const Node* bnode() const { return (const Node*)ptr; }
 
+  inline void* leaf(size_t& num) const {
+    assert(isLeaf());
+    num = (ptr & (items_mask))-tyLeaf;
+    return (void*) (ptr & ~(size_t)align_mask);
+  }
+  
   /* inline char* leaf(size_t& num) const { */
   /*   assert(isLeaf()); */
   /*   num = (ptr & (size_t)items_mask)-tyLeaf; */

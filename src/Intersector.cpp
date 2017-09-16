@@ -55,6 +55,14 @@ void BVHIntersector::intersectRay(NodeRef root, Ray& ray) {
 	}
 
       // leaf (set distance to nearest/farthest box intersection for now)
+      size_t numPrims;
+      BuildPrimitive* prims = (BuildPrimitive*)cur.leaf(numPrims);
+      float hit;
+      
+      for (size_t i = 0; i < numPrims; i++) {
+	BuildPrimitive p = prims[0];
+	if( intersectBox(p.box(), vray, hit) && (ray.tfar > hit) ) ray.tfar = hit;
+      }
       
     }
   

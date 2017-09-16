@@ -309,7 +309,6 @@ void splitNode(NodeRef* node, const BuildPrimitive* primitives, const size_t num
 }
 
 void* create_leaf(const BuildPrimitive *primitives, size_t numPrimitives) {
-  
   return (void*) encodeLeaf((void*)primitives, numPrimitives);
 }
 

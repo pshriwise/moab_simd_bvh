@@ -75,3 +75,26 @@ inline float halfArea ( const AABB &box ) { return halfArea(box.size()); }
 
 inline float area ( const AABB &box ) { return 2.0f*halfArea(box); }
 
+
+inline bool intersectBox(const AABB &b, const TravRay &ray, float& nearest_hit) {
+
+  const float tx1 = (b.lower.x - ray.org.x) * ray.rdir.x;
+  const float tx2 = (b.upper.x - ray.org.x) * ray.rdir.x;
+  
+  const float ty1 = (b.lower.y - ray.org.y) * ray.rdir.y;
+  const float ty2 = (b.upper.y - ray.org.y) * ray.rdir.y;
+
+  const float tz1 = (b.lower.z - ray.org.z) * ray.rdir.z;
+  const float tz2 = (b.upper.z - ray.org.z) * ray.rdir.z;
+
+  const float round_down = 1.0f-2.0f*float(ulp); // FIXME: use per instruction rounding for AVX512
+  const float round_up   = 1.0f+2.0f*float(ulp);
+
+  const float tmin = std::max(tx1,std::max(tx2,std::max(ty1,std::max(ty2,std::max(tz1,tz2)))));
+  const float tmax = std::min(tx1,std::min(tx2,std::min(ty1,std::min(ty2,std::min(tz1,tz2)))));
+
+  return (tmax >= tmin);
+   
+    
+    
+};
