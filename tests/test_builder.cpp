@@ -67,16 +67,6 @@ void build_hollow_cube(const float& x_min, const float& x_width, const size_t& x
 }
 
 
-
-
-void* createLeaf (BuildPrimitive *primitives, size_t numPrimitives) {
-  //  assert(numPrimitives < MAX_LEAF_SIZE); needs to be re-added later
-  NodeRef* leaf = encodeLeaf(primitives, numPrimitives); 
-  return (void*)leaf;
-}
-
-
-
 int main(int argc, char** argv) {
 
   std::cout << "Single Primitive Test" << std::endl << std::endl; 
@@ -97,7 +87,7 @@ void test_single_primitive() {
   p.lower_y = 0.0; p.upper_y = 4.0;
   p.lower_z = 0.0; p.upper_z = 4.0;
 
-  BVHBuilder bvh(createLeaf);
+  BVHBuilder bvh(create_leaf);
 
   BuildSettings settings;
 
@@ -124,7 +114,7 @@ void test_random_primitives(int numPrimitives) {
     primitives.push_back(p);
   }
   
-  BVHBuilder bvh(createLeaf);
+  BVHBuilder bvh(create_leaf);
 
   BuildSettings settings;
 
@@ -156,7 +146,7 @@ void test_hollow_box() {
 		    0.0, 10.0, 20,
 		    primitives);
 
-  BVHBuilder bvh(createLeaf);
+  BVHBuilder bvh(create_leaf);
 
   BuildSettings settings;
 
