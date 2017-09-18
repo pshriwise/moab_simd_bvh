@@ -44,8 +44,8 @@ void BVHIntersector::intersectRay(NodeRef root, Ray& ray) {
 	  // if no intersection, this is a leaf - check primitives
 	  if (!nodeIntersected) {
 	    // temporary setting of ray values
-	    ray.tnear = std::min(min(tNear),ray.tnear);
-	    ray.tfar = std::min(min(tNear),ray.tfar);
+	    //	    ray.tnear = std::min(min(tNear),ray.tnear);
+	    //	    ray.tfar = std::min(min(tNear),ray.tfar);
 	    break; }
 	  
 	  // if no children were hit, pop next node
@@ -60,8 +60,11 @@ void BVHIntersector::intersectRay(NodeRef root, Ray& ray) {
       float hit;
       
       for (size_t i = 0; i < numPrims; i++) {
-	BuildPrimitive p = prims[0];
-	if( intersectBox(p.box(), vray, hit) && (ray.tfar > hit) ) ray.tfar = hit;
+	BuildPrimitive p = prims[i];
+	std::cout << p << std::endl;
+	if( intersectBox(p.box(), vray, hit) && (ray.tfar > hit) ) {
+	  ray.tfar = hit;
+	}
       }
       
     }
