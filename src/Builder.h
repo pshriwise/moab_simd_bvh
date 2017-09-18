@@ -59,7 +59,7 @@ typedef void (*linkChildrenFunc) (void* nodePtr, void** children, size_t numChil
 
 typedef void (*setNodeBoundsFunc) (void* nodePtr, const BBounds** bounds, size_t numChildren);
 
-typedef void* (*createLeafFunc) (const BuildPrimitive* primitives, size_t numPrimitives);
+typedef void* (*createLeafFunc) (BuildPrimitive* primitives, size_t numPrimitives);
 
 
 void createNode(NodeRef* node) {
@@ -135,7 +135,7 @@ struct SetT{
 
   inline size_t size() const { prims.size(); }
 
-  inline const T* ptr () { return &(*prims.begin()); }
+  inline T* ptr () { return &(*prims.begin()); }
 
   inline const T& operator []( const size_t index) const { assert(index < prims.size()); return prims[index];}
   inline       T& operator []( const size_t index)       { assert(index < prims.size()); return prims[index]; }
@@ -177,7 +177,7 @@ public:
 
   size_t size() const { return prims.size(); }
 
-  inline const T* ptr () { return prims.ptr(); }
+  inline T* ptr () { return prims.ptr(); }
 
 public:
   size_t depth;
@@ -219,6 +219,7 @@ void splitNode(NodeRef* node, size_t split_axis, const BuildPrimitive* primitive
 
   AABB boxes[N];
 
+	 
   boxes[0] = AABB(bounds[0][0],
 		   bounds[2][0],
 		   bounds[4][0],
@@ -304,11 +305,43 @@ void splitNode(NodeRef* node, const BuildPrimitive* primitives, const size_t num
 
   splitNode(node, best_dim, primitives, numPrimitives, tempNodes);
 
+  vfloat4 low_x, upp_x,
+          low_y, upp_y,
+          low_z, upp_z;
+
+  low_x = vfloat4(tempNodes[0].box.lower.x,
+		  tempNodes[1].box.lower.x,
+		  tempNodes[2].box.lower.x,
+		  tempNodes[3].box.lower.x);
+  low_y = vfloat4(tempNodes[0].box.lower.y,
+		  tempNodes[1].box.lower.y,
+		  tempNodes[2].box.lower.y,
+		  tempNodes[3].box.lower.y);
+  low_z = vfloat4(tempNodes[0].box.lower.z,
+		  tempNodes[1].box.lower.z,
+		  tempNodes[2].box.lower.z,
+		  tempNodes[3].box.lower.z);
+  upp_x = vfloat4(tempNodes[0].box.upper.x,
+		  tempNodes[1].box.upper.x,
+		  tempNodes[2].box.upper.x,
+		  tempNodes[3].box.upper.x);
+  upp_y = vfloat4(tempNodes[0].box.upper.y,
+		  tempNodes[1].box.upper.y,
+		  tempNodes[2].box.upper.y,
+		  tempNodes[3].box.upper.y);
+  upp_z = vfloat4(tempNodes[0].box.upper.z,
+		  tempNodes[1].box.upper.z,
+		  tempNodes[2].box.upper.z,
+		  tempNodes[3].box.upper.z);
+
+  this_node->set(low_x,upp_x,
+		 low_y,upp_y,
+		 low_z,upp_z);
   return;
   
 }
 
-void* create_leaf(const BuildPrimitive *primitives, size_t numPrimitives) {
+void* create_leaf(BuildPrimitive *primitives, size_t numPrimitives) {
   
   return (void*) encodeLeaf((void*)primitives, numPrimitives);
 }
@@ -360,6 +393,8 @@ class BVHBuilder {
   createLeafFunc createLeaf;
   size_t largest_leaf_size, smallest_leaf_size;
   size_t numLeaves;
+
+  std::vector<BuildRecord> records;
   
  public:
 
@@ -402,6 +437,7 @@ class BVHBuilder {
       if (current.size() > largest_leaf_size) largest_leaf_size = current.size();
       if (current.size() < smallest_leaf_size) smallest_leaf_size = current.size();
       numLeaves++;
+      records.push_back(current);
       return (NodeRef*) createLeaf(current.ptr(), current.size());
     }
 
