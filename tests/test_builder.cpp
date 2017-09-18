@@ -104,6 +104,8 @@ void test_single_primitive() {
   BuildRecord br(0, &p, 1);
   
   NodeRef* root = bvh.Build(settings,br);
+
+  delete root;
 }
 
 void test_random_primitives(int numPrimitives) {
@@ -174,6 +176,7 @@ void test_hollow_box() {
 
   std::cout << r << std::endl;
 
+  delete root;
   
 }
   

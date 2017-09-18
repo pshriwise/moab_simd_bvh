@@ -14,7 +14,8 @@ struct Ray {
   inline Ray(const Vec3fa& org, const Vec3fa &dir,
 	     const float& tnear = zero, const float& tfar = inf,
 	     const int mask = -1)
-    : org(org), dir(dir), tnear(tnear), tfar(tfar), mask(mask), geomID(-1), primID(-1), instID(-1) {}
+    : org(org), dir(dir), tnear(tnear), tfar(tfar), mask(mask), geomID(-1), primID(-1), instID(-1), u(0.0f), v(0.0f) { Ng = Vec3fa(); }
+
 
   
   inline bool valid() const {
@@ -48,11 +49,11 @@ inline std::ostream& operator <<(std::ostream &os, Ray const &r) {
             << "Direction: " << r.dir << std::endl
             << "tNear: " << r.tnear << std::endl
             << "tFar: " << r.tfar << std::endl
-	    << "--------" << std::endl
+ 	    << "--------" << std::endl
             << "Hit Info" << std::endl
             << "--------" << std::endl
 	    << "Triangle Normal: " << r.Ng << std::endl
-            << "Barycentric Coords: " << Vec3fa(r.u,r.v,1-r.u-r.v) << std::endl
+            << "Barycentric Coords: " << "[" << r.u << " " << r.v << " " << 1-r.u-r.v << "]" << std::endl
     	    << "Instance ID: " << r.instID << std::endl
 	    << "Primitive ID: " << r.primID << std::endl
             << "Geometry ID: " << r.geomID << std::endl;
