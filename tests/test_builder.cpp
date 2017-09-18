@@ -162,6 +162,8 @@ void test_hollow_box() {
   
   NodeRef* root = bvh.Build(settings,br);
 
+  bvh.stats();
+
     // create a ray for intersection with the hierarchy
   Vec3fa org(5,5,5), dir(-1.0, 0.0, 0.0);
   Ray r(org, dir);
@@ -172,7 +174,6 @@ void test_hollow_box() {
 
   std::cout << r << std::endl;
 
-  bvh.stats();
   
 }
   
