@@ -37,8 +37,7 @@ void build_hollow_cube(const float& x_min, const float& x_width, const size_t& x
     for(size_t j = 0; j <= y_prims; j++) {
       for(size_t k = 0; k <= z_prims;) {
 
-	if ( !((i == 0 || i == x_prims) &&
-	       (j == 0 || j == y_prims)) ) {	  
+	if ( !((i == 0 || i == x_prims || j == 0 || j == y_prims)) ) {	  
 	  if (k == 1) {
 	    k = z_prims; continue;
 	  }
@@ -70,11 +69,9 @@ void build_hollow_cube(const float& x_min, const float& x_width, const size_t& x
 
 
 
-void* createLeaf (const BuildPrimitive *primitives, size_t numPrimitives) {
+void* createLeaf (BuildPrimitive *primitives, size_t numPrimitives) {
   //  assert(numPrimitives < MAX_LEAF_SIZE); needs to be re-added later
-  std::vector<BuildPrimitive> p;
-  p.assign(primitives, primitives+numPrimitives);
-  NodeRef* leaf = encodeLeaf(&p.front(), numPrimitives); 
+  NodeRef* leaf = encodeLeaf(primitives, numPrimitives); 
   return (void*)leaf;
 }
 
@@ -82,12 +79,12 @@ void* createLeaf (const BuildPrimitive *primitives, size_t numPrimitives) {
 
 int main(int argc, char** argv) {
 
-  std::cout << "Single Primitive Test" << std::endl;
+  std::cout << "Single Primitive Test" << std::endl << std::endl; 
   test_single_primitive();
-  std::cout << "Hollow Box Primitives Test" << std::endl;
+  std::cout << "Hollow Box Primitives Test" << std::endl << std::endl;
   test_hollow_box();
-  std::cout << "Random Primitives Test" << std::endl;
-  test_random_primitives(1E6);
+  std::cout << "Random Primitives Test" << std::endl << std::endl;
+  // test_random_primitives(1E3);
   return 0;
   
 }
@@ -166,13 +163,14 @@ void test_hollow_box() {
   NodeRef* root = bvh.Build(settings,br);
 
     // create a ray for intersection with the hierarchy
-  Vec3fa org(5.0,5.0,5.0), dir(-1.0, 0.0, 0.0);
+  Vec3fa org(5,5,5), dir(-1.0, 0.0, 0.0);
   Ray r(org, dir);
-  std::cout << r << std::endl;
   
   // use the root reference node to traverse the ray
   BVHIntersector BVH;
   BVH.intersectRay(*root, r);
+
+  std::cout << r << std::endl;
 
   bvh.stats();
   
