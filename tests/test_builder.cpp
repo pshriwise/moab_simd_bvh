@@ -71,8 +71,8 @@ int main(int argc, char** argv) {
 
   std::cout << "Single Primitive Test" << std::endl << std::endl; 
   test_single_primitive();
-  // std::cout << "Hollow Box Primitives Test" << std::endl << std::endl;
-  // test_hollow_box();
+  std::cout << "Hollow Box Primitives Test" << std::endl << std::endl;
+  test_hollow_box();
   //  std::cout << "Random Primitives Test" << std::endl << std::endl;
   // test_random_primitives(1E3);
   return 0;
@@ -162,9 +162,9 @@ void test_hollow_box() {
 
   std::vector<BuildPrimitive> primitives;
   
-  build_hollow_cube(0.0, 10.0, 20,
-		    0.0, 10.0, 20,
-		    0.0, 10.0, 20,
+  build_hollow_cube(0.0, 20.0, 5,
+		    0.0, 20.0, 5,
+		    0.0, 20.0, 5,
 		    primitives);
 
   BVHBuilder bvh(create_leaf);
@@ -178,14 +178,12 @@ void test_hollow_box() {
   bvh.stats();
 
     // create a ray for intersection with the hierarchy
-  Vec3fa org(5,5,5), dir(-1.0, 0.0, 0.0);
+  Vec3fa org(10.0,10.0,10.0), dir(-1.0, 0.0, 0.0);
   Ray r(org, dir);
   
   // use the root reference node to traverse the ray
   BVHIntersector BVH;
   BVH.intersectRay(*root, r);
-
-  std::cout << r << std::endl;
 
   delete root;
   

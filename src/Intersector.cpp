@@ -62,7 +62,7 @@ void BVHIntersector::intersectRay(NodeRef root, Ray& ray) {
       for (size_t i = 0; i < numPrims; i++) {
 	BuildPrimitive p = prims[i];
 	std::cout << p << std::endl;
-	assert(p.primID < 1000);
+	assert(p.primID < 1E6);
 	
 	if( intersectBox(p.box(), vray, hit) && (ray.tfar > hit) ) {
 	  ray.tfar = hit;
