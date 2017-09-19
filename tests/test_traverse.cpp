@@ -116,9 +116,4 @@ void test_intersect() {
   // use the root reference node to traverse the ray
   BVHIntersector BVH;
   BVH.intersectRay(root_ref, r);
-
-  // ensure the ray's tfar value has been clipped to
-  // the edge of the bbox
-  float exp_dist = 6.0;
-  CHECK_REAL_EQUAL(exp_dist, r.tfar, 0.0);
 }

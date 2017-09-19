@@ -33,13 +33,13 @@ void build_hollow_cube(const float& x_min, const float& x_width, const size_t& x
 
   int prim_id = 0;
   
-  for(size_t i = 0; i <= x_prims; i++) {
-    for(size_t j = 0; j <= y_prims; j++) {
-      for(size_t k = 0; k <= z_prims;) {
+  for(size_t i = 0; i < x_prims; i++) {
+    for(size_t j = 0; j < y_prims; j++) {
+      for(size_t k = 0; k < z_prims;) {
 
-	if ( !((i == 0 || i == x_prims || j == 0 || j == y_prims)) ) {	  
+	if ( !((i == 0 || i == x_prims-1 || j == 0 || j == y_prims-1)) ) {	  
 	  if (k == 1) {
-	    k = z_prims; continue;
+	    k = z_prims-1; continue;
 	  }
 	}
 
@@ -71,9 +71,9 @@ int main(int argc, char** argv) {
 
   std::cout << "Single Primitive Test" << std::endl << std::endl; 
   test_single_primitive();
-  std::cout << "Hollow Box Primitives Test" << std::endl << std::endl;
-  test_hollow_box();
-  std::cout << "Random Primitives Test" << std::endl << std::endl;
+  // std::cout << "Hollow Box Primitives Test" << std::endl << std::endl;
+  // test_hollow_box();
+  //  std::cout << "Random Primitives Test" << std::endl << std::endl;
   // test_random_primitives(1E3);
   return 0;
   
@@ -86,7 +86,8 @@ void test_single_primitive() {
   p.lower_x = 0.0; p.upper_x = 4.0;
   p.lower_y = 0.0; p.upper_y = 4.0;
   p.lower_z = 0.0; p.upper_z = 4.0;
-
+  p.sceneID = 0;   p.primID = 1;
+  
   BVHBuilder bvh(create_leaf);
 
   BuildSettings settings;
@@ -95,6 +96,26 @@ void test_single_primitive() {
   
   NodeRef* root = bvh.Build(settings,br);
 
+  BVHIntersector INT;
+
+  // create a ray for intersection with the hierarchy
+  Vec3fa org(5.0,2.0,2.0), dir(-1.0, 0.0, 0.0);
+  Ray r(org, dir);
+  
+  // use the root reference node to traverse the ray
+  INT.intersectRay(*root, r);
+
+  CHECK_REAL_EQUAL(1.0f, r.tfar, 1e-06);
+
+  org = Vec3fa(2.0,2.0,2.0);
+
+  r = Ray(org, dir);
+  
+  // use the root reference node to traverse the ray
+  INT.intersectRay(*root, r);
+  
+  CHECK_REAL_EQUAL(2.0f, r.tfar, 1e-06);
+  
   delete root;
 }
 
