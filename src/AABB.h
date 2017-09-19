@@ -78,23 +78,59 @@ inline float area ( const AABB &box ) { return 2.0f*halfArea(box); }
 
 inline bool intersectBox(const AABB &b, const TravRay &ray, float& nearest_hit) {
 
-  const float tx1 = (b.lower.x - ray.org.x) * ray.rdir.x;
-  const float tx2 = (b.upper.x - ray.org.x) * ray.rdir.x;
-  
-  const float ty1 = (b.lower.y - ray.org.y) * ray.rdir.y;
-  const float ty2 = (b.upper.y - ray.org.y) * ray.rdir.y;
+  std::cout << "Box: " << b.lower << " " <<  b.upper << std::endl;
 
-  const float tz1 = (b.lower.z - ray.org.z) * ray.rdir.z;
-  const float tz2 = (b.upper.z - ray.org.z) * ray.rdir.z;
+  float xnear, xfar, ynear, yfar, znear, zfar;
+  
+  if (ray.dir.x >= 0) {
+    xnear = b.lower.x;
+    xfar = b.upper.x;
+  }
+  else {
+    xnear = b.upper.x;
+    xfar = b.lower.x;
+  }
+
+  if (ray.dir.y >= 0) {
+    ynear = b.lower.y;
+    yfar = b.upper.y;
+  }
+  else {
+    ynear = b.upper.y;
+    yfar = b.lower.y;
+  }    
+
+  if (ray.dir.z >= 0) {
+    znear = b.lower.z;
+    zfar = b.upper.z;
+  }
+  else {
+    znear = b.upper.z;
+    zfar = b.lower.z;
+  }    
+
+  const float tnearx = (xnear - ray.org.x) * ray.rdir.x;
+  const float tfarx = (xfar - ray.org.x) * ray.rdir.x;
+  
+  const float tneary = (ynear - ray.org.y) * ray.rdir.y;
+  const float tfary = (yfar - ray.org.y) * ray.rdir.y;
+
+  const float tnearz = (znear - ray.org.z) * ray.rdir.z;
+  const float tfarz = (zfar - ray.org.z) * ray.rdir.z;
 
   const float round_down = 1.0f-2.0f*float(ulp); // FIXME: use per instruction rounding for AVX512
   const float round_up   = 1.0f+2.0f*float(ulp);
 
-  const float tmin = std::max(tx1,std::max(tx2,std::max(ty1,std::max(ty2,std::max(tz1,tz2)))));
-  const float tmax = std::min(tx1,std::min(tx2,std::min(ty1,std::min(ty2,std::min(tz1,tz2)))));
+  const float tmin = std::max(tnearx,std::max(tneary,tnearz));
+  const float tmax = std::min(tfarx,std::min(tfary,tfarz));
 
-  return (tmax >= tmin);
-   
-    
+  if (tmax >= tmin) {
+    nearest_hit = tmin > 0 ? tmin : tmax;
+    return true;
+  }
+  else {
+    nearest_hit = inf;
+    return false;
+  }
     
 };
