@@ -113,7 +113,7 @@ void test_single_primitive() {
   // use the root reference node to traverse the ray
   INT.intersectRay(*root, r);
   
-  CHECK_REAL_EQUAL(2.0f, r.tfar, 1e-06);
+  CHECK_REAL_EQUAL(0.0f, r.tfar, 1e-06);
   
   delete root;
 }
