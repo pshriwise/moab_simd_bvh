@@ -51,8 +51,6 @@ void build_hollow_cube(const float& x_min, const float& x_width, const size_t& x
 					  y_min+(j+1)*y_step,
 					  z_min+(k+1)*z_step,
 					  prim_id++);
-	std::cout << p << std::endl;
-	
 	prims.push_back(p);
 
 	k++;
@@ -188,10 +186,8 @@ void test_hollow_box() {
 
   std::cout << r << std::endl;
 
-
   CHECK_REAL_EQUAL(6.0f, r.tfar, 1e-06);
   
   delete root;
   
 }
-  
