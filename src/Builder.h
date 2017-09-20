@@ -498,6 +498,7 @@ class BVHBuilder {
 
     NodeRef* node = new NodeRef((size_t)aanode);
 
+    /* recurse into each child and perform reduction */
     for (size_t i = 0; i < numChildren; i++) {
       NodeRef* child_node = createLargeLeaf(tempChildren[i]);
       aanode->setRef(i, *child_node);
@@ -505,7 +506,6 @@ class BVHBuilder {
 
     return node;
 
-    /* recurse into each child and perform reduction */
   }
 
   NodeRef* Build(const BuildSettings& settings,
