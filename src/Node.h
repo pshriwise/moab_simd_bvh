@@ -4,6 +4,7 @@
 #include "AABB.h"
 #include "constants.h"
 #include "vfloat.h"
+#include "Primitive.h"
 
 #define N 4
 
@@ -31,6 +32,8 @@ struct NodeRef {
   
   inline size_t isLeaf() const { return ptr & tyLeaf; }
 
+  inline bool isEmpty() const { return ptr == emptyNode; }
+
   inline       AANode* node()       { return (AANode*)ptr; }
   inline const AANode* node() const { return (const AANode*)ptr; }
 
@@ -40,7 +43,8 @@ struct NodeRef {
   inline void* leaf(size_t& num) const {
     assert(isLeaf());
     num = (ptr & (items_mask))-tyLeaf;
-    return (void*) (ptr & ~(size_t)align_mask);
+    BuildPrimitive* p = (BuildPrimitive*)(ptr & ~(size_t)align_mask);
+    return (void*) p;
   }
   
   /* inline char* leaf(size_t& num) const { */
@@ -49,11 +53,17 @@ struct NodeRef {
   /*   return (char*)(ptr & ~(size_t)align_mask); */
   /* } */
 
+  
 private:
   size_t ptr;
 		   
 
 };
+
+
+inline const bool operator ==( const NodeRef& a, const NodeRef& b ) { return a.pointer() == b.pointer(); }
+
+
 
 struct Node {
   inline Node () {}
@@ -62,9 +72,9 @@ struct Node {
 
   inline bool verify() {
     for (size_t i=0; i < N; i++) {
-      if (child(i) == emptyNode) {
+      if (child(i) == NodeRef(emptyNode) ) {
 	for(; i < N; i++) {
-	  if (child(i) != emptyNode)
+	  if (child(i) != NodeRef(emptyNode) )
 	    return false;
 	}
 	break;
@@ -72,9 +82,6 @@ struct Node {
     }
     return true;
   }
-
-  
-
   
   inline NodeRef& child(size_t i) { assert(i<N); return children[i]; }
   inline const NodeRef& child(size_t i) const { assert(i<N); return children[i]; }
@@ -171,7 +178,7 @@ inline size_t intersectBox(const AANode &node, const TravRay &ray, const vfloat4
   const vfloat4 tFar = min(tFarX, tFarY, tFarZ, tfar);
 
   const vbool4 vmask = (round_down*tNear <= round_up*tFar);
-  std::cout << std::endl << vmask << std::endl;
+  std::cout << vmask << std::endl;
   dist = tNear;
   const size_t mask = movemask(vmask);
   return mask;
