@@ -540,8 +540,8 @@ class BVHBuilder {
     splitNode(this_node, primitives, numPrimitives, tempNodes);
     
     for(size_t i = 0; i < N ; i++){
-      BuildRecord br(current.depth+1, tempNodes[i].prims);
-      NodeRef* child_node = Build(settings, br);
+      BuildRecord* br = new BuildRecord(current.depth+1, tempNodes[i].prims);
+      NodeRef* child_node = Build(settings, *br);
       // link the child node
       aanode->setRef(i, *child_node);
     }
