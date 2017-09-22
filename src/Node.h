@@ -178,7 +178,6 @@ inline size_t intersectBox(const AANode &node, const TravRay &ray, const vfloat4
   const vfloat4 tFar = min(tFarX, tFarY, tFarZ, tfar);
 
   const vbool4 vmask = (round_down*tNear <= round_up*tFar);
-  std::cout << vmask << std::endl;
   dist = tNear;
   const size_t mask = movemask(vmask);
   return mask;

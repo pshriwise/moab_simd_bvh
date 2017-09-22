@@ -31,8 +31,9 @@ int main(int argc, char** argv) {
   test_single_primitive();
   std::cout << "Hollow Box Primitives Test" << std::endl << std::endl;
   test_hollow_box();
-  //  std::cout << "Random Primitives Test" << std::endl << std::endl;
-  // test_random_primitives(1E3);
+  std::cout << "Random Primitives Test" << std::endl << std::endl;
+  test_random_primitives(1E4);
+  
   return 0;
   
 }
@@ -54,6 +55,8 @@ void test_single_primitive() {
   
   NodeRef* root = bvh.Build(settings,br);
 
+  bvh.stats();
+  
   BVHIntersector INT;
 
   // create a ray for intersection with the hierarchy
@@ -100,19 +103,18 @@ void test_random_primitives(int numPrimitives) {
   BuildState br(0, primitives);
   
   NodeRef* root = bvh.Build(settings,br);
-  
+
+  bvh.stats();
+
   // create a ray for intersection with the hierarchy
   Vec3fa org(10.0, 2.5, 2.5), dir(-1.0, 0.0, 0.0);
   Ray r(org, dir);
-  std::cout << r << std::endl;
   
   // use the root reference node to traverse the ray
   BVHIntersector BVH;
   BVH.intersectRay(*root, r);
 
-  bvh.stats();
-  
-  std::cout << r << std::endl;
+  return;
 }
 
 
@@ -138,12 +140,13 @@ void test_hollow_box() {
   std::vector<BuildPrimitive*> v,d;
   check_leaf_pointers(root, v, d);
 
-  std::cout << "DUPLICATE LEAF PONTERS" << std::endl;
-  for(unsigned int i = 0; i < d.size(); i++ ) {
-    std::cout << "Pointer Value: " << d[i] << std::endl;
-    std::cout << *(d[i]) << std::endl;
+  if ( d.size() > 0 ) {
+    std::cout << "DUPLICATE LEAF PONTERS" << std::endl;
+    for(unsigned int i = 0; i < d.size(); i++ ) {
+      std::cout << "Pointer Value: " << d[i] << std::endl;
+      std::cout << *(d[i]) << std::endl;
+    }
   }
-
   // create a ray for intersection with the hierarchy
   Vec3fa org(10.1,10.1,10.1), dir(-1.0, 0.0, 0.0);
   Ray r(org, dir);

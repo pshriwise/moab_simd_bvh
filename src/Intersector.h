@@ -16,7 +16,6 @@ class BVHIntersector {
   
   static inline bool intersect(NodeRef& node, const TravRay& ray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& dist, size_t& mask) {
     if(node.isLeaf()) return false;
-    std::cout<< *node.node() << std::endl;
     mask = intersectBox(*node.node(),ray,tnear,tfar,dist);
     return true;
   }
