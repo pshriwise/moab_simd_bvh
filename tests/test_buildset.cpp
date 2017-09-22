@@ -44,6 +44,11 @@ void test_buildset() {
   std::cout << test_box << std::endl;
   CHECK(box == test_box);
 
-  
+  s.clear();
+
+  CHECK_EQUAL( 0, (int)s.size() );
+
+  CHECK( s.prims[0] == s.ptr()[0] );
+
   return;
 }
