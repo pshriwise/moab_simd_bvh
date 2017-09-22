@@ -319,7 +319,7 @@ class BVHBuilder {
   size_t largest_leaf_size, smallest_leaf_size;
   size_t numLeaves;
 
-  std::vector<BuildRecord> records;
+  std::vector<BuildState> records;
   
  public:
 
@@ -329,7 +329,7 @@ class BVHBuilder {
     std::cout << "Number of leaves: " << numLeaves << std::endl;  
   }
 
-  void splitFallback(const BuildRecord& current, BuildRecord& left, BuildRecord& right) {
+  void splitFallback(const BuildState& current, BuildState& left, BuildState& right) {
     const size_t begin_id = current.prims.prims.front().primID;
     const size_t end_id = current.prims.prims.back().primID;
     const size_t center_id = (begin_id + end_id)/2;
@@ -348,7 +348,7 @@ class BVHBuilder {
       return;
   }
   
-  NodeRef* createLargeLeaf(BuildRecord& current) {
+  NodeRef* createLargeLeaf(BuildState& current) {
     
     if(current.depth > maxDepth) {
       std::cerr << "Maximum depth reached" << std::endl;
@@ -367,12 +367,12 @@ class BVHBuilder {
     }
 
 
-    BuildRecord tempChildren[N];
+    BuildState tempChildren[N];
     size_t numChildren = 1;
     AABB bounds = current.prims.bounds();
     tempChildren[0] = current;
     for( size_t i = 1; i < numChildren; i++) {
-      tempChildren[i] = BuildRecord(current.depth+1);
+      tempChildren[i] = BuildState(current.depth+1);
     }
     
     do {
@@ -394,8 +394,8 @@ class BVHBuilder {
       /* if no child over maxLeafSize, then we're done */
       if(best_child == (size_t)-1) break;
 
-      BuildRecord left(current.depth+1);
-      BuildRecord right(current.depth+1);
+      BuildState left(current.depth+1);
+      BuildState right(current.depth+1);
       /* split the best child into left and right */
       splitFallback(tempChildren[best_child], left, right);
 
@@ -434,7 +434,7 @@ class BVHBuilder {
   }
 
   NodeRef* Build(const BuildSettings& settings,
-		 BuildRecord& current
+		 BuildState& current
 		 //	    createNodeFunc createNode,
 		 //	    linkChildrenFunc linkChildren,
 		 //	    setNodeBoundsFunc setNodeBounds,
@@ -466,7 +466,7 @@ class BVHBuilder {
     splitNode(this_node, primitives, numPrimitives, tempNodes);
     
     for(size_t i = 0; i < N ; i++){
-      BuildRecord* br = new BuildRecord(current.depth+1, tempNodes[i].prims);
+      BuildState* br = new BuildState(current.depth+1, tempNodes[i].prims);
       NodeRef* child_node = Build(settings, *br);
       // link the child node
       aanode->setRef(i, *child_node);

@@ -48,32 +48,32 @@ typedef SetT<BuildPrimitive> Set;
 
 
 template<typename T>
-struct BuildRecordT {
+struct BuildStateT {
 public:
-  BuildRecordT () {}
+  BuildStateT () {}
 
-  BuildRecordT (size_t depth) : depth(depth) { prims.clear(); }
+  BuildStateT (size_t depth) : depth(depth) { prims.clear(); }
 
-  BuildRecordT (size_t depth, const std::vector<T> p)
+  BuildStateT (size_t depth, const std::vector<T> p)
   : depth(depth) { prims = SetT<T>(p);
                  }
 
-  BuildRecordT (const std::vector<T> prims)
+  BuildStateT (const std::vector<T> prims)
   : depth(0), prims(prims) {}
 
-  BuildRecordT (size_t depth, T* primitives, size_t numPrimitives)
+  BuildStateT (size_t depth, T* primitives, size_t numPrimitives)
   : depth(depth) { std::vector<T> s(primitives, primitives + numPrimitives);
                    prims = SetT<T>(s);
                  }
 
-  BuildRecordT (T* primitives, size_t numPrimitives)
+  BuildStateT (T* primitives, size_t numPrimitives)
   : depth(0) { std::vector<T> s(primitives, primitives + numPrimitives);
                prims = SetT<T>(s);
              }
 
-  friend bool  operator< (const BuildRecordT& a, const BuildRecordT& b) { return a.prims.size() < b.prims.size(); }
+  friend bool  operator< (const BuildStateT& a, const BuildStateT& b) { return a.prims.size() < b.prims.size(); }
 
-  friend bool operator> (const BuildRecordT& a, const BuildRecordT& b) { return a.prims.size() > b.prims.size(); }
+  friend bool operator> (const BuildStateT& a, const BuildStateT& b) { return a.prims.size() > b.prims.size(); }
 
   size_t size() const { return prims.size(); }
 
@@ -85,4 +85,4 @@ public:
   SetT<T> prims;
 };
 
-typedef BuildRecordT<BuildPrimitive> BuildRecord;
+typedef BuildStateT<BuildPrimitive> BuildState;

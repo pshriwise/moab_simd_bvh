@@ -15,9 +15,9 @@ int main(int argc, char** argv) {
 
 void test_buildrecord() {
 
-  BuildRecord b = BuildRecord();
+  BuildState b = BuildState();
 
-  BuildRecord* ptr = new BuildRecord();
+  BuildState* ptr = new BuildState();
 
   BuildPrimitive p = BuildPrimitive();
 
@@ -25,7 +25,7 @@ void test_buildrecord() {
   v.push_back(p);
 
   size_t test_depth = 20, test_size = 1;
-  b = BuildRecord(test_depth,v);
+  b = BuildState(test_depth,v);
 
   CHECK_EQUAL(test_depth, b.depth);
 

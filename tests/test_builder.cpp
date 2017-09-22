@@ -9,7 +9,6 @@
 #include "Builder.h"
 #include "Intersector.h"
 
-
 #include <vector>
 
 #include "testutil.hpp"
@@ -51,7 +50,7 @@ void test_single_primitive() {
 
   BuildSettings settings;
 
-  BuildRecord br(0, &p, 1);
+  BuildState br(0, &p, 1);
   
   NodeRef* root = bvh.Build(settings,br);
 
@@ -98,7 +97,7 @@ void test_random_primitives(int numPrimitives) {
 
   BuildSettings settings;
 
-  BuildRecord br(0, primitives);
+  BuildState br(0, primitives);
   
   NodeRef* root = bvh.Build(settings,br);
   
@@ -130,7 +129,7 @@ void test_hollow_box() {
 
   BuildSettings settings;
 
-  BuildRecord br(0, primitives);
+  BuildState br(0, primitives);
   
   NodeRef* root = bvh.Build(settings,br);
 
