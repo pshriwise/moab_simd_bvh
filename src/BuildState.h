@@ -9,17 +9,17 @@
 
 
 template<typename T>
-struct SetT{
+struct BuildBuildSetT{
   
-  inline SetT(std::set<T>& p) { std::vector<T> v(prims.begin(), prims.end());
+  inline BuildBuildSetT(std::set<T>& p) { std::vector<T> v(prims.begin(), prims.end());
                                   prims = v;
                               }
 
-  inline SetT(const std::vector<T>& p) { prims = p; }
+  inline BuildBuildSetT(const std::vector<T>& p) { prims = p; }
   
-  inline SetT() {}
+  inline BuildBuildSetT() {}
 
-  inline SetT(EmptyTy) {}
+  inline BuildBuildSetT(EmptyTy) {}
 
   inline AABB bounds() {
     AABB* box = new AABB();
@@ -44,7 +44,7 @@ struct SetT{
   std::vector<T> prims;
 };
 
-typedef SetT<BuildPrimitive> Set;
+typedef BuildBuildSetT<BuildPrimitive> Set;
 
 
 template<typename T>
@@ -55,7 +55,7 @@ public:
   BuildStateT (size_t depth) : depth(depth) { prims.clear(); }
 
   BuildStateT (size_t depth, const std::vector<T> p)
-  : depth(depth) { prims = SetT<T>(p);
+  : depth(depth) { prims = BuildBuildSetT<T>(p);
                  }
 
   BuildStateT (const std::vector<T> prims)
@@ -63,12 +63,12 @@ public:
 
   BuildStateT (size_t depth, T* primitives, size_t numPrimitives)
   : depth(depth) { std::vector<T> s(primitives, primitives + numPrimitives);
-                   prims = SetT<T>(s);
+                   prims = BuildBuildSetT<T>(s);
                  }
 
   BuildStateT (T* primitives, size_t numPrimitives)
   : depth(0) { std::vector<T> s(primitives, primitives + numPrimitives);
-               prims = SetT<T>(s);
+               prims = BuildBuildSetT<T>(s);
              }
 
   friend bool  operator< (const BuildStateT& a, const BuildStateT& b) { return a.prims.size() < b.prims.size(); }
@@ -82,7 +82,7 @@ public:
 public:
   size_t depth;
   
-  SetT<T> prims;
+  BuildBuildSetT<T> prims;
 };
 
 typedef BuildStateT<BuildPrimitive> BuildState;
