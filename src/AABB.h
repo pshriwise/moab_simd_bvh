@@ -78,67 +78,8 @@ inline float halfArea ( const AABB &box ) { return halfArea(box.size()); }
 inline float area ( const AABB &box ) { return 2.0f*halfArea(box); }
 
 inline bool operator ==(const AABB &a, const AABB& b) { return a.lower == b.lower &&
-							a.upper == b.upper;
+                                                               a.upper == b.upper;
                                                       }
-
-inline bool intersectBox(const AABB &b, const TravRay &ray, float& nearest_hit) {
-
-  std::cout << "Box: " << b.lower << " " <<  b.upper << std::endl;
-
-  float xnear, xfar, ynear, yfar, znear, zfar;
-  
-  if (ray.dir.x >= 0) {
-    xnear = b.lower.x;
-    xfar = b.upper.x;
-  }
-  else {
-    xnear = b.upper.x;
-    xfar = b.lower.x;
-  }
-
-  if (ray.dir.y >= 0) {
-    ynear = b.lower.y;
-    yfar = b.upper.y;
-  }
-  else {
-    ynear = b.upper.y;
-    yfar = b.lower.y;
-  }    
-
-  if (ray.dir.z >= 0) {
-    znear = b.lower.z;
-    zfar = b.upper.z;
-  }
-  else {
-    znear = b.upper.z;
-    zfar = b.lower.z;
-  }    
-
-  const float tnearx = (xnear - ray.org.x) * ray.rdir.x;
-  const float tfarx = (xfar - ray.org.x) * ray.rdir.x;
-  
-  const float tneary = (ynear - ray.org.y) * ray.rdir.y;
-  const float tfary = (yfar - ray.org.y) * ray.rdir.y;
-
-  const float tnearz = (znear - ray.org.z) * ray.rdir.z;
-  const float tfarz = (zfar - ray.org.z) * ray.rdir.z;
-
-  const float round_down = 1.0f-2.0f*float(ulp); // FIXME: use per instruction rounding for AVX512
-  const float round_up   = 1.0f+2.0f*float(ulp);
-
-  const float tmin = std::max(tnearx,std::max(tneary,tnearz));
-  const float tmax = std::min(tfarx,std::min(tfary,tfarz));
-
-  if (tmax > tmin) {
-    nearest_hit = tmin >= 0 ? (tmin*ray.dir).length() : 0;
-    return true;
-  }
-  else {
-    nearest_hit = inf;
-    return false;
-  }
-    
-};
 
 inline std::ostream& operator <<( std::ostream& os, const AABB &b ) {
   return os << "Lower Corner " << b.lower << std::endl

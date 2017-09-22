@@ -61,7 +61,7 @@ void BVHIntersector::intersectRay(NodeRef root, Ray& ray) {
       
       for (size_t i = 0; i < numPrims; i++) {
 	BuildPrimitive p = prims[i];
-	if( intersectBox(p.box(), vray, hit) && (ray.tfar > hit) ) {
+	if( p.intersect(vray, hit) && (ray.tfar > hit) ) {
 	  ray.tfar = hit;
 	}
       }
