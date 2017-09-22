@@ -15,7 +15,7 @@ struct SetT{
                                   prims = v;
                               }
 
-  inline SetT(const std::vector<T> p) { prims = p; }
+  inline SetT(const std::vector<T>& p) { prims = p; }
   
   inline SetT() {}
 
@@ -31,7 +31,7 @@ struct SetT{
 
   inline void clear() { prims.clear(); }
 
-  inline size_t size() const { prims.size(); }
+  inline size_t size() const { return prims.size(); }
 
   inline T* ptr () { return &(*prims.begin()); }
 
@@ -57,7 +57,7 @@ public:
   : depth(depth) { prims = SetT<T>(p);
                  }
 
-  BuildRecordT (const std::vector<T> &prims)
+  BuildRecordT (const std::vector<T> prims)
   : depth(0), prims(prims) {}
 
   BuildRecordT (size_t depth, T* primitives, size_t numPrimitives)
