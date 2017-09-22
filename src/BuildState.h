@@ -27,6 +27,7 @@ struct SetT{
       box.update(prims[i].lower_x,prims[i].lower_y,prims[i].lower_z);
       box.update(prims[i].upper_x,prims[i].upper_y,prims[i].upper_z);
     }
+    return box;
   }
 
   inline void clear() { prims.clear(); }

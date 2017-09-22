@@ -77,6 +77,9 @@ inline float halfArea ( const AABB &box ) { return halfArea(box.size()); }
 
 inline float area ( const AABB &box ) { return 2.0f*halfArea(box); }
 
+inline bool operator ==(const AABB &a, const AABB& b) { return a.lower == b.lower &&
+							a.upper == b.upper;
+                                                      }
 
 inline bool intersectBox(const AABB &b, const TravRay &ray, float& nearest_hit) {
 
@@ -136,3 +139,8 @@ inline bool intersectBox(const AABB &b, const TravRay &ray, float& nearest_hit) 
   }
     
 };
+
+inline std::ostream& operator <<( std::ostream& os, const AABB &b ) {
+  return os << "Lower Corner " << b.lower << std::endl
+	    << "Upper Corner " << b.upper << std::endl;
+}

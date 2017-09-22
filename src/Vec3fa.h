@@ -48,6 +48,12 @@ inline Vec3fa operator /( const Vec3fa& b, const Vec3fa& c ) { return Vec3fa(b.x
 inline Vec3fa operator /( const float& pa, const Vec3fa& c ) { return Vec3fa(pa) / c; }
 inline Vec3fa operator /( const Vec3fa& c, const float& pa ) { return c / Vec3fa(pa); }
 
+
+inline bool operator ==( const Vec3fa& b, const Vec3fa& c) { return b.x == c.x &&
+							            b.y == c.y &&
+							            b.z == c.z;
+                                                           }
+
 inline const Vec3fa min( const Vec3fa& b, const Vec3fa& c ) { return Vec3fa(std::min(b.x,c.x),std::min(b.y,c.y),
 									   std::min(b.z,c.z),std::min(b.a,c.a)); }
 inline const Vec3fa max( const Vec3fa& b, const Vec3fa& c ) { return Vec3fa(std::max(b.x,c.x),std::max(b.y,c.y),
