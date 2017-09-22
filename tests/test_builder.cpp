@@ -152,21 +152,35 @@ void test_hollow_box() {
   BVHIntersector BVH;
   BVH.intersectRay(*root, r);
 
-  std::cout << r << std::endl;
-
   CHECK_REAL_EQUAL(5.1f, r.tfar, 1e-06);
 
   dir = Vec3fa(1.0, 0.0, 0.0);
   r = Ray(org,dir);
 
-  std::cout << r << std::endl;
-
   BVH.intersectRay(*root, r);
-
-  std::cout << r << std::endl;
   
   CHECK_REAL_EQUAL(4.9f, r.tfar, 1e-06);
 
+  org = Vec3fa(10.0, 10.0, 10.0);
+  
+  r = Ray(org,dir);
+
+  BVH.intersectRay(*root, r);
+
+  CHECK_REAL_EQUAL(5.0f, r.tfar, 1e-06);
+
+  dir = Vec3fa(1.0f/3.0f);
+
+  r = Ray(org,dir);
+
+  std::cout << r << std::endl;
+  
+  BVH.intersectRay(*root,r);
+
+  std::cout << r << std::endl;
+  
+  CHECK_REAL_EQUAL(8.660254038f, r.tfar, 1e-06);
+  
   delete root;
   
 }

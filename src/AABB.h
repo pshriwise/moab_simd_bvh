@@ -129,8 +129,8 @@ inline bool intersectBox(const AABB &b, const TravRay &ray, float& nearest_hit) 
   const float tmin = std::max(tnearx,std::max(tneary,tnearz));
   const float tmax = std::min(tfarx,std::min(tfary,tfarz));
 
-  if (tmax >= tmin) {
-    nearest_hit = tmin > 0 ? tmin : 0;
+  if (tmax > tmin) {
+    nearest_hit = tmin >= 0 ? (tmin*ray.dir).length() : 0;
     return true;
   }
   else {
