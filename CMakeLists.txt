@@ -33,5 +33,6 @@ ADD_TEST(NAME vfloat_test COMMAND test_vfloat)
 ADD_TEST(NAME vbool_test COMMAND test_vbool)
 ADD_TEST(NAME traverse_test COMMAND test_traverse)
 ADD_TEST(NAME builder_test COMMAND test_builder)
+ADD_TEST(NAME BuildRecord_test COMMAND test_builder)
 
 ENABLE_TESTING()

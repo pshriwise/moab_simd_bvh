@@ -10,5 +10,5 @@ ADD_EXECUTABLE(test_vfloat test_vfloat.cpp ${SRC_FILES})
 ADD_EXECUTABLE(test_vbool test_vbool.cpp ${SRC_FILES})
 ADD_EXECUTABLE(test_traverse test_traverse.cpp ${SRC_FILES})
 ADD_EXECUTABLE(test_builder test_builder.cpp ${SRC_FILES})
-
+ADD_EXECUTABLE(test_buildrecord test_buildrecord.cpp ${SRC_FILES})
 
