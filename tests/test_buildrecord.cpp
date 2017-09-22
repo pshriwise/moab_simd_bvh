@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
 
 void test_buildrecord() {
 
-  
+  BuildRecord b = BuildRecord();
 
   return;
 }

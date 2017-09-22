@@ -2,7 +2,7 @@
 
 #pragma once
 
-
+#include "AABB.h"
 
 struct BuildPrimitive {
   float lower_x, lower_y, lower_z;

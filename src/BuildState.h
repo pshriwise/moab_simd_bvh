@@ -1,6 +1,12 @@
 
 
+#pragma once
+
+#include <set>
+#include <vector>
 #include "Primitive.h"
+
+
 
 template<typename T>
 struct SetT{
