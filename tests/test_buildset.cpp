@@ -28,9 +28,9 @@ void test_buildset() {
   std::vector<BuildPrimitive> v;
   v.push_back(p);
 
-  s = Set(v);
+  s.push_back(p);
 
-  CHECK_EQUAL( 1, s.prims.size() );
+  CHECK_EQUAL( 1, (int)s.prims.size() );
   CHECK_EQUAL( 1, (int)s.size() );
   
   
