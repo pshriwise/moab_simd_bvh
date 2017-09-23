@@ -23,7 +23,7 @@ struct BuildPrimitive {
 
   AABB box() { return AABB(lower_x, lower_y, lower_z, upper_x, upper_y, upper_z); }
   
-  Vec3fa center() const { return (Vec3fa(lower_x,lower_y,lower_z)+Vec3fa(upper_x,upper_y,upper_z))/2.0f; }
+  Vec3fa center() const { return Vec3fa(lower_x+upper_x,lower_y+upper_y,lower_z+upper_z)/2.0f; }
 
   inline bool intersect(const TravRay &ray, float& nearest_hit) {
 
