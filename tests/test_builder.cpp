@@ -18,6 +18,7 @@
 void test_single_primitive();
 void test_random_primitives(int numPrimitives);
 void test_hollow_box();
+void test_hollow_box1();
 void check_leaf_pointers(NodeRef *root, std::vector<BuildPrimitive*>& leaf_pointers, std::vector<BuildPrimitive*>& Duplicates);
 
 void build_hollow_cube(const float& x_min, const float& x_width, const size_t& x_prims,
@@ -31,9 +32,11 @@ int main(int argc, char** argv) {
   test_single_primitive();
   std::cout << "Hollow Box Primitives Test" << std::endl << std::endl;
   test_hollow_box();
+  std::cout << "Hollow Box1 Primitives Test" << std::endl << std::endl;
+  test_hollow_box1();
   std::cout << "Random Primitives Test" << std::endl << std::endl;
-  test_random_primitives(1E4);
-  
+  // test_random_primitives(1E5);
+    
   return 0;
   
 }
@@ -187,6 +190,79 @@ void test_hollow_box() {
   delete root;
   
 }
+
+
+void test_hollow_box1() {
+
+  std::vector<BuildPrimitive> primitives;
+  
+  build_hollow_cube(0.0, 20.0, 10,
+		    0.0, 20.0, 10,
+		    0.0, 20.0, 10,
+		    primitives);
+
+  BVHBuilder bvh(create_leaf);
+
+  BuildSettings settings;
+
+  BuildState br(0, primitives);
+  
+  NodeRef* root = bvh.Build(settings,br);
+
+  bvh.stats();
+
+  std::vector<BuildPrimitive*> v,d;
+  check_leaf_pointers(root, v, d);
+
+  if ( d.size() > 0 ) {
+    std::cout << "DUPLICATE LEAF PONTERS" << std::endl;
+    for(unsigned int i = 0; i < d.size(); i++ ) {
+      std::cout << "Pointer Value: " << d[i] << std::endl;
+      std::cout << *(d[i]) << std::endl;
+    }
+  }
+  // create a ray for intersection with the hierarchy
+  Vec3fa org(10.1,10.1,10.1), dir(-1.0, 0.0, 0.0);
+  Ray r(org, dir);
+  
+  // use the root reference node to traverse the ray
+  BVHIntersector BVH;
+  BVH.intersectRay(*root, r);
+
+  CHECK_REAL_EQUAL(8.1f, r.tfar, 1e-06);
+
+  dir = Vec3fa(1.0, 0.0, 0.0);
+  r = Ray(org,dir);
+
+  BVH.intersectRay(*root, r);
+  
+  CHECK_REAL_EQUAL(7.9f, r.tfar, 1e-06);
+
+  org = Vec3fa(10.0, 10.0, 10.0);
+  
+  r = Ray(org,dir);
+
+  BVH.intersectRay(*root, r);
+
+  CHECK_REAL_EQUAL(8.0f, r.tfar, 1e-06);
+
+  dir = Vec3fa(1.0f/3.0f);
+
+  r = Ray(org,dir);
+
+  std::cout << r << std::endl;
+
+  for( unsigned int i = 0; i < 1E7 ; i++)
+  BVH.intersectRay(*root,r);
+
+  std::cout << r << std::endl;
+  
+  CHECK_REAL_EQUAL(13.856406461f, r.tfar, 1e-06);
+  
+  delete root;
+  
+}
+
 
 void check_leaf_pointers(NodeRef *root, std::vector<BuildPrimitive*>& leaf_pointers, std::vector<BuildPrimitive*>& duplicates) {
 
