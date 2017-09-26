@@ -18,8 +18,12 @@
 void test_single_primitive();
 void test_random_primitives(int numPrimitives);
 void test_hollow_box();
-void test_hollow_box1();
-void check_leaf_pointers(NodeRef *root, std::vector<BuildPrimitive*>& leaf_pointers, std::vector<BuildPrimitive*>& Duplicates);
+void test_hollow_box_big();
+void check_leaf_pointers(NodeRef *root);
+
+void check_leaf_pointers(NodeRef *root,
+			 std::vector<BuildPrimitive*>& leaf_pointers,
+			 std::vector<BuildPrimitive*>& duplicates);
 
 void build_hollow_cube(const float& x_min, const float& x_width, const size_t& x_prims,
 		       const float& y_min, const float& y_width, const size_t& y_prims,
@@ -30,13 +34,17 @@ int main(int argc, char** argv) {
 
   std::cout << "Single Primitive Test" << std::endl << std::endl; 
   test_single_primitive();
-  std::cout << "Hollow Box Primitives Test" << std::endl << std::endl;
-  test_hollow_box();
-  std::cout << "Hollow Box1 Primitives Test" << std::endl << std::endl;
-  test_hollow_box1();
   std::cout << "Random Primitives Test" << std::endl << std::endl;
-  // test_random_primitives(1E5);
-    
+  test_random_primitives(1E3);
+
+  std::cout << "Hollow Box Test" << std::endl << std::endl;
+  test_hollow_box();
+  std::cout << "Big Hollow Box Test" << std::endl << std::endl;
+  test_hollow_box_big();
+  std::cout << "Bigger Hollow Box Test" << std::endl << std::endl;
+  //  test_hollow_box_bigger();
+  
+  
   return 0;
   
 }
@@ -124,7 +132,11 @@ void test_random_primitives(int numPrimitives) {
 void test_hollow_box() {
 
   std::vector<BuildPrimitive> primitives;
-  
+
+  Vec3f min(0.0f);
+  Vec3f max(20.0f);
+
+  int num_intervals = 4;
   build_hollow_cube(0.0, 20.0, 4,
 		    0.0, 20.0, 4,
 		    0.0, 20.0, 4,
@@ -140,26 +152,61 @@ void test_hollow_box() {
 
   bvh.stats();
 
-  std::vector<BuildPrimitive*> v,d;
-  check_leaf_pointers(root, v, d);
+  check_leaf_pointers(root);
 
-  if ( d.size() > 0 ) {
-    std::cout << "DUPLICATE LEAF PONTERS" << std::endl;
-    for(unsigned int i = 0; i < d.size(); i++ ) {
-      std::cout << "Pointer Value: " << d[i] << std::endl;
-      std::cout << *(d[i]) << std::endl;
-    }
-  }
-  // create a ray for intersection with the hierarchy
-  Vec3fa org(10.1,10.1,10.1), dir(-1.0, 0.0, 0.0);
-  Ray r(org, dir);
+  // some scoping from the inside of the box
+
   
+  // create a ray for intersection with the hierarchy,
+  // shifted in each dimension by 0.1 units
+  Vec3fa org(0.1+ (min.x+max.x)/2.0,
+	     0.1+ (min.y+max.y)/2.0,
+	     0.1+ (min.z+max.z)/2.0);
+
   // use the root reference node to traverse the ray
   BVHIntersector BVH;
-  BVH.intersectRay(*root, r);
+  Ray r;
+  Vec3fa dir;
+  float dist;
+  // fire a ray in the positive and negative direction for each ray
+  for (int dim = 0; dim < 3 ; dim++) {
 
-  CHECK_REAL_EQUAL(5.1f, r.tfar, 1e-06);
+    // negative direction
+    dir = Vec3fa(0.0);
+    dir[dim] = -1.0;
+    
+    r = Ray(org, dir);
 
+    BVH.intersectRay(*root, r);
+
+    // distance to intersection should be equal to the distance from the minimum
+    // box edge to the ray origin
+    dist = org[dim]-min[dim];
+    // minus the size of the build primitive
+    dist -=(min[dim]+max[dim])/num_intervals;
+
+    std::cout << dim << std::endl;
+    std::cout << r << std::endl;
+    CHECK_REAL_EQUAL(dist, r.tfar, 1e-06);
+
+    // now do the same for the positive direction
+    dir = Vec3fa(0.0);
+    dir[dim] = 1.0;
+    
+    r = Ray(org, dir);
+
+    BVH.intersectRay(*root, r);
+
+    // distance to intersection should be equal to the distance from the maximum
+    // box edge to the ray origin
+    dist = max[dim]-org[dim];
+    // minus the size of the build primitive
+    dist -=(min[dim]+max[dim])/num_intervals;
+
+    CHECK_REAL_EQUAL(dist, r.tfar, 1e-06);
+  }
+
+  
   dir = Vec3fa(1.0, 0.0, 0.0);
   r = Ray(org,dir);
 
@@ -192,7 +239,7 @@ void test_hollow_box() {
 }
 
 
-void test_hollow_box1() {
+void test_hollow_box_big() {
 
   std::vector<BuildPrimitive> primitives;
   
@@ -211,16 +258,8 @@ void test_hollow_box1() {
 
   bvh.stats();
 
-  std::vector<BuildPrimitive*> v,d;
-  check_leaf_pointers(root, v, d);
+  check_leaf_pointers(root);
 
-  if ( d.size() > 0 ) {
-    std::cout << "DUPLICATE LEAF PONTERS" << std::endl;
-    for(unsigned int i = 0; i < d.size(); i++ ) {
-      std::cout << "Pointer Value: " << d[i] << std::endl;
-      std::cout << *(d[i]) << std::endl;
-    }
-  }
   // create a ray for intersection with the hierarchy
   Vec3fa org(10.1,10.1,10.1), dir(-1.0, 0.0, 0.0);
   Ray r(org, dir);
@@ -252,7 +291,7 @@ void test_hollow_box1() {
 
   std::cout << r << std::endl;
 
-  for( unsigned int i = 0; i < 1E7 ; i++)
+  for( unsigned int i = 0; i < 1E6 ; i++)
   BVH.intersectRay(*root,r);
 
   std::cout << r << std::endl;
@@ -263,7 +302,20 @@ void test_hollow_box1() {
   
 }
 
+void check_leaf_pointers(NodeRef *root) {
+  std::vector<BuildPrimitive*> bps;
+  std::vector<BuildPrimitive*> duplicate_ptrs;
+  
+  check_leaf_pointers(root, bps, duplicate_ptrs);
 
+  if ( duplicate_ptrs.size() > 0 ) {
+    std::cout << "DUPLICATE LEAF PONTERS" << std::endl;
+    for(unsigned int i = 0; i < duplicate_ptrs.size(); i++ ) {
+      std::cout << "Pointer Value: " << duplicate_ptrs[i] << std::endl;
+      std::cout << *(duplicate_ptrs[i]) << std::endl;
+    }
+  }
+}
 void check_leaf_pointers(NodeRef *root, std::vector<BuildPrimitive*>& leaf_pointers, std::vector<BuildPrimitive*>& duplicates) {
 
   NodeRef current = *root;

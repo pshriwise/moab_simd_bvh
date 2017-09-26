@@ -63,6 +63,7 @@ void BVHIntersector::intersectRay(NodeRef root, Ray& ray) {
 	BuildPrimitive p = prims[i];
 	if( p.intersect(vray, hit) && (ray.tfar > hit) ) {
 	  ray.tfar = hit;
+	  ray.primID = p.primID;
 	}
       }
     }

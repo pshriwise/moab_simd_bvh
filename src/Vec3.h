@@ -44,7 +44,9 @@ template<typename T> struct Vec3 {
   inline Vec3( const T x, const T y, const T z) : x(x), y(y), z(z) {}
   
   inline Vec3( const T v[3] ) : x(v[0]), y(v[1]), z(v[2]) {}
-  
+
+  inline Vec3( const T v ) : x(v), y(v), z(v) {}
+
   inline T length() const { return sqrtf(x*x + y*y + z*z); }
   
   template<typename t>

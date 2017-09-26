@@ -31,7 +31,7 @@ struct BuildPrimitive {
   
     float xnear, xfar, ynear, yfar, znear, zfar;
   
-    if (ray.dir.x >= 0) {
+    if (ray.dir.x >= 0.0f) {
       xnear = b.lower.x;
       xfar = b.upper.x;
     }
@@ -40,7 +40,7 @@ struct BuildPrimitive {
       xfar = b.lower.x;
     }
 
-    if (ray.dir.y >= 0) {
+    if (ray.dir.y >= 0.0f) {
       ynear = b.lower.y;
       yfar = b.upper.y;
     }
@@ -49,7 +49,7 @@ struct BuildPrimitive {
       yfar = b.lower.y;
     }    
 
-    if (ray.dir.z >= 0) {
+    if (ray.dir.z >= 0.0f) {
       znear = b.lower.z;
       zfar = b.upper.z;
     }
@@ -73,7 +73,7 @@ struct BuildPrimitive {
     const float tmin = std::max(tnearx,std::max(tneary,tnearz));
     const float tmax = std::min(tfarx,std::min(tfary,tfarz));
 
-    if (tmax > tmin) {
+    if (tmax > tmin && tmax >= 0) {
       nearest_hit = tmin >= 0 ? (tmin*ray.dir).length() : 0;
       return true;
     }
