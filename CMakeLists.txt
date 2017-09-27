@@ -38,15 +38,30 @@ LIST(APPEND TEST_FILES "buildset")
 
 ADD_SUBDIRECTORY(tests)
 
+
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-if(CMAKE_COMPILER_IS_GNUCXX)
+IF(CMAKE_COMPILER_IS_GNUCXX)
   include(CodeCoverage)
   FOREACH(TEST_NAME IN LISTS TEST_FILES)
     ADD_TEST(NAME ${TEST_NAME}_test COMMAND test_${TEST_NAME})
     setup_target_for_coverage( NAME test_${TEST_NAME}_coverage EXECUTABLE test_${TEST_NAME} )
+    LIST(APPEND TEST_NAMES test_${TEST_NAME}_coverage)
+    LIST(APPEND LCOV_MERGE_NAMES -a test_${TEST_NAME}_coverage.info)
   ENDFOREACH()
-endif()
+ENDIF()
 
+IF(CMAKE_BUILD_TYPE STREQUAL "Coverage")
+  ADD_CUSTOM_TARGET(test_coverage DEPENDS ${TEST_NAMES})
+ADD_CUSTOM_COMMAND(
+  TARGET
+    test_coverage
+  COMMAND
+    ${LCOV_PATH} ${LCOV_MERGE_NAMES} --output test_coverage.info
+  COMMAND
+    ${GENHTML_PATH} test_coverage.info -o test_coverage
+  VERBATIM
+  )
+ENDIF()
 
 ENABLE_TESTING()
 
