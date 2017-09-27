@@ -21,7 +21,10 @@ void test_random_primitives(int numPrimitives);
 void test_hollow_box(float x_min, float y_min, float z_min,
 		     float x_max, float y_max, float z_max,
 		     int num_x,   int num_y,   int num_z);
-void test_hollow_box_big();
+
+void test_hollow_box();
+void test_hollow_cube();
+
 void check_leaf_pointers(NodeRef *root);
 
 void check_leaf_pointers(NodeRef *root,
@@ -38,17 +41,11 @@ int main(int argc, char** argv) {
   std::cout << "Single Primitive Test" << std::endl << std::endl; 
   test_single_primitive();
   std::cout << "Random Primitives Test" << std::endl << std::endl;
-  test_random_primitives(1E3);
-
+  test_random_primitives(1E4);
+  std::cout << "Hollow Cube Test" << std::endl << std::endl;
+  test_hollow_cube();
   std::cout << "Hollow Box Test" << std::endl << std::endl;
-  test_hollow_box(0.0, 0.0, 0.0,
-		  20.0, 20.0, 20.0,
-		  4, 4, 4);
-  std::cout << "Big Hollow Box Test" << std::endl << std::endl;
-  test_hollow_box_big();
-  std::cout << "Bigger Hollow Box Test" << std::endl << std::endl;
-  //  test_hollow_box_bigger();
-  
+  test_hollow_box();  
   
   return 0;
   
@@ -133,7 +130,6 @@ void test_random_primitives(int numPrimitives) {
   return;
 }
 
-
 void test_hollow_box(float x_min, float y_min, float z_min,
 		     float x_max, float y_max, float z_max,
 		     int num_x,   int num_y,   int num_z) {
@@ -144,6 +140,8 @@ void test_hollow_box(float x_min, float y_min, float z_min,
 
   Vec3f max(x_max, y_max, z_max);
 
+  Vec3i num(num_x, num_y, num_z);
+  
   build_hollow_box( x_min, x_max, num_x,
 		    y_min, y_max, num_y,
 		    z_min, z_max, num_z,
@@ -189,10 +187,8 @@ void test_hollow_box(float x_min, float y_min, float z_min,
     // box edge to the ray origin
     dist = org[dim]-min[dim];
     // minus the size of the build primitive
-    dist -=(min[dim]+max[dim])/num_x;
+    dist -=(min[dim]+max[dim])/num[dim];
 
-    std::cout << dim << std::endl;
-    std::cout << r << std::endl;
     CHECK_REAL_EQUAL(dist, r.tfar, 1e-06);
 
     // now do the same for the positive direction
@@ -202,13 +198,13 @@ void test_hollow_box(float x_min, float y_min, float z_min,
     r = Ray(org, dir);
 
     BVH.intersectRay(*root, r);
-
+ 
     // distance to intersection should be equal to the distance from the maximum
     // box edge to the ray origin
     dist = max[dim]-org[dim];
     // minus the size of the build primitive
-    dist -=(min[dim]+max[dim])/num_x;
-
+    dist -=(max[dim]-min[dim])/num[dim];
+    
     CHECK_REAL_EQUAL(dist, r.tfar, 1e-06);
   }
 
@@ -218,27 +214,34 @@ void test_hollow_box(float x_min, float y_min, float z_min,
 	       (min.z+max.z)/2.0);
 
   
-  float corner_dist = 3.0f * pow((max.x-org.x)-(max.x-min.x)/num_x, 2.0f);
-  corner_dist = sqrt(corner_dist);
-    
+  float x_dist_to_corner = (max.x-org.x)-(max.x-min.x)/num_x;
+  float y_dist_to_corner = (max.y-org.y)-(max.y-min.y)/num_y;
+  float z_dist_to_corner = (max.z-org.z)-(max.z-min.z)/num_z;
 
-  Vec3fa corner_dirs[8] = { Vec3fa(  1,  1,   1),
-			    Vec3fa( -1,  1,   1),
-			    Vec3fa( -1, -1,   1),
-			    Vec3fa( -1, -1,  -1),
-			    Vec3fa(  1, -1,  -1),
-			    Vec3fa(  1,  1,  -1),
-			    Vec3fa( -1,  1,  -1),
-			    Vec3fa(  1, -1,  1)};
+
+  float corner_dist = x_dist_to_corner * x_dist_to_corner +
+                      y_dist_to_corner * y_dist_to_corner +
+                      z_dist_to_corner * z_dist_to_corner;
+  corner_dist = sqrt(corner_dist);
+
+  Vec3fa corner_dirs[8] = { Vec3fa(  x_dist_to_corner,  y_dist_to_corner,   z_dist_to_corner),
+			    Vec3fa( -x_dist_to_corner,  y_dist_to_corner,   z_dist_to_corner),
+			    Vec3fa( -x_dist_to_corner, -y_dist_to_corner,   z_dist_to_corner),
+			    Vec3fa( -x_dist_to_corner, -y_dist_to_corner,  -z_dist_to_corner),
+			    Vec3fa(  x_dist_to_corner, -y_dist_to_corner,  -z_dist_to_corner),
+			    Vec3fa(  x_dist_to_corner,  y_dist_to_corner,  -z_dist_to_corner),
+			    Vec3fa( -x_dist_to_corner,  y_dist_to_corner,  -z_dist_to_corner),
+			    Vec3fa(  x_dist_to_corner, -y_dist_to_corner,   z_dist_to_corner)};
 
   // fire a ray into each corner
   for(int i = 0 ; i < 8 ; i++) {
     dir = corner_dirs[i];
+
+    dir.normalize();
     
     r = Ray(org,dir);
 
     BVH.intersectRay(*root,r);
-      
     CHECK_REAL_EQUAL(corner_dist, r.tfar, 1e-06);
       
   }
@@ -249,11 +252,18 @@ void test_hollow_box(float x_min, float y_min, float z_min,
 }
 
 
-void test_hollow_box_big() {
+void test_hollow_cube() {
+  test_hollow_box(0.0, 0.0, 0.0,
+		  20.0, 20.0, 20.0,
+		  4, 4, 4);
+
+}
+
+void test_hollow_box() {
 
   test_hollow_box(0.0, 0.0, 0.0,
 		  20.0, 20.0, 20.0,
-		  10, 10, 10);
+		  10, 20, 30);
   
 }
 
@@ -289,11 +299,6 @@ void check_leaf_pointers(NodeRef *root, std::vector<BuildPrimitive*>& leaf_point
     
     
     if ( std::find(leaf_pointers.begin(), leaf_pointers.end(), p) != leaf_pointers.end() ) {
-    //   std::cout << "Duplicate nodes exist in the tree for some reason." << std::endl;
-    //   std::cout << "Pointer is: " << std::endl;
-    //   std::cout << p << std::endl;
-    //   std::cout << "Current primitive is: " << std::endl;
-    //   std::cout << *p << std::endl;
       duplicates.push_back(p);
     }
    
@@ -316,6 +321,12 @@ void build_hollow_box(const float& x_min, const float& x_max, const size_t& x_pr
 		       const float& z_min, const float& z_max, const size_t& z_prims,
 		       std::vector<BuildPrimitive>& primitives) {
 
+  CHECK(x_min < x_max);
+  CHECK(y_min < y_max);
+  CHECK(z_min < z_max);
+
+  CHECK( x_prims > 2 && y_prims > 2 && z_prims > 2);
+  
   std::vector<BuildPrimitive> prims;
 
   float x_width = x_max - x_min;
@@ -340,7 +351,7 @@ void build_hollow_box(const float& x_min, const float& x_max, const size_t& x_pr
 
         BuildPrimitive p = BuildPrimitive(x_min+i*x_step,
 					  y_min+j*y_step,
-					  z_min+k*y_step,
+					  z_min+k*z_step,
 					  0,
 					  x_min+(i+1)*x_step,
 					  y_min+(j+1)*y_step,
@@ -355,7 +366,6 @@ void build_hollow_box(const float& x_min, const float& x_max, const size_t& x_pr
   }
 
   primitives = prims;
-
 
   return;
 }
