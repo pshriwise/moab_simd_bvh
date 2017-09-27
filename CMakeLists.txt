@@ -21,19 +21,33 @@ LIST(APPEND HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Intersector.h
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Builder.h)
 
+# Code Coverage
+LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+#INCLUDE(UseBackportedModules)
 
+LIST(APPEND TEST_FILES "vec3f")
+LIST(APPEND TEST_FILES "aabb")
+LIST(APPEND TEST_FILES "ray")
+LIST(APPEND TEST_FILES "intersect")
+LIST(APPEND TEST_FILES "vfloat")
+LIST(APPEND TEST_FILES "vbool")
+LIST(APPEND TEST_FILES "traverse")
+LIST(APPEND TEST_FILES "builder")
+LIST(APPEND TEST_FILES "buildrecord")
+LIST(APPEND TEST_FILES "buildset")
 
 ADD_SUBDIRECTORY(tests)
 
-ADD_TEST(NAME vec3f_test COMMAND test_vec3f)
-ADD_TEST(NAME aabb_test COMMAND test_aabb)
-ADD_TEST(NAME ray_test COMMAND test_ray)
-ADD_TEST(NAME intersect_test COMMAND test_intersect)
-ADD_TEST(NAME vfloat_test COMMAND test_vfloat)
-ADD_TEST(NAME vbool_test COMMAND test_vbool)
-ADD_TEST(NAME traverse_test COMMAND test_traverse)
-ADD_TEST(NAME builder_test COMMAND test_builder)
-ADD_TEST(NAME BuildRecord_test COMMAND test_buildrecord)
-ADD_TEST(NAME BuildSet_test COMMAND test_buildset)
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+if(CMAKE_COMPILER_IS_GNUCXX)
+  include(CodeCoverage)
+  FOREACH(TEST_NAME IN LISTS TEST_FILES)
+    ADD_TEST(NAME ${TEST_NAME}_test COMMAND test_${TEST_NAME})
+    setup_target_for_coverage( NAME test_${TEST_NAME}_coverage EXECUTABLE test_${TEST_NAME} )
+  ENDFOREACH()
+endif()
+
 
 ENABLE_TESTING()
+
+
