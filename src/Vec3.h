@@ -106,6 +106,7 @@ inline T reduce_max( const Vec3<T>& v ) { return std::max(std::max(v.x, v.y), v.
 inline bool all(bool b[3]) { return b[0] && b[1] && b[2]; }
 
 typedef Vec3<float> Vec3f;
+typedef Vec3<int> Vec3i;
 
 template<typename T>
 inline std::ostream& operator <<(std::ostream &os, Vec3<T> const& v) {
