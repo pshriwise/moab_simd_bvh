@@ -187,6 +187,7 @@ void splitNode(NodeRef* node, size_t split_axis, const BuildPrimitive* primitive
 	tn[j].prims.push_back(p);
 	tn[j].box.update(p.lower_x, p.lower_y, p.lower_z);
 	tn[j].box.update(p.upper_x, p.upper_y, p.upper_z);
+	break;
       }
     }
     assert(placed);
