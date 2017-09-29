@@ -20,9 +20,7 @@ struct Node;
  
 struct NodeRef {
 
-
-  
-  inline NodeRef () {}
+  inline NodeRef () { ptr = emptyNode;}
 
   inline NodeRef(size_t ptr) : ptr(ptr) {}
 
