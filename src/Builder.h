@@ -109,6 +109,8 @@ struct TempNode {
   }
   
   float sah_contribution() { return (0 == prims.size()) ? 0.0 : area(box)*(float)prims.size(); }
+
+  void clear() { box.clear(); prims.clear(); }
 };
 
 
@@ -123,7 +125,6 @@ void splitNode(NodeRef* node, size_t split_axis, const BuildPrimitive* primitive
   for(size_t i=0; i<numPrimitives; i++) {
     box.update(primitives[i].lower_x,primitives[i].lower_y,primitives[i].lower_z);
     box.update(primitives[i].upper_x,primitives[i].upper_y,primitives[i].upper_z);
-
   }
 
   Vec3fa dxdydz = (box.upper - box.lower) / 4.0f;
@@ -171,10 +172,15 @@ void splitNode(NodeRef* node, size_t split_axis, const BuildPrimitive* primitive
 		   bounds[3][3],
 		   bounds[5][3]);
 
-  tn[0] = TempNode();
-  tn[1] = TempNode();
-  tn[2] = TempNode();
-  tn[3] = TempNode();
+  tn[0].clear();
+  tn[1].clear();
+  tn[2].clear();
+  tn[3].clear();
+
+  /* tn[0] = TempNode(); */
+  /* tn[1] = TempNode(); */
+  /* tn[2] = TempNode(); */
+  /* tn[3] = TempNode(); */
   
   // sort primitives into boxes by their centroid
   for(size_t i = 0; i < numPrimitives; i++) {
@@ -319,8 +325,6 @@ class BVHBuilder {
   createLeafFunc createLeaf;
   size_t largest_leaf_size, smallest_leaf_size;
   size_t numLeaves;
-
-  std::vector<BuildState> records;
   
  public:
 
@@ -363,8 +367,7 @@ class BVHBuilder {
       if (current.size() > largest_leaf_size) largest_leaf_size = current.size();
       if (current.size() < smallest_leaf_size) smallest_leaf_size = current.size();
       numLeaves++;
-      records.push_back(current);
-      return (NodeRef*) createLeaf(current.ptr(), current.size());
+      return current.size() ? (NodeRef*) createLeaf(current.ptr(), current.size()) : new NodeRef();
     }
 
 
