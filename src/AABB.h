@@ -57,6 +57,8 @@ struct AABB {
 										   upper[1] = std::max(upper[1], xyz[1]);
 										   upper[2] = std::max(upper[2], xyz[2]); }
 
+  inline void clear() { lower = inf; upper = neg_inf; }
+
   inline const AABB& extend(const AABB& other) { lower = min(lower, other.lower); upper = max(upper, other.upper); return *this; }
 
   inline Vec3fa size() const { return upper - lower; };
