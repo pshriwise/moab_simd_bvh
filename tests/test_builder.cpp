@@ -11,6 +11,7 @@
 
 #include <vector>
 #include <math.h>
+#include <fstream>
 
 #include "testutil.hpp"
 
@@ -29,7 +30,11 @@ void check_leaf_pointers(NodeRef *root);
 
 void check_leaf_pointers(NodeRef *root,
 			 std::vector<BuildPrimitive*>& leaf_pointers,
-			 std::vector<BuildPrimitive*>& duplicates);
+			 std::vector<BuildPrimitive*>& duplicates,
+			 int& num_empty_nodes,
+			 int& numPrimitives);
+
+void write_dot_graph(NodeRef* root, std::string filename);
 
 void build_hollow_box(const float& x_min, const float& x_width, const size_t& x_prims,
 		      const float& y_min, const float& y_width, const size_t& y_prims,
@@ -68,6 +73,8 @@ void test_single_primitive() {
   
   NodeRef* root = bvh.Build(settings,br);
 
+  write_dot_graph(root, "single.dot");
+  
   bvh.stats();
   
   BVHIntersector INT;
@@ -99,10 +106,10 @@ void test_random_primitives(int numPrimitives) {
   int primID = 0;
   for(int i = 0; i < numPrimitives; i++){  
     BuildPrimitive p;
-
-    p.lower_x = float(drand48()); p.upper_x = float(drand48());
-    p.lower_y = float(drand48()); p.upper_y = float(drand48());
-    p.lower_z = float(drand48()); p.upper_z = float(drand48());
+    float scale = 10.0;
+    p.lower_x = float(-scale*drand48()); p.upper_x = float(scale*drand48());
+    p.lower_y = float(-scale*drand48()); p.upper_y = float(scale*drand48());
+    p.lower_z = float(-scale*drand48()); p.upper_z = float(scale*drand48());
     p.primID = primID++;
     p.sceneID = 0;
     
@@ -117,6 +124,9 @@ void test_random_primitives(int numPrimitives) {
   
   NodeRef* root = bvh.Build(settings,br);
 
+  check_leaf_pointers(root);
+  write_dot_graph(root, "random_tree.dot");
+  
   bvh.stats();
 
   // create a ray for intersection with the hierarchy
@@ -156,7 +166,7 @@ void test_hollow_box(float x_min, float y_min, float z_min,
   NodeRef* root = bvh.Build(settings,br);
 
   bvh.stats();
-
+  
   check_leaf_pointers(root);
 
   // some scoping from the inside of the box
@@ -262,16 +272,57 @@ void test_hollow_cube() {
 void test_hollow_box() {
 
   test_hollow_box(0.0, 0.0, 0.0,
-		  20.0, 20.0, 20.0,
-		  10, 20, 30);
+		  10.0, 10.0, 10.0,
+		  20, 20, 50);
   
+}
+
+
+void write_dot_header(std::ofstream& os) {
+  os << "digraph" << std::endl;
+  os << "{" << std::endl;
+  return;
+}
+
+void write_dot_footer(std::ofstream& os) {
+  os << "}" << std::endl;
+  return;
+}
+
+void write_dot_graph(NodeRef* root, std::ofstream& os, int& counter) {
+
+  if(root->isLeaf()){
+    size_t num;
+    void* p = root->leaf(num);
+    os << counter << "[label = " << num << "]" << std::endl;
+    return;
+  }
+  int root_val = counter;
+  os << root_val << "[label = \"Interior Node\"]" << std::endl;
+  for (unsigned int i = 0; i < N; i++) {
+    NodeRef* child = &(root->bnode()->child(i));
+    os << root_val << "->" << ++counter << std::endl;
+    write_dot_graph(child, os, counter);
+    }
+}
+
+
+void write_dot_graph(NodeRef* root, std::string filename) {
+  std::ofstream os;
+  os.open(filename.c_str());
+  
+  int counter = 0;
+  write_dot_header(os);
+  write_dot_graph(root, os, counter);
+  write_dot_footer(os);
 }
 
 void check_leaf_pointers(NodeRef *root) {
   std::vector<BuildPrimitive*> bps;
   std::vector<BuildPrimitive*> duplicate_ptrs;
-  
-  check_leaf_pointers(root, bps, duplicate_ptrs);
+  int num_empty_nodes = 0;
+  int numPrimitives = 0;
+  check_leaf_pointers(root, bps, duplicate_ptrs, num_empty_nodes, numPrimitives);
 
   if ( duplicate_ptrs.size() > 0 ) {
     std::cout << "DUPLICATE LEAF PONTERS" << std::endl;
@@ -280,13 +331,25 @@ void check_leaf_pointers(NodeRef *root) {
       std::cout << *(duplicate_ptrs[i]) << std::endl;
     }
   }
+
+  // report number of empty leaves
+  if ( num_empty_nodes > 0 ) {
+    std::cout << "Number of empty leaves found: " << num_empty_nodes << std::endl;
+  }
+
+  std::cout << "Number of primitives found: " << numPrimitives << std::endl;
+  
 }
-void check_leaf_pointers(NodeRef *root, std::vector<BuildPrimitive*>& leaf_pointers, std::vector<BuildPrimitive*>& duplicates) {
+
+
+void check_leaf_pointers(NodeRef* root, std::vector<BuildPrimitive*>& leaf_pointers, std::vector<BuildPrimitive*>& duplicates, int& num_empty_nodes, int& numPrimitives) {
 
   NodeRef current = *root;
 
   // if the node is empty, move on
   if( current.isEmpty() ) {
+    // record empty leaf nodes
+    num_empty_nodes++;
     return;
   }
   
@@ -296,9 +359,10 @@ void check_leaf_pointers(NodeRef *root, std::vector<BuildPrimitive*>& leaf_point
     // get the leaf info
     size_t num;
     BuildPrimitive* p = (BuildPrimitive*)current.leaf(num);
+
+    numPrimitives += num;
     
-    
-    if ( std::find(leaf_pointers.begin(), leaf_pointers.end(), p) != leaf_pointers.end() ) {
+    if ( num && std::find(leaf_pointers.begin(), leaf_pointers.end(), p) != leaf_pointers.end() ) {
       duplicates.push_back(p);
     }
    
@@ -308,8 +372,8 @@ void check_leaf_pointers(NodeRef *root, std::vector<BuildPrimitive*>& leaf_point
   // if this is not a leaf, check all children
   else{
     for( size_t i = 0; i < N ; i++ ) {
-      NodeRef* child = &current.bnode()->child(i);
-      check_leaf_pointers(child, leaf_pointers, duplicates);
+      NodeRef* child = &(current.bnode()->child(i));
+      check_leaf_pointers(child, leaf_pointers, duplicates, num_empty_nodes, numPrimitives);
     }
   }
   
