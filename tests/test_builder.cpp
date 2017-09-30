@@ -107,9 +107,15 @@ void test_random_primitives(int numPrimitives) {
   for(int i = 0; i < numPrimitives; i++){  
     BuildPrimitive p;
     float scale = 10.0;
-    p.lower_x = float(-scale*drand48()); p.upper_x = float(scale*drand48());
-    p.lower_y = float(-scale*drand48()); p.upper_y = float(scale*drand48());
-    p.lower_z = float(-scale*drand48()); p.upper_z = float(scale*drand48());
+    float x = float(drand48());
+    float y = float(drand48());
+    float z = float(drand48());
+    Vec3fa pnt = 1000.0f*Vec3fa(x,y,z);
+    
+    p.lower_x = pnt.x; p.upper_x = 1.0f + pnt.x;
+    p.lower_y = pnt.y; p.upper_y = 1.0f + pnt.y;
+    p.lower_z = pnt.z; p.upper_z = 1.0f + pnt.z;
+    
     p.primID = primID++;
     p.sceneID = 0;
     
