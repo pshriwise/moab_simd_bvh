@@ -1,10 +1,10 @@
+#pragma once
 
 
 #include "Node.h"
 #include "Stack.h"
 #include "Ray.h"
 #include "ops.h"
-
 
 
 class BVHTraverser {

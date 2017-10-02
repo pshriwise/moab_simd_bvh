@@ -2,12 +2,10 @@
 
 #include "Node.h"
 #include "Vec3.h"
-#include "Traverser.h"
 #include "Intersector.h"
 #include "Ray.h"
 #include "Vec3fa.h"
 #include "Builder.h"
-#include "Intersector.h"
 
 #include <vector>
 #include <math.h>
@@ -77,7 +75,7 @@ void test_single_primitive() {
   
   bvh.stats();
   
-  BVHIntersector INT;
+  BuildPrimitiveIntersector INT;
 
   // create a ray for intersection with the hierarchy
   Vec3fa org(5.0,2.0,2.0), dir(-1.0, 0.0, 0.0);
@@ -140,7 +138,7 @@ void test_random_primitives(int numPrimitives) {
   Ray r(org, dir);
   
   // use the root reference node to traverse the ray
-  BVHIntersector BVH;
+  BuildPrimitiveIntersector BVH;
   BVH.intersectRay(*root, r);
 
   return;
@@ -184,7 +182,7 @@ void test_hollow_box(float x_min, float y_min, float z_min,
 	     0.1+ (min.z+max.z)/2.0);
 
   // use the root reference node to traverse the ray
-  BVHIntersector BVH;
+  BuildPrimitiveIntersector BVH;
   Ray r;
   Vec3fa dir;
   float dist;

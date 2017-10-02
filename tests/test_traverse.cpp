@@ -114,6 +114,6 @@ void test_intersect() {
   Ray r(org, dir);
 
   // use the root reference node to traverse the ray
-  BVHIntersector BVH;
+  BuildPrimitiveIntersector BVH;
   BVH.intersectRay(root_ref, r);
 }
