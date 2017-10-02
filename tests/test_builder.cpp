@@ -65,7 +65,7 @@ void test_single_primitive() {
   p.lower_z = 0.0; p.upper_z = 4.0;
   p.sceneID = 0;   p.primID = 1;
   
-  BVHBuilder bvh(create_leaf);
+  BuildPrimitiveBVH bvh(create_leaf);
 
   BuildSettings settings;
 
@@ -122,7 +122,7 @@ void test_random_primitives(int numPrimitives) {
     primitives.push_back(p);
   }
   
-  BVHBuilder bvh(create_leaf);
+  BuildPrimitiveBVH bvh(create_leaf);
 
   BuildSettings settings;
 
@@ -163,7 +163,7 @@ void test_hollow_box(float x_min, float y_min, float z_min,
 		    z_min, z_max, num_z,
 		    primitives);
 
-  BVHBuilder bvh(create_leaf);
+  BuildPrimitiveBVH bvh(create_leaf);
 
   BuildSettings settings;
 

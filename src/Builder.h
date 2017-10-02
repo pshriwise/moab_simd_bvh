@@ -313,10 +313,10 @@ struct PrimRef{
 
 
 
-class BVHBuilder {
+template <typename T> class BVHBuilder {
 
  public:
-  inline BVHBuilder(createLeafFunc createLeaf) : maxLeafSize(8), depth(0), maxDepth(1024), createLeaf(createLeaf), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0) {}
+  inline BVHBuilder(createLeafFunc createLeaf) : maxLeafSize(8), depth(0), maxDepth(3000), createLeaf(createLeaf), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0) {}
   
  private:
   size_t maxLeafSize;
@@ -334,7 +334,7 @@ class BVHBuilder {
     std::cout << "Number of leaves: " << numLeaves << std::endl;  
   }
 
-  void splitFallback(const BuildState& current, BuildState& left, BuildState& right) {
+  void splitFallback(const BuildStateT<T>& current, BuildStateT<T>& left, BuildStateT<T>& right) {
     const size_t begin_id = current.prims.prims.front().primID;
     const size_t end_id = current.prims.prims.back().primID;
     const size_t center_id = (begin_id + end_id)/2;
@@ -353,7 +353,7 @@ class BVHBuilder {
       return;
   }
   
-  NodeRef* createLargeLeaf(BuildState& current) {
+  NodeRef* createLargeLeaf(BuildStateT<T>& current) {
     
     if(current.depth > maxDepth) {
       std::cerr << "Maximum depth reached" << std::endl;
@@ -371,12 +371,12 @@ class BVHBuilder {
     }
 
 
-    BuildState tempChildren[N];
+    BuildStateT<T> tempChildren[N];
     size_t numChildren = 1;
     AABB bounds = current.prims.bounds();
     tempChildren[0] = current;
     for( size_t i = 1; i < numChildren; i++) {
-      tempChildren[i] = BuildState(current.depth+1);
+      tempChildren[i] = BuildStateT<T>(current.depth+1);
     }
     
     do {
@@ -398,8 +398,8 @@ class BVHBuilder {
       /* if no child over maxLeafSize, then we're done */
       if(best_child == (size_t)-1) break;
 
-      BuildState left(current.depth+1);
-      BuildState right(current.depth+1);
+      BuildStateT<T> left(current.depth+1);
+      BuildStateT<T> right(current.depth+1);
       /* split the best child into left and right */
       splitFallback(tempChildren[best_child], left, right);
 
@@ -438,14 +438,14 @@ class BVHBuilder {
   }
 
   NodeRef* Build(const BuildSettings& settings,
-		 BuildState& current
+		 BuildStateT<T>& current
 		 //	    createNodeFunc createNode,
 		 //	    linkChildrenFunc linkChildren,
 		 //	    setNodeBoundsFunc setNodeBounds,
 		 ) {
 
 
-    const BuildPrimitive* primitives = current.ptr();
+    const T* primitives = current.ptr();
     size_t numPrimitives = current.size();
     
     // if the end conditions for the tree are met, then create a leaf
@@ -470,7 +470,7 @@ class BVHBuilder {
     splitNode(this_node, primitives, numPrimitives, tempNodes);
     
     for(size_t i = 0; i < N ; i++){
-      BuildState* br = new BuildState(current.depth+1, tempNodes[i].prims);
+      BuildStateT<T>* br = new BuildStateT<T>(current.depth+1, tempNodes[i].prims);
       NodeRef* child_node = Build(settings, *br);
       // link the child node
       aanode->setRef(i, *child_node);
@@ -480,3 +480,5 @@ class BVHBuilder {
   } // end build
 
 };
+
+typedef BVHBuilder<BuildPrimitive> BuildPrimitiveBVH;
