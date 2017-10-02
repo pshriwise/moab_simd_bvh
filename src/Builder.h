@@ -449,7 +449,7 @@ class BVHBuilder {
     size_t numPrimitives = current.size();
     
     // if the end conditions for the tree are met, then create a leaf
-    if(numPrimitives <= maxLeafSize || current.depth > maxDepth-20) {
+    if(numPrimitives <= maxLeafSize || current.depth > maxDepth) {
       return createLargeLeaf(current);
     }
 
