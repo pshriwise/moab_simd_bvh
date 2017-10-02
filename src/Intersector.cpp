@@ -58,7 +58,8 @@ void BVHIntersector::intersectRay(NodeRef root, Ray& ray) {
       size_t numPrims;
       BuildPrimitive* prims = (BuildPrimitive*)cur.leaf(numPrims);
       float hit;
-      
+
+      if ( !cur.isEmpty() ) {
       for (size_t i = 0; i < numPrims; i++) {
 	BuildPrimitive p = prims[i];
 	if( p.intersect(vray, hit) && (ray.tfar > hit) ) {
@@ -66,9 +67,10 @@ void BVHIntersector::intersectRay(NodeRef root, Ray& ray) {
 	  ray.primID = p.primID;
 	}
       }
+      }
+      
     }
-  
-
+  return;
 }
 
 

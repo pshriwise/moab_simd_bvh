@@ -275,7 +275,7 @@ void splitNode(NodeRef* node, const BuildPrimitive* primitives, const size_t num
 }
 
 void* create_leaf(BuildPrimitive *primitives, size_t numPrimitives) {
-  return (void*) encodeLeaf((void*)primitives, numPrimitives);
+  return (void*) encodeLeaf((void*)primitives, numPrimitives - 1);
 }
 
 struct PrimRef{
@@ -316,7 +316,7 @@ struct PrimRef{
 class BVHBuilder {
 
  public:
-  inline BVHBuilder(createLeafFunc createLeaf) : maxLeafSize(7), depth(0), maxDepth(1024), createLeaf(createLeaf), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0) {}
+  inline BVHBuilder(createLeafFunc createLeaf) : maxLeafSize(8), depth(0), maxDepth(1024), createLeaf(createLeaf), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0) {}
   
  private:
   size_t maxLeafSize;
@@ -385,7 +385,7 @@ class BVHBuilder {
       size_t best_size = 0;
       for (size_t i = 0; i < numChildren; i++) {
 	/* ignore leaf if under the limit */
-	if(tempChildren[i].prims.size() < maxLeafSize)
+	if(tempChildren[i].prims.size() <= maxLeafSize)
 	  continue;
 
 	/* track child with largest size */
