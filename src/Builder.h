@@ -316,7 +316,7 @@ struct PrimRef{
 template <typename T> class BVHBuilder {
 
  public:
-  inline BVHBuilder(createLeafFunc createLeaf) : maxLeafSize(8), depth(0), maxDepth(3000), createLeaf(createLeaf), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0) {}
+  inline BVHBuilder(createLeafFunc createLeaf) : maxLeafSize(8), depth(0), maxDepth(1024), createLeaf(createLeaf), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0) {}
   
  private:
   size_t maxLeafSize;
@@ -370,7 +370,7 @@ template <typename T> class BVHBuilder {
       return current.size() ? (NodeRef*) createLeaf(current.ptr(), current.size()) : new NodeRef();
     }
 
-
+    
     BuildStateT<T> tempChildren[N];
     size_t numChildren = 1;
     AABB bounds = current.prims.bounds();
@@ -426,13 +426,15 @@ template <typename T> class BVHBuilder {
     AANode* aanode = new AANode(x_min, y_min, z_min, x_max, y_max, z_max);
 
     NodeRef* node = new NodeRef((size_t)aanode);
-
+    
     /* recurse into each child and perform reduction */
     for (size_t i = 0; i < numChildren; i++) {
       NodeRef* child_node = createLargeLeaf(tempChildren[i]);
       aanode->setRef(i, *child_node);
     }
 
+    depth = current.depth > depth ? current.depth : depth;
+    
     return node;
 
   }
@@ -463,7 +465,6 @@ template <typename T> class BVHBuilder {
     }
 
     // increment depth and recur here
-    depth++;
     aanode->setBounds(box);
     NodeRef* this_node = new NodeRef((size_t)aanode);
     TempNode tempNodes[4];
@@ -476,6 +477,8 @@ template <typename T> class BVHBuilder {
       aanode->setRef(i, *child_node);
     }
 
+    depth = current.depth > depth ? current.depth : depth;
+    
     return this_node;
   } // end build
 
