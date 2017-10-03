@@ -58,10 +58,10 @@ void test_single_primitive() {
   
   BuildPrimitive p;
 
-  p.lower_x = 0.0; p.upper_x = 4.0;
-  p.lower_y = 0.0; p.upper_y = 4.0;
-  p.lower_z = 0.0; p.upper_z = 4.0;
-  p.sceneID = 0;   p.primID = 1;
+  p.lower.x = 0.0; p.upper.x = 4.0;
+  p.lower.y = 0.0; p.upper.y = 4.0;
+  p.lower.z = 0.0; p.upper.z = 4.0;
+  p.set_sceneID(0); p.set_primID(1);
   
   BuildPrimitiveBVH bvh(create_leaf);
 
@@ -110,12 +110,12 @@ void test_random_primitives(int numPrimitives) {
     float z = float(drand48());
     Vec3fa pnt = 1000.0f*Vec3fa(x,y,z);
     
-    p.lower_x = pnt.x; p.upper_x = 1.0f + pnt.x;
-    p.lower_y = pnt.y; p.upper_y = 1.0f + pnt.y;
-    p.lower_z = pnt.z; p.upper_z = 1.0f + pnt.z;
+    p.lower.x = pnt.x; p.upper.x = 1.0f + pnt.x;
+    p.lower.y = pnt.y; p.upper.y = 1.0f + pnt.y;
+    p.lower.z = pnt.z; p.upper.z = 1.0f + pnt.z;
     
-    p.primID = primID++;
-    p.sceneID = 0;
+    p.set_primID(primID++);
+    p.set_sceneID(0);
     
     primitives.push_back(p);
   }

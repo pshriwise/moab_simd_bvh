@@ -5,26 +5,39 @@
 #include "AABB.h"
 
 struct BuildPrimitive {
-  float lower_x, lower_y, lower_z;
-  int sceneID;
-  float upper_x, upper_y, upper_z;
-  int primID;
+  Vec3fa lower, upper;
+  /* float lower_x, lower_y, lower_z; */
+  /* int sceneID; */
+  /* float upper_x, upper_y, upper_z; */
+  /* int primID; */
 
   BuildPrimitive () {}
   
-  BuildPrimitive (float lx, float ly, float lz, int sID, float ux, float uy, float uz, int pID) :
-  lower_x(lx), lower_y(ly), lower_z(lz), sceneID(sID), upper_x(ux), upper_y(uy), upper_z(uz), primID(pID) {}
+  BuildPrimitive (float lx, float ly, float lz, int sID, float ux, float uy, float uz, int pID) : lower(Vec3fa(lx, ly, lz, sID)),
+    upper(Vec3fa(ux, uy, uz, pID)) {}
   
-  friend bool operator< (const BuildPrimitive& a, const BuildPrimitive& b) { return a.primID < b.primID; }
+  /* int sceneID() { return lower.a; } */
 
-  friend bool operator!= (const BuildPrimitive& a, const BuildPrimitive& b) { return a.primID != b.primID; }
+  /* int primID() { return upper.a; } */
 
-  friend bool operator== (const BuildPrimitive& a, const BuildPrimitive& b) { return a.primID == b.primID; }
+  const int sceneID() const { return lower.a; }
 
-  AABB box() { return AABB(lower_x, lower_y, lower_z, upper_x, upper_y, upper_z); }
+  const int primID() const { return upper.a; }
+
+  void set_sceneID( const int &id ) { lower.a = id; }
+
+  void set_primID( const int &id ) { upper.a = id; }
+
+  friend bool operator< (const BuildPrimitive& a, const BuildPrimitive& b) { return a.primID() < b.primID(); }
+
+  friend bool operator!= (const BuildPrimitive& a, const BuildPrimitive& b) { return a.primID() != b.primID(); }
+
+  friend bool operator== (const BuildPrimitive& a, const BuildPrimitive& b) { return a.primID() == b.primID(); }
+
+  AABB box() { return AABB(lower.x, lower.y, lower.z, upper.x, upper.y, upper.z); }
   
-  Vec3fa center() const { return Vec3fa(lower_x+upper_x,lower_y+upper_y,lower_z+upper_z)/2.0f; }
-
+  Vec3fa center() const { return Vec3fa(lower.x+upper.x,lower.y+upper.y,lower.z+upper.z)/2.0f; }
+  
   inline bool intersect(const TravRay &ray, float& nearest_hit) {
 
     AABB b = box();
@@ -88,13 +101,13 @@ struct BuildPrimitive {
 
 
 inline std::ostream& operator<< (std::ostream &os, BuildPrimitive &p) {
-  return os <<  "Primitive "  << p.primID << std::endl <<
-                "Lower xyz: " << p.lower_x << " "
-	                      << p.lower_y << " "
-                              << p.lower_z << std::endl <<
-                "Upper xyz: " << p.upper_x << " "
-                              << p.upper_y << " "
-                              << p.upper_z << std::endl <<
-                "Part of Scene " << p.sceneID << std::endl;
+  return os <<  "Primitive "  << p.primID() << std::endl <<
+                "Lower xyz: " << p.lower.x << " "
+	                      << p.lower.y << " "
+                              << p.lower.z << std::endl <<
+                "Upper xyz: " << p.upper.x << " "
+                              << p.upper.y << " "
+                              << p.upper.z << std::endl <<
+                "Part of Scene " << p.sceneID() << std::endl;
 }
 

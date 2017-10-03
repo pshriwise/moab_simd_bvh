@@ -44,8 +44,8 @@ struct Heuristic {
   AABB bounds(BuildPrimitive* primitives, size_t numPrimitives) {
     AABB b((float)inf,(float)neg_inf);
     for(size_t i=0; i<numPrimitives; i++) {
-      b.update(primitives[i].lower_x,primitives[i].lower_y,primitives[i].lower_z);
-      b.update(primitives[i].upper_x,primitives[i].upper_y,primitives[i].upper_z);
+      b.update(primitives[i].lower.x,primitives[i].lower.y,primitives[i].lower.z);
+      b.update(primitives[i].upper.x,primitives[i].upper.y,primitives[i].upper.z);
 
     }
     return b;
@@ -104,8 +104,8 @@ struct TempNode {
 
   void update_box() {
     for (size_t i = 0; i < prims.size() ; i++) {
-      box.update(prims[i].lower_x,prims[i].lower_y,prims[i].lower_z);
-      box.update(prims[i].upper_x,prims[i].upper_y,prims[i].upper_z);
+      box.update(prims[i].lower.x,prims[i].lower.y,prims[i].lower.z);
+      box.update(prims[i].upper.x,prims[i].upper.y,prims[i].upper.z);
     }
   }
   
@@ -124,8 +124,8 @@ void splitNode(NodeRef* node, size_t split_axis, const BuildPrimitive* primitive
   //get the bounds of the node
   AABB box((float)inf,(float)neg_inf);
   for(size_t i=0; i<numPrimitives; i++) {
-    box.update(primitives[i].lower_x,primitives[i].lower_y,primitives[i].lower_z);
-    box.update(primitives[i].upper_x,primitives[i].upper_y,primitives[i].upper_z);
+    box.update(primitives[i].lower.x,primitives[i].lower.y,primitives[i].lower.z);
+    box.update(primitives[i].upper.x,primitives[i].upper.y,primitives[i].upper.z);
   }
 
   Vec3fa dxdydz = (box.upper - box.lower) / 4.0f;
@@ -192,8 +192,8 @@ void splitNode(NodeRef* node, size_t split_axis, const BuildPrimitive* primitive
       if( inside(boxes[j], p.center()) ){
 	placed = true;
 	tn[j].prims.push_back(p);
-	tn[j].box.update(p.lower_x, p.lower_y, p.lower_z);
-	tn[j].box.update(p.upper_x, p.upper_y, p.upper_z);
+	tn[j].box.update(p.lower.x, p.lower.y, p.lower.z);
+	tn[j].box.update(p.upper.x, p.upper.y, p.upper.z);
 	break;
       }
     }
@@ -336,13 +336,13 @@ template <typename T> class BVHBuilder {
   }
 
   void splitFallback(const BuildStateT<T>& current, BuildStateT<T>& left, BuildStateT<T>& right) {
-    const size_t begin_id = current.prims.prims.front().primID;
-    const size_t end_id = current.prims.prims.back().primID;
+    const size_t begin_id = current.prims.prims.front().primID();
+    const size_t end_id = current.prims.prims.back().primID();
     const size_t center_id = (begin_id + end_id)/2;
 
     size_t numPrimitives = current.prims.size();
     for (size_t i = 0; i < current.prims.size(); i++) {
-      if (current.prims[i].primID < center_id) {
+      if (current.prims[i].primID() < center_id) {
 	left.prims.push_back(current.prims[i]);
       }
       else {
@@ -461,8 +461,8 @@ template <typename T> class BVHBuilder {
     AANode* aanode = new AANode();
     AABB box((float)inf, (float)neg_inf);
     for(size_t i = 0; i < numPrimitives; i++) {
-      box.update(primitives[i].lower_x,primitives[i].lower_y,primitives[i].lower_z);
-      box.update(primitives[i].upper_x,primitives[i].upper_y,primitives[i].upper_z);
+      box.update(primitives[i].lower.x,primitives[i].lower.y,primitives[i].lower.z);
+      box.update(primitives[i].upper.x,primitives[i].upper.y,primitives[i].upper.z);
     }
 
     // increment depth and recur here

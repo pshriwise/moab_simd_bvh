@@ -82,7 +82,7 @@ template <typename T> class BVHIntersectorT {
 	    T p = prims[i];
 	    if( p.intersect(vray, hit) && (ray.tfar > hit) ) {
 	      ray.tfar = hit;
-	      ray.primID = p.primID;
+	      ray.primID = p.primID();
 	    }
 	  }
 	}
