@@ -1,0 +1,9 @@
+
+
+
+ADD_EXECUTABLE(moab_loader moab_loader.cpp ${SRC_FILES})
+
+TARGET_LINK_LIBRARIES(moab_loader ${MOAB_LIBRARIES})
+
+
+INSTALL(TARGETS moab_loader DESTINATION $INSTALL_DIR)
