@@ -3,6 +3,7 @@
 #include <set>
 #include "Primitive.h"
 #include "BuildState.h"
+#include "Node.h"
 
 enum BuildQuality {
   BUILD_QUALITY_LOW = 0,
@@ -355,13 +356,13 @@ template <typename T> class BVHBuilder {
   
   NodeRef* createLargeLeaf(BuildStateT<T>& current) {
     
-    if(current.depth > maxDepth) {
-      std::cerr << "Maximum depth reached" << std::endl;
-      std::cerr << "Current depth: " << current.depth << std::endl;
-      std::cerr << "Maximum allowed depth: " << maxDepth << std::endl;
-      std::cerr << "Number of primitives remaining: " << current.size() << std::endl;
-      assert(false);
-    }
+    /* if(current.depth > maxDepth) { */
+    /*   std::cerr << "Maximum depth reached" << std::endl; */
+    /*   std::cerr << "Current depth: " << current.depth << std::endl; */
+    /*   std::cerr << "Maximum allowed depth: " << maxDepth << std::endl; */
+    /*   std::cerr << "Number of primitives remaining: " << current.size() << std::endl; */
+    /*   assert(false); */
+    /* } */
 
     if (current.size() <= maxLeafSize) {
       if (current.size() > largest_leaf_size) largest_leaf_size = current.size();
