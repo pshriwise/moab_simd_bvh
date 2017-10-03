@@ -2,7 +2,6 @@ PROJECT(MOAB_SIMD_BVH)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
-
 # Allow use of find_package(HDF5), find_package(MOAB), etc.
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_LIST_DIR}/cmake)
 
@@ -30,6 +29,10 @@ LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 #INCLUDE(UseBackportedModules)
 
 SET(INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/bin)
+SET(TEST_DIR ${CMAKE_INSTALL_PREFIX}/tests)
+
+# make test file location global
+SET(TEST_FILES_DIR CACHE INTERNAL "Test File Location" FORCE)
 
 INCLUDE_DIRECTORIES(${MOAB_INCLUDE_DIRS})
 
@@ -45,6 +48,7 @@ LIST(APPEND TEST_FILES "traverse")
 LIST(APPEND TEST_FILES "builder")
 LIST(APPEND TEST_FILES "buildrecord")
 LIST(APPEND TEST_FILES "buildset")
+LIST(APPEND TEST_FILES "moab_mesh")
 
 ADD_SUBDIRECTORY(tests)
 
@@ -58,6 +62,10 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
     LIST(APPEND LCOV_MERGE_NAMES -a test_${TEST_NAME}_coverage.info)
   ENDFOREACH()
 ENDIF()
+
+#setup_target_for_coverage( NAME test_moab_mesh_coverage EXECUTABLE test_moab_mesh )
+#LIST(APPEND TEST_NAMES test_moab_mesh_coverage)
+#LIST(APPEND LCOV_MERGE_NAMES -a test_moab_mesh_coverage.info)
 
 IF(CMAKE_BUILD_TYPE STREQUAL "Coverage")
   ADD_CUSTOM_TARGET(test_coverage DEPENDS ${TEST_NAMES})
