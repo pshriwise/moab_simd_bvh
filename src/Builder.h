@@ -1,4 +1,6 @@
 
+#pragma once
+
 #include <vector>
 #include <set>
 #include "Primitive.h"
@@ -93,12 +95,12 @@ void sortPrimitives(const int dim, const float coord,
 }
 
 
-
+template <typename T>
 struct TempNode {
   AABB box;
-  std::vector<BuildPrimitive> prims;
+  std::vector<T> prims;
 
-  inline TempNode (AABB& b, std::vector<BuildPrimitive>& p) : box(b), prims(p) {}
+  inline TempNode (AABB& b, std::vector<T>& p) : box(b), prims(p) {}
   
   inline TempNode() : box(AABB((float)inf,(float)neg_inf)) {}
 
@@ -114,170 +116,10 @@ struct TempNode {
   void clear() { box.clear(); prims.clear(); }
 };
 
+typedef TempNode<BuildPrimitive> TempNodeBP;
 
 
 
-void splitNode(NodeRef* node, size_t split_axis, const BuildPrimitive* primitives, const size_t numPrimitives, TempNode tn[N]) {
-
-  assert(split_axis >= 0 && split_axis <= 2);
-
-  //get the bounds of the node
-  AABB box((float)inf,(float)neg_inf);
-  for(size_t i=0; i<numPrimitives; i++) {
-    box.update(primitives[i].lower.x,primitives[i].lower.y,primitives[i].lower.z);
-    box.update(primitives[i].upper.x,primitives[i].upper.y,primitives[i].upper.z);
-  }
-
-  Vec3fa dxdydz = (box.upper - box.lower) / 4.0f;
-
-  //create new child bounds
-  vfloat4 bounds[6];
-  
-  bounds[0] = vfloat4(box.lower[0]); // lower x
-  bounds[1] = vfloat4(box.upper[0]); // upper x
-  bounds[2] = vfloat4(box.lower[1]); // lower y
-  bounds[3] = vfloat4(box.upper[1]); // upper y
-  bounds[4] = vfloat4(box.lower[2]); // lower z
-  bounds[5] = vfloat4(box.upper[2]); // upper z
-
-  float lb = box.lower[split_axis];
-  float delta = dxdydz[split_axis];
-  bounds[2*split_axis] = vfloat4(lb, lb + delta, lb + 2*delta, lb + 3*delta);
-  bounds[2*split_axis+1] = vfloat4(lb + delta, lb + 2*delta, lb + 3*delta, lb + 4*delta);
-
-  AABB boxes[N];
-
-	 
-  boxes[0] = AABB(bounds[0][0],
-		   bounds[2][0],
-		   bounds[4][0],
-		   bounds[1][0],
-		   bounds[3][0],
-		   bounds[5][0]);
-  boxes[1] = AABB(bounds[0][1],
-		   bounds[2][1],
-		   bounds[4][1],
-		   bounds[1][1],
-		   bounds[3][1],
-		   bounds[5][1]);
-  boxes[2] = AABB(bounds[0][2],
-		   bounds[2][2],
-		   bounds[4][2],
-		   bounds[1][2],
-		   bounds[3][2],
-		   bounds[5][2]);
-  boxes[3] = AABB(bounds[0][3],
-		   bounds[2][3],
-		   bounds[4][3],
-		   bounds[1][3],
-		   bounds[3][3],
-		   bounds[5][3]);
-
-  tn[0].clear();
-  tn[1].clear();
-  tn[2].clear();
-  tn[3].clear();
-
-  /* tn[0] = TempNode(); */
-  /* tn[1] = TempNode(); */
-  /* tn[2] = TempNode(); */
-  /* tn[3] = TempNode(); */
-  
-  // sort primitives into boxes by their centroid
-  for(size_t i = 0; i < numPrimitives; i++) {
-    BuildPrimitive p = primitives[i];
-    bool placed = false;
-    for(size_t j = 0; j < 4 ; j++) {
-      // if the centroid is in the box, place it there
-      if( inside(boxes[j], p.center()) ){
-	placed = true;
-	tn[j].prims.push_back(p);
-	tn[j].box.update(p.lower.x, p.lower.y, p.lower.z);
-	tn[j].box.update(p.upper.x, p.upper.y, p.upper.z);
-	break;
-      }
-    }
-    assert(placed);
-  }
-
-}
-
-
-void splitNode(NodeRef* node, const BuildPrimitive* primitives, const size_t numPrimitives, TempNode tempNodes[N]) {
-
-  // split node along each axis
-  float max_cost = 2.0;
-  float min_cost = 0.0;
-  
-  float best_cost = max_cost;
-  int best_dim = -1;
-  float cost;
-
-  AANode* this_node = node->node();
-
-  AABB node_box = this_node->bounds();
-  
-  // split along each axis and get lowest cost
-  for(size_t i = 0; i < 3; i++) {
-    splitNode(node, i, primitives, numPrimitives, tempNodes);
-    //compute the SAH cost of this node split
-    cost = tempNodes[0].sah_contribution() +
-           tempNodes[1].sah_contribution() +
-           tempNodes[2].sah_contribution() +
-           tempNodes[3].sah_contribution();
-    cost /= area(node_box)*(float)numPrimitives;
-
-    assert(cost >= min_cost && cost <= max_cost);
-    // update cost
-    if (cost < best_cost) {
-      best_cost = cost;
-      best_dim = i;
-    }
-  }
-
-  assert(best_dim != -1);
-
-  splitNode(node, best_dim, primitives, numPrimitives, tempNodes);
-
-  vfloat4 low_x, upp_x,
-          low_y, upp_y,
-          low_z, upp_z;
-
-  low_x = vfloat4(tempNodes[0].box.lower.x,
-		  tempNodes[1].box.lower.x,
-		  tempNodes[2].box.lower.x,
-		  tempNodes[3].box.lower.x);
-  low_y = vfloat4(tempNodes[0].box.lower.y,
-		  tempNodes[1].box.lower.y,
-		  tempNodes[2].box.lower.y,
-		  tempNodes[3].box.lower.y);
-  low_z = vfloat4(tempNodes[0].box.lower.z,
-		  tempNodes[1].box.lower.z,
-		  tempNodes[2].box.lower.z,
-		  tempNodes[3].box.lower.z);
-  upp_x = vfloat4(tempNodes[0].box.upper.x,
-		  tempNodes[1].box.upper.x,
-		  tempNodes[2].box.upper.x,
-		  tempNodes[3].box.upper.x);
-  upp_y = vfloat4(tempNodes[0].box.upper.y,
-		  tempNodes[1].box.upper.y,
-		  tempNodes[2].box.upper.y,
-		  tempNodes[3].box.upper.y);
-  upp_z = vfloat4(tempNodes[0].box.upper.z,
-		  tempNodes[1].box.upper.z,
-		  tempNodes[2].box.upper.z,
-		  tempNodes[3].box.upper.z);
-
-  this_node->set(low_x,upp_x,
-		 low_y,upp_y,
-		 low_z,upp_z);
-  return;
-  
-}
-
-void* create_leaf(BuildPrimitive *primitives, size_t numPrimitives) {
-  return (void*) encodeLeaf((void*)primitives, numPrimitives - 1);
-}
 
 struct PrimRef{
   inline PrimRef () {}
@@ -313,22 +155,189 @@ struct PrimRef{
 };
 
 
+void* create_leaf(BuildPrimitive* primitives, size_t numPrimitives) {
+  return (void*) encodeLeaf((void*)primitives, numPrimitives - 1);
+  }
+
 
 template <typename T> class BVHBuilder {
 
  public:
-  inline BVHBuilder(createLeafFunc createLeaf) : maxLeafSize(8), depth(0), maxDepth(1024), createLeaf(createLeaf), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0) {}
+  inline BVHBuilder(createLeafFunc createLeaf) : maxLeafSize(8), depth(0), maxDepth(1024), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0) {}
   
  private:
   size_t maxLeafSize;
   size_t depth;
   size_t maxDepth;
-  createLeafFunc createLeaf;
   size_t largest_leaf_size, smallest_leaf_size;
   size_t numLeaves;
   
  public:
 
+
+  void* createLeaf(T* primitives, size_t numPrimitives) {
+  return (void*) encodeLeaf((void*)primitives, numPrimitives - 1);
+  }
+
+  void splitNode(NodeRef* node, size_t split_axis, const T* primitives, const size_t numPrimitives, TempNode<T> tn[N]) {
+
+    assert(split_axis >= 0 && split_axis <= 2);
+
+    //get the bounds of the node
+    AABB box((float)inf,(float)neg_inf);
+    for(size_t i=0; i<numPrimitives; i++) {
+      box.update(primitives[i].lower.x,primitives[i].lower.y,primitives[i].lower.z);
+      box.update(primitives[i].upper.x,primitives[i].upper.y,primitives[i].upper.z);
+    }
+
+    Vec3fa dxdydz = (box.upper - box.lower) / 4.0f;
+
+    //create new child bounds
+    vfloat4 bounds[6];
+  
+    bounds[0] = vfloat4(box.lower[0]); // lower x
+    bounds[1] = vfloat4(box.upper[0]); // upper x
+    bounds[2] = vfloat4(box.lower[1]); // lower y
+    bounds[3] = vfloat4(box.upper[1]); // upper y
+    bounds[4] = vfloat4(box.lower[2]); // lower z
+    bounds[5] = vfloat4(box.upper[2]); // upper z
+
+    float lb = box.lower[split_axis];
+    float delta = dxdydz[split_axis];
+    bounds[2*split_axis] = vfloat4(lb, lb + delta, lb + 2*delta, lb + 3*delta);
+    bounds[2*split_axis+1] = vfloat4(lb + delta, lb + 2*delta, lb + 3*delta, lb + 4*delta);
+
+    AABB boxes[N];
+
+	 
+    boxes[0] = AABB(bounds[0][0],
+		    bounds[2][0],
+		    bounds[4][0],
+		    bounds[1][0],
+		    bounds[3][0],
+		    bounds[5][0]);
+    boxes[1] = AABB(bounds[0][1],
+		    bounds[2][1],
+		    bounds[4][1],
+		    bounds[1][1],
+		    bounds[3][1],
+		    bounds[5][1]);
+    boxes[2] = AABB(bounds[0][2],
+		    bounds[2][2],
+		    bounds[4][2],
+		    bounds[1][2],
+		    bounds[3][2],
+		    bounds[5][2]);
+    boxes[3] = AABB(bounds[0][3],
+		    bounds[2][3],
+		    bounds[4][3],
+		    bounds[1][3],
+		    bounds[3][3],
+		    bounds[5][3]);
+
+    tn[0].clear();
+    tn[1].clear();
+    tn[2].clear();
+    tn[3].clear();
+
+    /* tn[0] = TempNode(); */
+    /* tn[1] = TempNode(); */
+    /* tn[2] = TempNode(); */
+    /* tn[3] = TempNode(); */
+  
+    // sort primitives into boxes by their centroid
+    for(size_t i = 0; i < numPrimitives; i++) {
+      T p = primitives[i];
+      bool placed = false;
+      for(size_t j = 0; j < 4 ; j++) {
+	// if the centroid is in the box, place it there
+	if( inside(boxes[j], p.center()) ){
+	  placed = true;
+	  tn[j].prims.push_back(p);
+	  tn[j].box.update(p.lower.x, p.lower.y, p.lower.z);
+	  tn[j].box.update(p.upper.x, p.upper.y, p.upper.z);
+	  break;
+	}
+      }
+      assert(placed);
+    }
+
+  }
+
+
+  void splitNode(NodeRef* node, const T* primitives, const size_t numPrimitives, TempNode<T> tempNodes[N]) {
+
+    // split node along each axis
+    float max_cost = 2.0;
+    float min_cost = 0.0;
+  
+    float best_cost = max_cost;
+    int best_dim = -1;
+    float cost;
+
+    AANode* this_node = node->node();
+
+    AABB node_box = this_node->bounds();
+  
+    // split along each axis and get lowest cost
+    for(size_t i = 0; i < 3; i++) {
+      splitNode(node, i, primitives, numPrimitives, tempNodes);
+      //compute the SAH cost of this node split
+      cost = tempNodes[0].sah_contribution() +
+	tempNodes[1].sah_contribution() +
+	tempNodes[2].sah_contribution() +
+	tempNodes[3].sah_contribution();
+      cost /= area(node_box)*(float)numPrimitives;
+
+      assert(cost >= min_cost && cost <= max_cost);
+      // update cost
+      if (cost < best_cost) {
+	best_cost = cost;
+	best_dim = i;
+      }
+    }
+
+    assert(best_dim != -1);
+
+    splitNode(node, best_dim, primitives, numPrimitives, tempNodes);
+
+    vfloat4 low_x, upp_x,
+      low_y, upp_y,
+      low_z, upp_z;
+
+    low_x = vfloat4(tempNodes[0].box.lower.x,
+		    tempNodes[1].box.lower.x,
+		    tempNodes[2].box.lower.x,
+		    tempNodes[3].box.lower.x);
+    low_y = vfloat4(tempNodes[0].box.lower.y,
+		    tempNodes[1].box.lower.y,
+		    tempNodes[2].box.lower.y,
+		    tempNodes[3].box.lower.y);
+    low_z = vfloat4(tempNodes[0].box.lower.z,
+		    tempNodes[1].box.lower.z,
+		    tempNodes[2].box.lower.z,
+		    tempNodes[3].box.lower.z);
+    upp_x = vfloat4(tempNodes[0].box.upper.x,
+		    tempNodes[1].box.upper.x,
+		    tempNodes[2].box.upper.x,
+		    tempNodes[3].box.upper.x);
+    upp_y = vfloat4(tempNodes[0].box.upper.y,
+		    tempNodes[1].box.upper.y,
+		    tempNodes[2].box.upper.y,
+		    tempNodes[3].box.upper.y);
+    upp_z = vfloat4(tempNodes[0].box.upper.z,
+		    tempNodes[1].box.upper.z,
+		    tempNodes[2].box.upper.z,
+		    tempNodes[3].box.upper.z);
+
+    this_node->set(low_x,upp_x,
+		   low_y,upp_y,
+		   low_z,upp_z);
+    return;
+  
+  }
+
+  
   void stats () { std::cout << "Depth: " << depth << std::endl;
     std::cout << "Largest leaf: " << largest_leaf_size << std::endl;
     std::cout <<  "Smallest leaf: " << smallest_leaf_size << std::endl;
@@ -468,7 +477,7 @@ template <typename T> class BVHBuilder {
     // increment depth and recur here
     aanode->setBounds(box);
     NodeRef* this_node = new NodeRef((size_t)aanode);
-    TempNode tempNodes[4];
+    TempNode<T> tempNodes[4];
     splitNode(this_node, primitives, numPrimitives, tempNodes);
     
     for(size_t i = 0; i < N ; i++){
@@ -486,3 +495,4 @@ template <typename T> class BVHBuilder {
 };
 
 typedef BVHBuilder<BuildPrimitive> BuildPrimitiveBVH;
+

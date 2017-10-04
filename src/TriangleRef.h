@@ -1,19 +1,20 @@
-
+#pragma once
 
 #include "Primitive.h"
 
 #include "moab/Core.hpp"
+#include "moab/CartVect.hpp"
 
 struct TriangleRef : public BuildPrimitive {
   using::BuildPrimitive::lower;
   using::BuildPrimitive::upper;
   
-  inline TriangleRef(long unsigned int tri_handle): eh(tri_handle) {}
+  inline TriangleRef(long unsigned int tri_handle): eh(tri_handle){}
 
-  inline TriangleRef(long unsigned int tri_handle, moab::Interface* mbi): eh(tri_handle) { set_bounds(); }
-
+  inline TriangleRef(long unsigned int tri_handle, moab::Interface* mbi): eh(tri_handle) { set_bounds(mbi); }
 
   inline void set_bounds(moab::Interface * mbi) {
+    
     std::vector<moab::EntityHandle> conn;
     moab::ErrorCode rval = mbi->get_connectivity(&eh, 1, conn);
     MB_CHK_SET_ERR_RET(rval, "Failed to get triangle connectivity.");
@@ -38,6 +39,6 @@ struct TriangleRef : public BuildPrimitive {
   
   long unsigned int eh;
 
-}
+};
   
   

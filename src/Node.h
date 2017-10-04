@@ -41,8 +41,7 @@ struct NodeRef {
   inline void* leaf(size_t& num) const {
     assert(isLeaf());
     num = 1 + (ptr & (items_mask))-tyLeaf;
-    BuildPrimitive* p = (BuildPrimitive*)(ptr & ~(size_t)align_mask);
-    return (void*) p;
+    return (void*) (ptr & ~(size_t)align_mask);
   }
   
   /* inline char* leaf(size_t& num) const { */

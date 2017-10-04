@@ -23,7 +23,8 @@ LIST(APPEND HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Stack.h
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Intersector.h
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Builder.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/TriangleRef.h)
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/TriangleRef.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/MBVH.h)
 
 
 

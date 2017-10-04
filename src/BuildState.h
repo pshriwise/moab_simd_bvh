@@ -7,7 +7,6 @@
 #include "Primitive.h"
 
 
-
 template<typename T>
 struct BuildBuildSetT{
   
