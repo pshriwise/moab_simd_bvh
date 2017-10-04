@@ -9,9 +9,16 @@ struct TriangleRef : public BuildPrimitive {
   using::BuildPrimitive::lower;
   using::BuildPrimitive::upper;
   
-  inline TriangleRef(long unsigned int tri_handle): eh(tri_handle){}
+  inline TriangleRef(long unsigned int tri_handle): eh(tri_handle){ set_primID(eh); }
 
-  inline TriangleRef(long unsigned int tri_handle, moab::Interface* mbi): eh(tri_handle) { set_bounds(mbi); }
+  inline TriangleRef(long unsigned int tri_handle, moab::Interface* mbi): eh(tri_handle) { set_bounds(mbi); set_primID(eh); }
+
+    friend bool operator< (const TriangleRef& a, const TriangleRef& b) { return a.eh < b.eh; }
+
+  friend bool operator!= (const TriangleRef& a, const TriangleRef& b) { return a.eh != b.eh; }
+
+  friend bool operator== (const TriangleRef& a, const TriangleRef& b) { return a.eh == b.eh; }
+
 
   inline void set_bounds(moab::Interface * mbi) {
     
