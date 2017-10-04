@@ -13,6 +13,8 @@
 #include "Intersector.h"
 #include "MBVH.h"
 
+#include "testutil.hpp"
+
 static const float PI = acos(-1.0);
 static const float denom = 1.0 / ((float) RAND_MAX);
 static const float denomPI = PI * denom;
@@ -28,7 +30,7 @@ inline void RNDVEC(Vec3fa& uvw, float &az)
 }
 
 moab::ErrorCode test_file(std::string filename) {
-    moab::Interface* mbi = new moab::Core();
+  moab::Interface* mbi = new moab::Core();
   
   moab::ErrorCode rval;
   
@@ -73,26 +75,82 @@ moab::ErrorCode test_file(std::string filename) {
     Vec3fa dir;
     
     RNDVEC(dir, angle);
-  
+    dir.normalize();
+    
     Ray r = Ray(org, dir, 0.0, inf);
     
     TINT.intersectRay(*root, r);
-  
-    assert(r.tfar < inf);
+
+    if(r.tfar >= (float)inf) {
+      std::cout << r << std::endl;
+    }
+    
+    CHECK(r.tfar < (float)inf);
     
   }
 
  delete mbi;
  delete root;
- 
+
+}
+
+moab::ErrorCode test_cube() {
+  
+  moab::Interface* mbi = new moab::Core();
+  
+  moab::ErrorCode rval;
+  
+  rval = mbi->load_file(TEST_CUBE);
+  MB_CHK_SET_ERR(rval, "Failed to load test file");
+
+  moab::Range all_tris;
+
+  rval = mbi->get_entities_by_type(0, moab::MBTRI, all_tris, true);
+  MB_CHK_SET_ERR(rval, "Failed to get all triangles in the model");
+
+  std::vector<TriangleRef> tris;
+
+  moab::Range::iterator i;
+  int counter = 0;
+  for(i = all_tris.begin(); i != all_tris.end(); i++) {
+
+    moab::EntityHandle tri = *i;
+
+    TriangleRef t = TriangleRef(tri, mbi);
+    
+    tris.push_back(t);
+    
+  }
+
+
+  TriangleBVH TBVH(create_leaf);
+
+  BuildSettings settings;
+  
+  BuildStateTri bs = BuildStateTri(0, tris);
+
+  NodeRef* root = TBVH.Build(settings, bs);
+
+  Vec3fa org(0.0,0.0,0.0);
+  Vec3fa dir(1.0,0.0,0.0);
+
+  Ray ray(org, dir, 0.0, inf);
+  
+  TriIntersector TINT;
+
+  TINT.intersectRay(*root, ray);
+  
+  CHECK_REAL_EQUAL(ray.tfar, 5.0f, 1e-6);
+  
 }
 
 int main(int argc, char** argv) {
 
   int num_fails = 0;
-  num_fails += test_file(TEST_SPHERE);
   num_fails += test_file(TEST_CUBE);
-
+  num_fails += test_cube();
+  num_fails += test_file(TEST_SPHERE);
+  
 return num_fails;
 
 }
