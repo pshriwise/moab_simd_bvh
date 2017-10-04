@@ -70,10 +70,10 @@ moab::ErrorCode test_file(std::string filename) {
   Vec3fa org(0.0, 0.0, 0.0);
 
   float angle = 2*PI;
-  int num_rand_rays = 1E4;
-  for(unsigned int i = 0; i < num_rand_rays; i++) {    
-    Vec3fa dir;
+  int num_rand_rays = 1E3;
+  for(unsigned int i = 0; i < num_rand_rays; i++) {
     
+    Vec3fa dir;    
     RNDVEC(dir, angle);
     dir.normalize();
     
@@ -82,6 +82,7 @@ moab::ErrorCode test_file(std::string filename) {
     TINT.intersectRay(*root, r);
 
     if(r.tfar >= (float)inf) {
+      std::cout << "Ray number: " << i << std::endl;
       std::cout << r << std::endl;
     }
     
@@ -131,25 +132,46 @@ moab::ErrorCode test_cube() {
 
   NodeRef* root = TBVH.Build(settings, bs);
 
+  TriIntersector TINT;
+
   Vec3fa org(0.0,0.0,0.0);
   Vec3fa dir(1.0,0.0,0.0);
 
   Ray ray(org, dir, 0.0, inf);
   
-  TriIntersector TINT;
-
   TINT.intersectRay(*root, ray);
   
   CHECK_REAL_EQUAL(ray.tfar, 5.0f, 1e-6);
+
+  dir = Vec3fa(0.0,1.0,0.0);
+
+  ray = Ray(org, dir, 0.0, inf);
   
+  TINT.intersectRay(*root, ray);
+  
+  CHECK_REAL_EQUAL(ray.tfar, 5.0f, 1e-6);
+
+  dir = Vec3fa(0.0,0.0,1.0);
+
+  ray = Ray(org, dir, 0.0, inf);
+  
+  TINT.intersectRay(*root, ray);
+  
+  CHECK_REAL_EQUAL(ray.tfar, 5.0f, 1e-6);
+
+  delete mbi;
+  delete root;
 }
 
 int main(int argc, char** argv) {
 
   int num_fails = 0;
+  std::cout << "General test for cube model..." << std::endl;
   num_fails += test_file(TEST_CUBE);
+  std::cout << "Specific test for cube model..." << std::endl;
   num_fails += test_cube();
-  num_fails += test_file(TEST_SPHERE);
+  std::cout << "General test for sphere model..." << std::endl;
+  //  num_fails += test_file(TEST_SPHERE);
   
 return num_fails;
 

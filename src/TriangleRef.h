@@ -39,18 +39,18 @@ struct TriangleRef : public BuildPrimitive {
     const float round_up   = 1.0f+2.0f*float(ulp);
 
     upper.x = std::max(coords[0][0],std::max(coords[1][0], coords[2][0]));
-    upper.x *= round_up;
+    upper.x += 1.0;
     upper.y = std::max(coords[0][1],std::max(coords[1][1], coords[2][1]));
-    upper.y *= round_up;
+    upper.y += 1.0;
     upper.z = std::max(coords[0][2],std::max(coords[1][2], coords[2][2]));
-    upper.z *= round_up;
+    upper.z += 1.0;
     
     lower.x = std::min(coords[0][0],std::min(coords[1][0], coords[2][0]));
-    lower.x *= round_down;
+    lower.x -= 1.0;
     lower.y = std::min(coords[0][1],std::min(coords[1][1], coords[2][1]));
-    lower.y *= round_down;
+    lower.y -= 1.0;
     lower.z = std::min(coords[0][2],std::min(coords[1][2], coords[2][2]));
-    lower.z *= round_down;
+    lower.z -= 1.0;
     	
 
     
