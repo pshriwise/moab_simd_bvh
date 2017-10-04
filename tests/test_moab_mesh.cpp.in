@@ -49,18 +49,22 @@ int main(int argc, char** argv) {
 
   NodeRef* root = TBVH.Build(settings, bs);
 
-  // Vec3fa org(0.0, 0.0, 0.0);
-  // Vec3fa dir(1.0, 0.0, 0.0);
+  Vec3fa org(0.0, 0.0, 0.0);
+  Vec3fa dir(1.0, 0.0, 0.0);
 
-  // Ray r = Ray(org, dir, 0.0, inf);
+  Ray r = Ray(org, dir, 0.0, inf);
 
+  TriIntersector TINT;
+
+  TINT.intersectRay(*root, r);
+  
   // BuildPrimitiveIntersector BPINT;
 
   // BPINT.intersectRay(*root, r);
   
-  // assert(r.tfar < inf);
+  assert(r.tfar < inf);
 
-  // std::cout << r << std::endl;
+  std::cout << r << std::endl;
   
 return 0;
 
