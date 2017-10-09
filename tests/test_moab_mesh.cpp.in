@@ -70,7 +70,7 @@ moab::ErrorCode test_file(std::string filename) {
   Vec3fa org(0.0, 0.0, 0.0);
 
   float angle = 2*PI;
-  int num_rand_rays = 1E3;
+  int num_rand_rays = 1E4;
   for(unsigned int i = 0; i < num_rand_rays; i++) {
     
     Vec3fa dir;    
@@ -166,12 +166,15 @@ moab::ErrorCode test_cube() {
 int main(int argc, char** argv) {
 
   int num_fails = 0;
-  std::cout << "General test for cube model..." << std::endl;
+  std::cout << "General test for cube model...";
   num_fails += test_file(TEST_CUBE);
-  std::cout << "Specific test for cube model..." << std::endl;
+  std::cout << "done" << std::endl;
+  std::cout << "Specific test for cube model...";
   num_fails += test_cube();
-  std::cout << "General test for sphere model..." << std::endl;
-  //  num_fails += test_file(TEST_SPHERE);
+  std::cout << "done" << std::endl;
+  // std::cout << "General test for sphere model...";
+  // num_fails += test_file(TEST_SPHERE);
+  // std::cout << "done" << std::endl;
   
 return num_fails;
 
