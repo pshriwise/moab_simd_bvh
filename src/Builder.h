@@ -163,7 +163,7 @@ void* create_leaf(BuildPrimitive* primitives, size_t numPrimitives) {
 template <typename T> class BVHBuilder {
 
  public:
-  inline BVHBuilder(createLeafFunc createLeaf) : maxLeafSize(8), depth(0), maxDepth(1024), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0) {}
+  inline BVHBuilder(createLeafFunc createLeaf) : maxLeafSize(8), depth(0), maxDepth(BVH_MAX_DEPTH), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0) {}
   
  private:
   size_t maxLeafSize;
