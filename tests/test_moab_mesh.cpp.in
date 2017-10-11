@@ -1,7 +1,8 @@
-
+ 
 
 #define TEST_SPHERE "${CMAKE_CURRENT_BINARY_DIR}/test_files/sphere.h5m"
 #define TEST_CUBE "${CMAKE_CURRENT_BINARY_DIR}/test_files/cube.h5m"
+#define TEST_3K_CUBE "${CMAKE_CURRENT_BINARY_DIR}/test_files/3k-tri-cube.h5m"
 
 #include "assert.h"
 
@@ -55,7 +56,6 @@ moab::ErrorCode test_file(std::string filename) {
     tris.push_back(t);
     
   }
-
 
   TriangleBVH TBVH(create_leaf);
 
@@ -168,6 +168,9 @@ int main(int argc, char** argv) {
   int num_fails = 0;
   std::cout << "General test for cube model...";
   num_fails += test_file(TEST_CUBE);
+  std::cout << "done" << std::endl;
+  std::cout << "General test for 3K triangle cube model...";
+  num_fails += test_file(TEST_3K_CUBE);
   std::cout << "done" << std::endl;
   std::cout << "Specific test for cube model...";
   num_fails += test_cube();
