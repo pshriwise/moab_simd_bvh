@@ -10,6 +10,11 @@
 #include "Stack.h"
 #include "Primitive.h"
 
+//#define VERBOSE_MODE
+
+#ifdef VERBOSE_MODE
+  #include <bitset>
+#endif
 
 template <typename T> class BVHIntersectorT {
   
@@ -43,12 +48,14 @@ template <typename T> class BVHIntersectorT {
     vfloat4 ray_far = std::max(ray.tfar, 0.0f);
 
     BVHTraverser nodeTraverser;
+    new (&nodeTraverser) BVHTraverser();
   
     while (true) pop:
       {
 	if(stackPtr == stack) break;
 	stackPtr--;
 	NodeRef cur = NodeRef(stackPtr->ptr);
+
 
 	// if the ray doesn't reach this node, move to next
 	if(*(float*)&stackPtr->dist > ray.tfar) { continue; }
@@ -57,8 +64,23 @@ template <typename T> class BVHIntersectorT {
       
 	while (true)
 	  {
-	    size_t mask; vfloat4 tNear;
+	    size_t mask = 0; vfloat4 tNear(inf);
 	    bool nodeIntersected = intersect(cur, vray, ray_near, ray_far, tNear, mask);
+#ifdef VERBOSE_MODE
+	    AANode* curaa = cur.node();
+	    if( !cur.isEmpty() ) std::cout << curaa->bounds() << std::endl;
+	    else std::cout << "EMPTY NODE" << std::endl;
+	    
+	    if (nodeIntersected) {
+	      std::cout << "INTERIOR NODE" << std::endl;
+	      std::cout << std::bitset<4>(mask) << std::endl;
+	      std::cout << "Distances to hit: " << tNear << std::endl;
+	    }
+	    else
+	      std::cout << "LEAF NODE" << std::endl;
+	    std::cout << std::endl;
+#endif
+
 	    // if no intersection, this is a leaf - check primitives
 	    if (!nodeIntersected) {
 	      // temporary setting of ray values
@@ -83,9 +105,14 @@ template <typename T> class BVHIntersectorT {
 	    if( p.intersect(vray, hit) && (ray.tfar > hit) ) {
 	      ray.tfar = hit;
 	      ray.primID = p.primID();
+#ifdef VERBOSE_MODE
+	      std::cout << "Updating distance to: " << hit << std::endl;
+#endif
 	    }
 	  }
 	}
+
+	
       
       }
     return;

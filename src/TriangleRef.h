@@ -72,7 +72,7 @@ struct TriangleRef : public BuildPrimitive {
     
     rval = mbi->get_coords(&(conn[0]), 3, coords[0].array() );
     MB_CHK_SET_ERR_CONT(rval, "Failed to get triangle vert coords");
-
+    
     moab::CartVect origin, direction;
 
     origin = moab::CartVect(ray.org.x, ray.org.y, ray.org.z);
@@ -88,6 +88,13 @@ struct TriangleRef : public BuildPrimitive {
 							 nonneg_ray_len);
 
     if (hit) { nearest_hit = dist; }
+
+#ifdef VERBOSE_MODE
+    std::cout << *this;
+    std::cout << "Triangle Vert Coords: " << coords[0] << coords[1] << coords[2] << std::endl;
+    if (hit) std::cout << "Hit found at distance: " << dist << std::endl;
+    std::cout << std::endl;
+#endif
 
     return hit;
     

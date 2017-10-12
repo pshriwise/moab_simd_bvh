@@ -7,6 +7,8 @@
 #include "BuildState.h"
 #include "Node.h"
 
+#define VERBOSE_MODE
+
 enum BuildQuality {
   BUILD_QUALITY_LOW = 0,
   BUILD_QUALITY_NORMAL = 1,
@@ -195,12 +197,12 @@ template <typename T> class BVHBuilder {
     //create new child bounds
     vfloat4 bounds[6];
   
-    bounds[0] = vfloat4(box.lower[0]); // lower x
-    bounds[1] = vfloat4(box.upper[0]); // upper x
-    bounds[2] = vfloat4(box.lower[1]); // lower y
-    bounds[3] = vfloat4(box.upper[1]); // upper y
-    bounds[4] = vfloat4(box.lower[2]); // lower z
-    bounds[5] = vfloat4(box.upper[2]); // upper z
+    new (&bounds[0]) vfloat4(box.lower[0]); // lower x
+    new (&bounds[1]) vfloat4(box.upper[0]); // upper x
+    new (&bounds[2]) vfloat4(box.lower[1]); // lower y
+    new (&bounds[3]) vfloat4(box.upper[1]); // upper y
+    new (&bounds[4]) vfloat4(box.lower[2]); // lower z
+    new (&bounds[5]) vfloat4(box.upper[2]); // upper z
 
     float lb = box.lower[split_axis];
     float delta = dxdydz[split_axis];
@@ -210,40 +212,40 @@ template <typename T> class BVHBuilder {
     AABB boxes[N];
 
 	 
-    boxes[0] = AABB(bounds[0][0],
+    new (&boxes[0]) AABB(bounds[0][0],
 		    bounds[2][0],
 		    bounds[4][0],
 		    bounds[1][0],
 		    bounds[3][0],
 		    bounds[5][0]);
-    boxes[1] = AABB(bounds[0][1],
+    new (&boxes[1]) AABB(bounds[0][1],
 		    bounds[2][1],
 		    bounds[4][1],
 		    bounds[1][1],
 		    bounds[3][1],
 		    bounds[5][1]);
-    boxes[2] = AABB(bounds[0][2],
+    new (&boxes[2]) AABB(bounds[0][2],
 		    bounds[2][2],
 		    bounds[4][2],
 		    bounds[1][2],
 		    bounds[3][2],
 		    bounds[5][2]);
-    boxes[3] = AABB(bounds[0][3],
+    new (&boxes[3]) AABB(bounds[0][3],
 		    bounds[2][3],
 		    bounds[4][3],
 		    bounds[1][3],
 		    bounds[3][3],
 		    bounds[5][3]);
 
-    tn[0].clear();
-    tn[1].clear();
-    tn[2].clear();
-    tn[3].clear();
+    /* tn[0].clear(); */
+    /* tn[1].clear(); */
+    /* tn[2].clear(); */
+    /* tn[3].clear(); */
 
-    /* tn[0] = TempNode(); */
-    /* tn[1] = TempNode(); */
-    /* tn[2] = TempNode(); */
-    /* tn[3] = TempNode(); */
+    new (&tn[0]) TempNode<T>();
+    new (&tn[1]) TempNode<T>();
+    new (&tn[2]) TempNode<T>();
+    new (&tn[3]) TempNode<T>();
   
     // sort primitives into boxes by their centroid
     for(size_t i = 0; i < numPrimitives; i++) {
@@ -305,30 +307,30 @@ template <typename T> class BVHBuilder {
       low_y, upp_y,
       low_z, upp_z;
 
-    low_x = vfloat4(tempNodes[0].box.lower.x,
-		    tempNodes[1].box.lower.x,
-		    tempNodes[2].box.lower.x,
-		    tempNodes[3].box.lower.x);
-    low_y = vfloat4(tempNodes[0].box.lower.y,
-		    tempNodes[1].box.lower.y,
-		    tempNodes[2].box.lower.y,
-		    tempNodes[3].box.lower.y);
-    low_z = vfloat4(tempNodes[0].box.lower.z,
-		    tempNodes[1].box.lower.z,
-		    tempNodes[2].box.lower.z,
-		    tempNodes[3].box.lower.z);
-    upp_x = vfloat4(tempNodes[0].box.upper.x,
-		    tempNodes[1].box.upper.x,
-		    tempNodes[2].box.upper.x,
-		    tempNodes[3].box.upper.x);
-    upp_y = vfloat4(tempNodes[0].box.upper.y,
-		    tempNodes[1].box.upper.y,
-		    tempNodes[2].box.upper.y,
-		    tempNodes[3].box.upper.y);
-    upp_z = vfloat4(tempNodes[0].box.upper.z,
-		    tempNodes[1].box.upper.z,
-		    tempNodes[2].box.upper.z,
-		    tempNodes[3].box.upper.z);
+    new (&low_x) vfloat4(tempNodes[0].box.lower.x,
+			 tempNodes[1].box.lower.x,
+			 tempNodes[2].box.lower.x,
+			 tempNodes[3].box.lower.x);
+    new (&low_y) vfloat4(tempNodes[0].box.lower.y,
+			 tempNodes[1].box.lower.y,
+			 tempNodes[2].box.lower.y,
+			 tempNodes[3].box.lower.y);
+    new (&low_z) vfloat4(tempNodes[0].box.lower.z,
+			 tempNodes[1].box.lower.z,
+			 tempNodes[2].box.lower.z,
+			 tempNodes[3].box.lower.z);
+    new (&upp_x) vfloat4(tempNodes[0].box.upper.x,
+			 tempNodes[1].box.upper.x,
+			 tempNodes[2].box.upper.x,
+			 tempNodes[3].box.upper.x);
+    new (&upp_y) vfloat4(tempNodes[0].box.upper.y,
+			 tempNodes[1].box.upper.y,
+			 tempNodes[2].box.upper.y,
+			 tempNodes[3].box.upper.y);
+    new (&upp_z) vfloat4(tempNodes[0].box.upper.z,
+			 tempNodes[1].box.upper.z,
+			 tempNodes[2].box.upper.z,
+			 tempNodes[3].box.upper.z);
 
     this_node->set(low_x,upp_x,
 		   low_y,upp_y,
@@ -434,7 +436,6 @@ template <typename T> class BVHBuilder {
     
     /* create node */
     AANode* aanode = new AANode(x_min, y_min, z_min, x_max, y_max, z_max);
-
     NodeRef* node = new NodeRef((size_t)aanode);
     
     /* recurse into each child and perform reduction */
@@ -468,14 +469,18 @@ template <typename T> class BVHBuilder {
 
     // created a new node and set the bounds
     AANode* aanode = new AANode();
-    AABB box((float)inf, (float)neg_inf);
+    AABB box;
+    new (&box) AABB((float)inf, (float)neg_inf);
     for(size_t i = 0; i < numPrimitives; i++) {
-      box.update(primitives[i].lower.x,primitives[i].lower.y,primitives[i].lower.z);
-      box.update(primitives[i].upper.x,primitives[i].upper.y,primitives[i].upper.z);
+      box.update(primitives[i].lower.x, primitives[i].lower.y, primitives[i].lower.z);
+      box.update(primitives[i].upper.x, primitives[i].upper.y, primitives[i].upper.z);
     }
 
     // increment depth and recur here
     aanode->setBounds(box);
+#ifdef VERBOSE_MODE
+    std::cout << "New Node with Bounds: " << *aanode << std::endl;
+#endif
     NodeRef* this_node = new NodeRef((size_t)aanode);
     TempNode<T> tempNodes[4];
     splitNode(this_node, primitives, numPrimitives, tempNodes);
