@@ -51,9 +51,9 @@ moab::ErrorCode test_file(std::string filename) {
 
     moab::EntityHandle tri = *i;
 
-    TriangleRef t = TriangleRef(tri, mbi);
+    TriangleRef *t = new TriangleRef(tri, mbi);
     
-    tris.push_back(t);
+    tris.push_back(*t);
     
   }
 
@@ -70,10 +70,13 @@ moab::ErrorCode test_file(std::string filename) {
   Vec3fa org(0.0, 0.0, 0.0);
 
   float angle = 2*PI;
-  int num_rand_rays = 1E4;
+  
+  int num_rand_rays = 1e4;
+  
   for(unsigned int i = 0; i < num_rand_rays; i++) {
     
-    Vec3fa dir;    
+    Vec3fa dir;
+    //    dir = Vec3fa(-0.660058, 0.750736, 0.0268018);
     RNDVEC(dir, angle);
     dir.normalize();
     
