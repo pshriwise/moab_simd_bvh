@@ -10,11 +10,60 @@
 #include "Stack.h"
 #include "Primitive.h"
 
-//#define VERBOSE_MODE
+#include <vector>
+
+#define VERBOSE_MODE
 
 #ifdef VERBOSE_MODE
   #include <bitset>
 #endif
+
+struct TraversalTracker {
+  
+  std::vector<int> s;
+
+  inline TraversalTracker() { s.push_back(1); }
+
+  inline void count_hits(size_t& mask, int& hits) {
+    assert(mask <= 15 && mask >= 0);
+    
+    if(mask == 0) return;
+    size_t r = __bscf(mask);
+    hits++;
+    count_hits(mask, hits);
+    return;
+  }
+  
+  inline void down(size_t mask) {
+    assert(mask >= 0);
+
+    s.back()--;
+
+    if(mask == 0 ) return;
+    
+    int nodes_hit = 0;
+    count_hits(mask, nodes_hit);
+    s.push_back(nodes_hit);
+    
+    return;
+  }
+  
+  inline void up() {
+
+    if(s.back() == 0) {
+      s.pop_back();
+      up();
+    }
+    else{
+      return;
+    }
+  }
+
+  inline int depth() { return s.size()-1; }
+  
+};
+
+  
 
 template <typename T> class BVHIntersectorT {
   
@@ -49,23 +98,24 @@ template <typename T> class BVHIntersectorT {
 
     BVHTraverser nodeTraverser;
     new (&nodeTraverser) BVHTraverser();
-  
+
+    TraversalTracker t;
+    
     while (true) pop:
       {
 	if(stackPtr == stack) break;
 	stackPtr--;
 	NodeRef cur = NodeRef(stackPtr->ptr);
-
-
+	t.up();
+	
 	// if the ray doesn't reach this node, move to next
 	if(*(float*)&stackPtr->dist > ray.tfar) { continue; }
-      
-
-      
+        
 	while (true)
 	  {
 	    size_t mask = 0; vfloat4 tNear(inf);
 	    bool nodeIntersected = intersect(cur, vray, ray_near, ray_far, tNear, mask);
+
 #ifdef VERBOSE_MODE
 	    AANode* curaa = cur.node();
 	    if( !cur.isEmpty() ) std::cout << curaa->bounds() << std::endl;
@@ -75,6 +125,7 @@ template <typename T> class BVHIntersectorT {
 	      std::cout << "INTERIOR NODE" << std::endl;
 	      std::cout << std::bitset<4>(mask) << std::endl;
 	      std::cout << "Distances to hit: " << tNear << std::endl;
+	      std::cout << *cur.node() << std::endl;
 	    }
 	    else
 	      std::cout << "LEAF NODE" << std::endl;
@@ -87,10 +138,13 @@ template <typename T> class BVHIntersectorT {
 	      //	    ray.tnear = std::min(min(tNear),ray.tnear);
 	      //	    ray.tfar = std::min(min(tNear),ray.tfar);
 	      break; }
-	  
+
+	    t.down(mask);
 	    // if no children were hit, pop next node
 	    if (mask == 0) { goto pop; }
+	    
 
+	    
 	    nodeTraverser.traverseClosest(cur, mask, tNear, stackPtr, stackEnd);
 	  }
 
@@ -112,8 +166,6 @@ template <typename T> class BVHIntersectorT {
 	  }
 	}
 
-	
-      
       }
     return;
   }
