@@ -43,12 +43,12 @@ struct AABB {
 
   inline AABB ( const AABB& other) { lower = other.lower; upper = other.upper; }
 
-  inline void update ( const float x_val, const float y_val, const float z_val ) { lower[0] = lower[0] < x_val ? lower[0] : x_val;
-                                                                                   lower[1] = lower[1] < y_val ? lower[1] : y_val;
-										   lower[2] = lower[2] < z_val ? lower[2] : z_val;
-										   upper[0] = upper[0] > x_val ? upper[0] : x_val;
-                                                                                   upper[1] = upper[1] > y_val ? upper[1] : y_val;
-										   upper[2] = upper[2] > z_val ? upper[2] : z_val; }
+  inline void update ( const float& x_val, const float& y_val, const float& z_val ) { lower[0] = lower[0] < x_val ? lower[0] : x_val;
+                                                                                      lower[1] = lower[1] < y_val ? lower[1] : y_val;
+										      lower[2] = lower[2] < z_val ? lower[2] : z_val;
+										      upper[0] = upper[0] > x_val ? upper[0] : x_val;
+										      upper[1] = upper[1] > y_val ? upper[1] : y_val;
+										      upper[2] = upper[2] > z_val ? upper[2] : z_val; }
   
   inline void update ( const float xyz[3] )                                      { lower[0] = std::min(lower[0], xyz[0]);
                                                                                    lower[1] = std::min(lower[1], xyz[1]);
