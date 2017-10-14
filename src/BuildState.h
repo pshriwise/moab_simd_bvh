@@ -21,8 +21,8 @@ struct BuildBuildSetT{
   inline BuildBuildSetT(EmptyTy) {}
 
   inline AABB bounds() {
-    AABB* box = new AABB();
-    for(size_t i = 0; i < prims.size(); i++ ) {
+    AABB *box = new AABB();
+    for(unsigned int i = 0; i < prims.size(); i++ ) {
       box->update(prims[i].lower.x,prims[i].lower.y,prims[i].lower.z);
       box->update(prims[i].upper.x,prims[i].upper.y,prims[i].upper.z);
     }
