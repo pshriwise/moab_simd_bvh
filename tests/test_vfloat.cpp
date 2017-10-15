@@ -8,6 +8,7 @@ void test_vfloat4_constructors();
 void test_vfloat4_operators();
 void test_vfloat4_comparators();
 void test_vfloat4_methods();
+void test_vfloat4_store();
 
 int main( int argc, char** argv ) {
 
@@ -19,6 +20,8 @@ int main( int argc, char** argv ) {
   test_vfloat4_comparators();
   // common but non-standard operation tests
   test_vfloat4_methods();
+  // testing store functionality
+  test_vfloat4_store();
   
   return 0;
 }
@@ -199,5 +202,16 @@ void test_vfloat4_comparators() {
   result = (v1 >= v2);
   expected_result = vbool4(false, true, true, false);
   CHECK_VBOOLREAL_EQUAL(expected_result, result);
+
+}
+
+void test_vfloat4_store() {
+
+  float vals1[4] = {-6.0, -1.0,  2.0, -3.0};
+  float vals2[4] = { 6.0,  1.0, -2.0,  3.0};
+  
+  vfloat4 v1 = vfloat4(vals1[0],vals1[1], vals1[2], vals1[3]);
+  vfloat4 v2 = vfloat4(vals2[0],vals2[1], vals2[2], vals2[3]);
+  
 
 }
