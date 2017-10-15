@@ -12,7 +12,7 @@
 
 #include <vector>
 
-#define VERBOSE_MODE
+// #define VERBOSE_MODE
 
 #ifdef VERBOSE_MODE
   #include <bitset>

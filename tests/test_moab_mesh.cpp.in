@@ -178,9 +178,9 @@ int main(int argc, char** argv) {
   std::cout << "Specific test for cube model...";
   num_fails += test_cube();
   std::cout << "done" << std::endl;
-  // std::cout << "General test for sphere model...";
-  // num_fails += test_file(TEST_SPHERE);
-  // std::cout << "done" << std::endl;
+  std::cout << "General test for sphere model...";
+  num_fails += test_file(TEST_SPHERE);
+  std::cout << "done" << std::endl;
   
 return num_fails;
 

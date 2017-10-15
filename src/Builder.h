@@ -2,12 +2,13 @@
 #pragma once
 
 #include <vector>
+#include <list>
 #include <set>
 #include "Primitive.h"
 #include "BuildState.h"
 #include "Node.h"
 
-#define VERBOSE_MODE
+// #define VERBOSE_MODE
 
 enum BuildQuality {
   BUILD_QUALITY_LOW = 0,
@@ -174,7 +175,7 @@ template <typename T> class BVHBuilder {
   size_t largest_leaf_size, smallest_leaf_size;
   size_t numLeaves;
 
-  std::vector< BuildStateT<T> > storage;
+  std::list< BuildStateT<T> > storage;
   
  public:
 
