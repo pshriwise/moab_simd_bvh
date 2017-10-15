@@ -8,7 +8,7 @@ void test_vfloat4_constructors();
 void test_vfloat4_operators();
 void test_vfloat4_comparators();
 void test_vfloat4_methods();
-void test_vfloat4_store();
+void test_vfloat4_load_store();
 
 int main( int argc, char** argv ) {
 
@@ -21,7 +21,7 @@ int main( int argc, char** argv ) {
   // common but non-standard operation tests
   test_vfloat4_methods();
   // testing store functionality
-  test_vfloat4_store();
+  test_vfloat4_load_store();
   
   return 0;
 }
@@ -205,13 +205,29 @@ void test_vfloat4_comparators() {
 
 }
 
-void test_vfloat4_store() {
+void test_vfloat4_load_store() {
 
   float vals1[4] = {-6.0, -1.0,  2.0, -3.0};
   float vals2[4] = { 6.0,  1.0, -2.0,  3.0};
   
   vfloat4 v1 = vfloat4(vals1[0],vals1[1], vals1[2], vals1[3]);
   vfloat4 v2 = vfloat4(vals2[0],vals2[1], vals2[2], vals2[3]);
-  
+
+  vfloat4 v3;
+
+  v3 = vfloat4::load((void*)&v1);
+
+  CHECK_VFLOATREAL_EQUAL(v1, v3);
+
+
+  v3 = vfloat4::load((void*)&v2);
+
+  CHECK_VFLOATREAL_EQUAL(v2, v3);
+
+  vfloat4 v4;
+
+  vfloat4::store((void*)&v4, v1);
+
+  CHECK_VFLOATREAL_EQUAL(v1, v4);
 
 }
