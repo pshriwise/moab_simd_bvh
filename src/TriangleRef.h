@@ -38,19 +38,21 @@ struct TriangleRef : public BuildPrimitive {
     const float round_down = 1.0f-2.0f*float(ulp); // FIXME: use per instruction rounding for AVX512
     const float round_up   = 1.0f+2.0f*float(ulp);
 
+    float bump = 1e-03;
+    
     upper.x = std::max(coords[0][0],std::max(coords[1][0], coords[2][0]));
-    upper.x += 1.0;
+    upper.x += bump;
     upper.y = std::max(coords[0][1],std::max(coords[1][1], coords[2][1]));
-    upper.y += 1.0;
+    upper.y += bump;
     upper.z = std::max(coords[0][2],std::max(coords[1][2], coords[2][2]));
-    upper.z += 1.0;
+    upper.z += bump;
     
     lower.x = std::min(coords[0][0],std::min(coords[1][0], coords[2][0]));
-    lower.x -= 1.0;
+    lower.x -= bump;
     lower.y = std::min(coords[0][1],std::min(coords[1][1], coords[2][1]));
-    lower.y -= 1.0;
+    lower.y -= bump;
     lower.z = std::min(coords[0][2],std::min(coords[1][2], coords[2][2]));
-    lower.z -= 1.0;
+    lower.z -= bump;
     	
 
     
