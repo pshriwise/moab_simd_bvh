@@ -1,4 +1,4 @@
 *~
 bld
 build
-/tests/test_moab_mesh.cpp
+/tests/test_files.h

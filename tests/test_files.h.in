@@ -1,0 +1,5 @@
+
+#define TEST_SPHERE "/home/shriwise/opt/moab_simd_bvh/bld/tests/test_files/sphere.h5m"
+#define TEST_CUBE "/home/shriwise/opt/moab_simd_bvh/bld/tests/test_files/cube.h5m"
+#define TEST_3K_CUBE "/home/shriwise/opt/moab_simd_bvh/bld/tests/test_files/3k-tri-cube.h5m"
+

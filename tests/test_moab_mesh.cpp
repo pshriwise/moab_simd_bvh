@@ -1,8 +1,5 @@
- 
 
-#define TEST_SPHERE "${CMAKE_CURRENT_BINARY_DIR}/test_files/sphere.h5m"
-#define TEST_CUBE "${CMAKE_CURRENT_BINARY_DIR}/test_files/cube.h5m"
-#define TEST_3K_CUBE "${CMAKE_CURRENT_BINARY_DIR}/test_files/3k-tri-cube.h5m"
+#include "test_files.h"
 
 #include "assert.h"
 
