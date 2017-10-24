@@ -78,16 +78,16 @@ int main(int argc, char** argv) {
   NodeRef* root = TBVH->Build(settings, bs);
 
   Ray r;
-  r.org = Vec3fa(0.0, 0.0, 0.0);
-
+  Vec3fa org = Vec3fa(0.0, 0.0, 0.0);
+  
   TriIntersector TINT;
   
   std::clock_t start;
   double duration;
   double total = 0.0;
 
-  int misses, rays_fired;
-  int center_misses, edge_misses, node_misses;
+  int misses = 0, rays_fired = 0;
+  int center_misses = 0, edge_misses = 0, node_misses = 0;
   
   for ( int i = 0; i < volume_triangles.size(); i++ ) {
 
@@ -138,17 +138,18 @@ int main(int argc, char** argv) {
 
       for (unsigned int j = 0; j < dirs.size() ; j++) {
 	moab::CartVect this_dir = dirs[j];
-	r.dir.x = this_dir[0];
-	r.dir.y = this_dir[1];
-	r.dir.z = this_dir[2];
 
+	Vec3fa dir = Vec3fa(this_dir[0], this_dir[1], this_dir[2]);
+	
+	r = Ray(org, dir, 0.0, inf);
+       
 	start = std::clock();
 	TINT.intersectRay(*root, r);
 	duration = (std::clock() - start)/ (double) CLOCKS_PER_SEC;
 	total += duration;
 
 	rays_fired++;
-
+	
 	if (r.tfar == (float)inf) {
 	  
 	  misses++; 
@@ -182,9 +183,11 @@ int main(int argc, char** argv) {
 	    << " (" << 100*double(node_misses)/double(rays_fired) << "% of total rays) " 
 	    << " (" << 100*double(node_misses)/double(misses) << "% of missed rays) "
 	    << std::endl; 
-  std::cout << "Missed Rays Total: " << misses << std::endl; 
+  std::cout << "Missed Rays Total: " << misses
+    	    << " (" << 100*double(misses)/double(rays_fired) << "% of total rays fired) "
+	    << std::endl; 
 
-  return rval;
+  return misses;
 }
 
 
