@@ -54,6 +54,8 @@ LIST(APPEND TEST_FILES "buildrecord")
 LIST(APPEND TEST_FILES "buildset")
 LIST(APPEND TEST_FILES "stack")
 LIST(APPEND TEST_FILES "moab_mesh")
+LIST(APPEND TEST_FILES "moab_robust")
+
 
 ADD_SUBDIRECTORY(tests)
 
