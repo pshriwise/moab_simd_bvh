@@ -12,6 +12,10 @@
 
 #include "testutil.hpp"
 
+#include <ctime>
+
+#define third (1.0/3.0)
+
 moab::ErrorCode get_all_volumes(moab::Interface* mbi, moab::Range& volumes);
 moab::ErrorCode get_all_surfaces(moab::Interface *mbi, moab::Range& surfaces);
 
@@ -72,6 +76,113 @@ int main(int argc, char** argv) {
   BuildStateTri bs = BuildStateTri(0, tri_refs);
 
   NodeRef* root = TBVH->Build(settings, bs);
+
+  Ray r;
+  r.org = Vec3fa(0.0, 0.0, 0.0);
+
+  TriIntersector TINT;
+  
+  std::clock_t start;
+  double duration;
+  double total = 0.0;
+
+  int misses, rays_fired;
+  int center_misses, edge_misses, node_misses;
+  
+  for ( int i = 0; i < volume_triangles.size(); i++ ) {
+
+    moab::EntityHandle this_tri = volume_triangles[i];
+
+    //get the vertices of the triangle
+    moab::Range verts;
+    rval = mbi->get_adjacencies(&this_tri,1,0,true,verts);
+    if(rval != moab::MB_SUCCESS || verts.size() != 3)
+      {
+	std::cout << "Error getting triangle verts." << std::endl;
+	std::cout << "Verts found " << verts.size() << std::endl;
+	return moab::MB_FAILURE;
+      }
+
+          //get the coordinates of the vertices
+      double xs[3], ys[3], zs[3];
+
+      rval = mbi->get_coords(verts, xs, ys, zs);
+      if(rval != moab::MB_SUCCESS)
+	{
+	  std::cout << "Error getting vertex coordinates." << std::endl;
+	  return moab::MB_FAILURE;
+	}
+
+      moab::CartVect v0(xs[0],ys[0],zs[0]);
+      moab::CartVect v1(xs[1],ys[1],zs[1]);
+      moab::CartVect v2(xs[2],ys[2],zs[2]);
+
+      //now prepare the different directions for firing...
+      std::vector<moab::CartVect> dirs;
+      
+      //center of triangle
+      dirs.push_back(third*v0+third*v2+third*v2);
+      //middle of edge 0
+      dirs.push_back(unit(0.5*v0+0.5*v1));
+      //middle of edge 1
+      dirs.push_back(unit(0.5*v1+0.5*v2));
+      //middle of edge 2
+      dirs.push_back(unit(0.5*v2+0.5*v0));
+
+      //at vert 0
+      dirs.push_back(unit(v0));
+      //at vert 1
+      dirs.push_back(unit(v1));
+      //at vert 2
+      dirs.push_back(unit(v2));
+
+      for (unsigned int j = 0; j < dirs.size() ; j++) {
+	moab::CartVect this_dir = dirs[j];
+	r.dir.x = this_dir[0];
+	r.dir.y = this_dir[1];
+	r.dir.z = this_dir[2];
+
+	start = std::clock();
+	TINT.intersectRay(*root, r);
+	duration = (std::clock() - start)/ (double) CLOCKS_PER_SEC;
+	total += duration;
+
+	rays_fired++;
+
+	if (r.tfar == (float)inf) {
+	  
+	  misses++; 
+
+	  if ( 0 == j)
+	    center_misses++;
+	  else if ( j > 0 && j < 4)
+	    edge_misses++;
+	  else
+	    node_misses++;		
+	}
+	
+      }
+  }
+
+  std::cout << "-------------------" << std::endl;
+  std::cout << "Firing from origin:" << std::endl;
+  std::cout << "-------------------" << std::endl;
+    
+  std::cout << rays_fired << " took " << total << " seconds, time per ray " << total/double(rays_fired) << std::endl;
+  std::cout << std::endl << "Missed rays summary: " << std::endl << "----------------" << std::endl;
+  std::cout << "Triangle Center Misses: " << center_misses 
+	    << " (" << 100*double(center_misses)/double(rays_fired) << "% of total rays) " 
+	    << " (" << 100*double(center_misses)/double(misses) << "% of missed rays) "
+	    << std::endl; 
+  std::cout << "Triangle Edge Misses: " << edge_misses 
+ 	    << " (" << 100*double(edge_misses)/double(rays_fired) << "% of total rays) " 
+	    << " (" << 100*double(edge_misses)/double(misses) << "% of missed rays) "
+	    << std::endl; 
+  std::cout << "Triangle Node Misses: " << node_misses 
+	    << " (" << 100*double(node_misses)/double(rays_fired) << "% of total rays) " 
+	    << " (" << 100*double(node_misses)/double(misses) << "% of missed rays) "
+	    << std::endl; 
+  std::cout << "Missed Rays Total: " << misses << std::endl; 
 
   return rval;
 }
