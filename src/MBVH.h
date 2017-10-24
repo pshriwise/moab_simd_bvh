@@ -5,9 +5,8 @@
 
 #include "Builder.h"
 #include "BuildState.h"
+#include "Intersector.h"
 #include "TriangleRef.h"
-
-#include "moab/Core.hpp"
 
 typedef BVHBuilder<TriangleRef> TriangleBVH;
 
