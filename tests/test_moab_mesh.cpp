@@ -6,7 +6,6 @@
 #include "moab/Core.hpp"
 #include "moab/CartVect.hpp"
 
-#include "Primitive.h"
 #include "Builder.h"
 #include "Intersector.h"
 #include "MBVH.h"
