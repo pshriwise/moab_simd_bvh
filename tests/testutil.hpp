@@ -5,6 +5,7 @@
 #include "constants.h"
 #include "vfloat.h"
 #include "Vec3fa.h"
+#include "Vec3da.h"
 
 //#include "moab/MOABConfig.h"
 /* Define these here because they are used by many tests
@@ -251,6 +252,28 @@ void check_equal_Vec3( const Vec3<T>& A,
 
 void check_equal_Vec3( const Vec3fa& A,
 		       const Vec3fa& B,
+		       const char* sA, const char* sB, 
+		       int line, const char* file )
+{
+  check_equal( A.length(), B.length(), 0.0, sA, sB, line, file);
+
+  if( (A[0] == B[0]) && (A[1] == B[1]) && (A[2] == B[2]) )
+    return;
+  
+  std::cout << "Equality Test Failed: " << sA << " == " << sB << std::endl;
+  std::cout << "  at line " << line << " of '" << file << "'" << std::endl;
+   
+  std::cout << "  Expected: ";
+  std::cout << A << std::endl;
+  
+  std::cout << "  Actual:   ";
+  std::cout << B << std::endl;
+  
+  flag_error(); 
+}
+
+void check_equal_Vec3( const Vec3da& A,
+		       const Vec3da& B,
 		       const char* sA, const char* sB, 
 		       int line, const char* file )
 {
