@@ -75,8 +75,10 @@ int main(int argc, char** argv) {
 
   BuildStateTri bs = BuildStateTri(0, tri_refs);
 
+  std::cout << "Building BVH..." << std::endl;
   NodeRef* root = TBVH->Build(settings, bs);
-
+  std::cout << "Build complete" << std::endl;
+  
   dRay r;
   Vec3da org = Vec3da(0.0, 0.0, 0.0);
   
