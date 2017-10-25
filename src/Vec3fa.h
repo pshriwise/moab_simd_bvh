@@ -5,6 +5,7 @@
 #include <math.h>
 #include "constants.h"
 #include "Vec3ba.h"
+#include "Vec3da.h"
 
 struct Vec3fa {
   typedef float Scalar;
@@ -15,6 +16,9 @@ struct Vec3fa {
   inline Vec3fa () {}
 
   inline Vec3fa            ( const Vec3fa& other ) { x = other.x; y = other.y; z = other.z; a = other.a; }
+
+  inline Vec3fa            ( const Vec3da& other ) { x = (float)other.x; y = (float)other.y; z = (float)other.z; a = other.a; }
+
   inline Vec3fa& operator =( const Vec3fa& other ) { x = other.x; y = other.y; z = other.z; a = other.a; return *this;}
 
   inline Vec3fa( const float pa ) { x = pa; y = pa; z = pa; a = pa;}

@@ -58,7 +58,12 @@ struct TriangleRef : public BuildPrimitive {
     
   }
 
+
   inline bool intersect(const TravRay &ray, float& nearest_hit) {
+    return intersect(ray, nearest_hit);
+  }
+  
+  inline bool intersect(const TravRay &ray, double& nearest_hit) {
 
     moab::ErrorCode rval;
 
@@ -103,6 +108,7 @@ struct TriangleRef : public BuildPrimitive {
   }
   
   long unsigned int eh;
+  
 };
   
   

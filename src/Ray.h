@@ -87,6 +87,20 @@ struct TravRay {
     }
 
 
+      inline TravRay(const Vec3da &ray_org, const Vec3da &ray_dir)
+      : org_xyz(ray_org), dir_xyz(ray_dir) {
+      rdir = rcp_safe(dir_xyz);
+      org = ray_org;
+      dir = ray_dir;
+      nearX = ray_dir.x >= 0.0f ? 0*sizeof(vfloat4) : 1*sizeof(vfloat4);
+      nearY = ray_dir.y >= 0.0f ? 2*sizeof(vfloat4) : 3*sizeof(vfloat4);
+      nearZ = ray_dir.z >= 0.0f ? 4*sizeof(vfloat4) : 5*sizeof(vfloat4);
+      farX  = nearX ^ sizeof(vfloat4);
+      farY  = nearY ^ sizeof(vfloat4);
+      farZ  = nearZ ^ sizeof(vfloat4);
+    }
+
+
     Vec3fa org_xyz, dir_xyz;
     Vec3fa org, dir, rdir;
     size_t nearX, nearY, nearZ;

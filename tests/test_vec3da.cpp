@@ -128,7 +128,7 @@ void binary_op_tests() {
 
   // Scalar Tests
 
-  float val = 10.0;
+  double val = 10.0;
 
   expected_mult_result = Vec3da(10.0, 20.0, 30.0);
   CHECK_VECREAL_EQUAL(expected_mult_result,val*a);

@@ -77,10 +77,10 @@ int main(int argc, char** argv) {
 
   NodeRef* root = TBVH->Build(settings, bs);
 
-  Ray r;
-  Vec3fa org = Vec3fa(0.0, 0.0, 0.0);
+  dRay r;
+  Vec3da org = Vec3da(0.0, 0.0, 0.0);
   
-  TriIntersector TINT;
+  DblTriIntersector TINT;
   
   std::clock_t start;
   double duration;
@@ -139,9 +139,9 @@ int main(int argc, char** argv) {
       for (unsigned int j = 0; j < dirs.size() ; j++) {
 	moab::CartVect this_dir = dirs[j];
 
-	Vec3fa dir = Vec3fa(this_dir[0], this_dir[1], this_dir[2]);
+	Vec3da dir = Vec3da(this_dir[0], this_dir[1], this_dir[2]);
 	
-	r = Ray(org, dir, 0.0, inf);
+	r = dRay(org, dir, 0.0, inf);
        
 	start = std::clock();
 	TINT.intersectRay(*root, r);

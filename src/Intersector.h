@@ -93,8 +93,8 @@ template <typename T, typename V, typename P> class BVHIntersectorT {
     assert(ray.tnear >= 0.0f);
 
     TravRay vray = TravRay(ray.org, ray.dir);
-    vfloat4 ray_near = std::max(ray.tnear, 0.0f);
-    vfloat4 ray_far = std::max(ray.tfar, 0.0f);
+    vfloat4 ray_near = std::max(ray.tnear, (P)0.0);
+    vfloat4 ray_far = std::max(ray.tfar, (P)0.0);
 
     BVHTraverser nodeTraverser;
     new (&nodeTraverser) BVHTraverser();
