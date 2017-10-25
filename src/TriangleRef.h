@@ -135,8 +135,6 @@ struct TriangleRef : public BuildPrimitive {
 							 dist,
 							 nonneg_ray_len);
 
-    if (hit) { nearest_hit = dist; }
-
 #ifdef VERBOSE_MODE
     std::cout << *this;
     std::cout << "Triangle Vert Coords: " << coords[0] << coords[1] << coords[2] << std::endl;
@@ -144,8 +142,11 @@ struct TriangleRef : public BuildPrimitive {
     std::cout << std::endl;
 #endif
 
-    if (hit) ray.primID = eh;
-
+    if (hit) {
+      ray.primID = eh;
+      if ( dist < ray.tfar ) ray.tfar = dist;
+    }
+    
     return hit;
 
   }

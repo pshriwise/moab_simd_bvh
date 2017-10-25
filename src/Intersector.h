@@ -156,13 +156,7 @@ template <typename T, typename V, typename P> class BVHIntersectorT {
 	if ( !cur.isEmpty() ) {
 	  for (size_t i = 0; i < numPrims; i++) {
 	    T p = prims[i];
-	    if( p.intersect(ray, hit) && (ray.tfar > hit) ) {
-	      ray.tfar = hit;
-	      ray.primID = p.primID();
-#ifdef VERBOSE_MODE
-	      std::cout << "Updating distance to: " << hit << std::endl;
-#endif
-	    }
+	    p.intersect(ray, hit);
 	  }
 	}
 

@@ -7,7 +7,8 @@
 #include "moab/Core.hpp"
 #include "moab/CartVect.hpp"
 #include "moab/Range.hpp"
-#include "moab/OrientedBoxTreeTool.hpp"
+#include "moab/GeomTopoTool.hpp"
+#include "moab/GeomQueryTool.hpp"
 
 #include "MBVH.h"
 
@@ -18,6 +19,7 @@
 #define third (1.0/3.0)
 
 moab::ErrorCode get_all_volumes(moab::Interface* mbi, moab::Range& volumes);
+
 moab::ErrorCode get_all_surfaces(moab::Interface *mbi, moab::Range& surfaces);
 
 moab::ErrorCode get_triangles_on_volume(moab::Interface* mbi, moab::EntityHandle volume, std::vector<moab::EntityHandle>& triangles);
@@ -73,16 +75,14 @@ int main(int argc, char** argv) {
   rval = get_triangles_on_volume(mbi, volumes[0], vol_tris);
   MB_CHK_SET_ERR(rval, "Failed to retrieve triangles for the volume with handle: " << volumes ); 
 
-  moab::OrientedBoxTreeTool* OBBTool = new moab::OrientedBoxTreeTool(mbi);
+  std::cout << "Building MOAB OBB Tree" << std::endl;
+  moab::GeomTopoTool* GTT = new moab::GeomTopoTool(mbi, true);
+  moab::GeomQueryTool* GQT = new moab::GeomQueryTool(GTT);
 
-
-  moab::EntityHandle obb_root;
-  rval = OBBTool->build(vol_tris, obb_root);
-  MB_CHK_SET_ERR(rval, "Failed to build obb tree for entities " << vol_tris);
-
-  rval = mbi->add_entities(obb_root, volumes);
-  MB_CHK_SET_ERR(rval, "Failed to add geom entity sets to obb tree root");
-  
+  rval = GTT->construct_obb_trees();
+  MB_CHK_SET_ERR(rval, "Failed to construct MOAB obb tree");
+  std::cout << "MOAB OBB Tree Complete" << std::endl;
+    
   // create build triangles
   std::vector<TriangleRef> tri_refs = create_build_triangles(mbi, volume_triangles);
 
@@ -109,10 +109,12 @@ int main(int argc, char** argv) {
   std::clock_t start;
   double duration;
   double total = 0.0;
-
+  double moab_total = 0.0;
+  
   int misses = 0, rays_fired = 0;
   int center_misses = 0, edge_misses = 0, node_misses = 0;
 
+  std::cout << "Firing Rays" << std::endl;
   
   for ( int i = 0; i < volume_triangles.size(); i++ ) {
 
@@ -170,24 +172,24 @@ int main(int argc, char** argv) {
        
 	start = std::clock();
 	TINT.intersectRay(*root, r);
-	duration = (std::clock() - start)/ (double) CLOCKS_PER_SEC;
+	duration = (std::clock() - start);
 	total += duration;
 
 	rays_fired++;
-
-	std::vector<double> distances;
-	std::vector<moab::EntityHandle> sets;
-	std::vector<moab::EntityHandle> facets;
 
 	double direction[3];
 	direction[0] = this_dir[0];
 	direction[1] = this_dir[1];
 	direction[2] = this_dir[2];
-
-	rval = OBBTool->ray_intersect_sets(distances, sets, facets, obb_root, 1e-3, location, direction, &ray_len);
+	moab::EntityHandle surf_hit;
+	double next_surf_dist;
+	start = std::clock();
+	rval = GQT->ray_fire(volumes[0], location, direction, surf_hit, next_surf_dist);
+	duration = (std::clock() - start);
 	MB_CHK_SET_ERR(rval, "Failed in MOAB to intersect a ray with the mesh");
-
-	MB_CHK_SET_ERR(rval, "Failed to intersect ray with set");
+	moab_total += duration;
+	
+	CHECK_REAL_EQUAL(next_surf_dist, r.tfar, 0.0);
 	
 	if (r.primID == -1) {
 	  
@@ -204,11 +206,17 @@ int main(int argc, char** argv) {
       }
   }
 
+  total /= (double)CLOCKS_PER_SEC;
+  moab_total /= (double)CLOCKS_PER_SEC;
+  
   std::cout << "-------------------" << std::endl;
   std::cout << "Firing from origin:" << std::endl;
   std::cout << "-------------------" << std::endl;
-    
+  std::cout << "SIMD BVH" << std::endl << "--------" << std::endl;  
   std::cout << rays_fired << " took " << total << " seconds, time per ray " << total/double(rays_fired) << std::endl;
+  std::cout << "MOAB" << std::endl << "----" << std::endl;
+  std::cout << rays_fired << " took " << moab_total << " seconds, time per ray " << moab_total/double(rays_fired) << std::endl;
+
   std::cout << std::endl << "Missed rays summary: " << std::endl << "----------------" << std::endl;
   std::cout << "Triangle Center Misses: " << center_misses 
 	    << " (" << 100*double(center_misses)/double(rays_fired) << "% of total rays) " 
