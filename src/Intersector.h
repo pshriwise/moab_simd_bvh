@@ -65,7 +65,7 @@ struct TraversalTracker {
 
   
 
-template <typename T> class BVHIntersectorT {
+template <typename T, typename V, typename P> class BVHIntersectorT {
   
   static const size_t stackSize = 1+(N-1)*BVH_MAX_DEPTH;
 
@@ -79,7 +79,7 @@ template <typename T> class BVHIntersectorT {
   }
 
   
-  inline void intersectRay (NodeRef root, Ray& ray) {
+  inline void intersectRay (NodeRef root, RayT<V,P> & ray) {
 
     /* initialiez stack state */
     StackItemT<NodeRef> stack[stackSize];
@@ -151,7 +151,7 @@ template <typename T> class BVHIntersectorT {
 	// leaf (set distance to nearest/farthest box intersection for now)
 	size_t numPrims;
 	T* prims = (T*)cur.leaf(numPrims);
-	float hit;
+	P hit;
 
 	if ( !cur.isEmpty() ) {
 	  for (size_t i = 0; i < numPrims; i++) {
@@ -172,4 +172,4 @@ template <typename T> class BVHIntersectorT {
 
 };
 
-typedef BVHIntersectorT<BuildPrimitive> BuildPrimitiveIntersector;
+typedef BVHIntersectorT<BuildPrimitive, Vec3fa, float> BuildPrimitiveIntersector;

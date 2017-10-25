@@ -12,4 +12,4 @@ typedef BVHBuilder<TriangleRef> TriangleBVH;
 
 typedef BuildStateT<TriangleRef> BuildStateTri;
 
-typedef BVHIntersectorT<TriangleRef> TriIntersector;
+typedef BVHIntersectorT<TriangleRef, Vec3fa, float> TriIntersector;

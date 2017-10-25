@@ -2,19 +2,22 @@
 
 
 #include "Vec3fa.h"
+#include "Vec3da.h"
+
 #include "constants.h"
 #include "vfloat.h"
 
-struct Ray {
+template<typename V, typename P>
+struct RayT {
 
   /* Empty Constructor */
-  inline Ray() {}
+  inline RayT() {}
   
-  /* Ray Constructor */
-  inline Ray(const Vec3fa& org, const Vec3fa &dir,
-	     const float& tnear = zero, const float& tfar = inf,
+  /* RayT Constructor */
+  inline RayT(const V& org, const V &dir,
+	     const P& tnear = zero, const P& tfar = inf,
 	     const int mask = -1)
-    : org(org), dir(dir), tnear(tnear), tfar(tfar), mask(mask), geomID(-1), primID(-1), instID(-1), u(0.0f), v(0.0f) { Ng = Vec3fa(); }
+    : org(org), dir(dir), tnear(tnear), tfar(tfar), mask(mask), geomID(-1), primID(-1), instID(-1), u(0.0f), v(0.0f) { Ng = V(); }
 
 
   
@@ -22,29 +25,28 @@ struct Ray {
     bool vx = (fabs(org.x) <= FLT_LARGE) & (fabs(dir.x) <= FLT_LARGE);
     bool vy = (fabs(org.y) <= FLT_LARGE) & (fabs(dir.y) <= FLT_LARGE);
     bool vz = (fabs(org.z) <= FLT_LARGE) & (fabs(dir.z) <= FLT_LARGE);
-    bool vn = fabs(tnear) <= (float)inf;
-    bool vf = fabs(tnear) <= (float)inf;
+    bool vn = fabs(tnear) <= (P)inf;
+    bool vf = fabs(tnear) <= (P)inf;
     return vx & vy & vz & vn & vf;
   }
 
-  /* Ray data */
-  Vec3fa org;
-  Vec3fa dir;
-  float tnear;
-  float tfar;
+  /* RayT data */
+  V org;
+  V dir;
+  P tnear;
+  P tfar;
   int mask;
 
   /* Hit data */
-  Vec3fa Ng; // tri normal
-  float u; // barycentric coordinate of hit
-  float v; // barycentric coordinate of hit
+  V Ng; // tri normal
+  P u; // barycentric coordinate of hit
+  P v; // barycentric coordinate of hit
   int geomID; // geometry ID (equivalent to surface ID for us)
   int primID; // triangle ID (equivalent to triangle EntityHandle)
   int instID; // kernel instance ID (might be able to replace with volume EntityHandle
 
-};
-
-inline std::ostream& operator <<(std::ostream &os, Ray const &r) {
+template<typename v, typename p>
+  friend std::ostream& operator <<(std::ostream &os, RayT<v,p> const &r) {
   return os << "Origin: " << r.org << std::endl
             << "Direction: " << r.dir << std::endl
             << "tNear: " << r.tnear << std::endl
@@ -59,12 +61,19 @@ inline std::ostream& operator <<(std::ostream &os, Ray const &r) {
             << "Geometry ID: " << r.geomID << std::endl;
 }
 
-  struct TravRay {
+
+};
+
+
+typedef RayT<Vec3fa, float> Ray;
+typedef RayT<Vec3da, double> dRay;
+
+struct TravRay {
 
     /* Empty constructor */
     inline TravRay() {}
 
-    inline TravRay(const Vec3fa &ray_org, const Vec3fa& ray_dir)
+    inline TravRay(const Vec3fa &ray_org, const Vec3fa &ray_dir)
       : org_xyz(ray_org), dir_xyz(ray_dir) {
       rdir = rcp_safe(dir_xyz);
       org = ray_org;
