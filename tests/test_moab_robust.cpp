@@ -152,7 +152,7 @@ int main(int argc, char** argv) {
 
 	rays_fired++;
 	
-	if (r.tfar == (float)inf) {
+	if (r.primID == -1) {
 	  
 	  misses++; 
 

@@ -48,8 +48,6 @@ struct RayT {
 
 };
 
-
-
 template<typename v, typename p>
  std::ostream& operator <<(std::ostream &os, RayT<v,p> const &r) {
   return os << "Origin: " << r.org << std::endl
