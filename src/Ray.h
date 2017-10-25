@@ -45,8 +45,13 @@ struct RayT {
   int primID; // triangle ID (equivalent to triangle EntityHandle)
   int instID; // kernel instance ID (might be able to replace with volume EntityHandle
 
+
+};
+
+
+
 template<typename v, typename p>
-  friend std::ostream& operator <<(std::ostream &os, RayT<v,p> const &r) {
+ std::ostream& operator <<(std::ostream &os, RayT<v,p> const &r) {
   return os << "Origin: " << r.org << std::endl
             << "Direction: " << r.dir << std::endl
             << "tNear: " << r.tnear << std::endl
@@ -60,10 +65,6 @@ template<typename v, typename p>
 	    << "Primitive ID: " << r.primID << std::endl
             << "Geometry ID: " << r.geomID << std::endl;
 }
-
-
-};
-
 
 typedef RayT<Vec3fa, float> Ray;
 typedef RayT<Vec3da, double> dRay;
