@@ -7,6 +7,7 @@
 #include "moab/Core.hpp"
 #include "moab/CartVect.hpp"
 #include "moab/Range.hpp"
+#include "moab/OrientedBoxTreeTool.hpp"
 
 #include "MBVH.h"
 
@@ -20,6 +21,8 @@ moab::ErrorCode get_all_volumes(moab::Interface* mbi, moab::Range& volumes);
 moab::ErrorCode get_all_surfaces(moab::Interface *mbi, moab::Range& surfaces);
 
 moab::ErrorCode get_triangles_on_volume(moab::Interface* mbi, moab::EntityHandle volume, std::vector<moab::EntityHandle>& triangles);
+
+moab::ErrorCode get_triangles_on_volume(moab::Interface* mbi, moab::EntityHandle volume, moab::Range& triangles);
 
 moab::ErrorCode get_triangles_on_surface(moab::Interface* mbi, moab::EntityHandle surface, std::vector<moab::EntityHandle> &triangles);
 
@@ -65,6 +68,20 @@ int main(int argc, char** argv) {
   std::vector<moab::EntityHandle> volume_triangles;
   rval = get_triangles_on_volume(mbi, volumes[0], volume_triangles);
   MB_CHK_SET_ERR(rval, "Failed to retrieve triangles for the volume with handle: " << volumes );
+
+  moab::Range vol_tris;
+  rval = get_triangles_on_volume(mbi, volumes[0], vol_tris);
+  MB_CHK_SET_ERR(rval, "Failed to retrieve triangles for the volume with handle: " << volumes ); 
+
+  moab::OrientedBoxTreeTool* OBBTool = new moab::OrientedBoxTreeTool(mbi);
+
+
+  moab::EntityHandle obb_root;
+  rval = OBBTool->build(vol_tris, obb_root);
+  MB_CHK_SET_ERR(rval, "Failed to build obb tree for entities " << vol_tris);
+
+  rval = mbi->add_entities(obb_root, volumes);
+  MB_CHK_SET_ERR(rval, "Failed to add geom entity sets to obb tree root");
   
   // create build triangles
   std::vector<TriangleRef> tri_refs = create_build_triangles(mbi, volume_triangles);
@@ -81,8 +98,13 @@ int main(int argc, char** argv) {
   
   dRay r;
   Vec3da org = Vec3da(0.0, 0.0, 0.0);
+  moab::CartVect origin = moab::CartVect(0.0, 0.0, 0.0);
+  double location[3];
+  origin.get(location);
   
   DblTriIntersector TINT;
+
+  double ray_len = 1e17;
   
   std::clock_t start;
   double duration;
@@ -90,6 +112,7 @@ int main(int argc, char** argv) {
 
   int misses = 0, rays_fired = 0;
   int center_misses = 0, edge_misses = 0, node_misses = 0;
+
   
   for ( int i = 0; i < volume_triangles.size(); i++ ) {
 
@@ -123,7 +146,7 @@ int main(int argc, char** argv) {
       std::vector<moab::CartVect> dirs;
       
       //center of triangle
-      dirs.push_back(third*v0+third*v2+third*v2);
+      dirs.push_back(unit(third*v0+third*v2+third*v2));
       //middle of edge 0
       dirs.push_back(unit(0.5*v0+0.5*v1));
       //middle of edge 1
@@ -151,6 +174,20 @@ int main(int argc, char** argv) {
 	total += duration;
 
 	rays_fired++;
+
+	std::vector<double> distances;
+	std::vector<moab::EntityHandle> sets;
+	std::vector<moab::EntityHandle> facets;
+
+	double direction[3];
+	direction[0] = this_dir[0];
+	direction[1] = this_dir[1];
+	direction[2] = this_dir[2];
+
+	rval = OBBTool->ray_intersect_sets(distances, sets, facets, obb_root, 1e-3, location, direction, &ray_len);
+	MB_CHK_SET_ERR(rval, "Failed in MOAB to intersect a ray with the mesh");
+
+	MB_CHK_SET_ERR(rval, "Failed to intersect ray with set");
 	
 	if (r.primID == -1) {
 	  
@@ -284,6 +321,37 @@ moab::ErrorCode get_triangles_on_surface(moab::Interface* mbi, moab::EntityHandl
 
 /* get the triangles for the given volume */
 moab::ErrorCode get_triangles_on_volume(moab::Interface* mbi, moab::EntityHandle volume, std::vector<moab::EntityHandle>& triangles)
+{
+  // get the entities tagged with dimension & type
+  moab::ErrorCode rval;
+
+  // get the volume id tag
+  moab::Tag id_tag;
+  int id; // id number of the volume
+
+  // get the id tag handle
+  rval = mbi->tag_get_handle(GLOBAL_ID_TAG_NAME, 1, moab::MB_TYPE_INTEGER, id_tag,
+			     moab::MB_TAG_SPARSE|moab::MB_TAG_CREAT);
+  rval = mbi->tag_get_data(id_tag,&(volume),1,&id);
+  
+
+  moab::Range child_surface_sets;
+  // get the child sets are all the surfaces
+  rval = mbi->get_child_meshsets(volume,child_surface_sets);
+
+  moab::Range::iterator surf_it;
+  // moab ranges are additive, so it gets appended to every time
+  for ( surf_it = child_surface_sets.begin() ; surf_it != child_surface_sets.end() ; ++surf_it)
+    {
+      rval = mbi->get_entities_by_type(*surf_it,moab::MBTRI,triangles);
+    }
+  std::cout << "Volume " << id << " has " << triangles.size() << " triangles"  << std::endl;
+
+  return rval;
+}
+
+/* get the triangles for the given volume */
+moab::ErrorCode get_triangles_on_volume(moab::Interface* mbi, moab::EntityHandle volume, moab::Range& triangles)
 {
   // get the entities tagged with dimension & type
   moab::ErrorCode rval;
