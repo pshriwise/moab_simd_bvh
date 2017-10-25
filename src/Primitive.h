@@ -38,7 +38,7 @@ struct BuildPrimitive {
   
   Vec3fa center() const { return Vec3fa(lower.x+upper.x,lower.y+upper.y,lower.z+upper.z)/2.0f; }
   
-  inline bool intersect(const TravRay &ray, float& nearest_hit) {
+  inline bool intersect(const Ray &ray, float& nearest_hit) {
 
     AABB b = box();
   
@@ -71,14 +71,14 @@ struct BuildPrimitive {
       zfar = b.lower.z;
     }    
 
-    const float tnearx = (xnear - ray.org.x) * ray.rdir.x;
-    const float tfarx = (xfar - ray.org.x) * ray.rdir.x;
+    const float tnearx = (xnear - ray.org.x) * (1/ray.dir.x);
+    const float tfarx = (xfar - ray.org.x) * (1/ray.dir.x);
   
-    const float tneary = (ynear - ray.org.y) * ray.rdir.y;
-    const float tfary = (yfar - ray.org.y) * ray.rdir.y;
+    const float tneary = (ynear - ray.org.y) * (1/ray.dir.y);
+    const float tfary = (yfar - ray.org.y) * (1/ray.dir.y);
 
-    const float tnearz = (znear - ray.org.z) * ray.rdir.z;
-    const float tfarz = (zfar - ray.org.z) * ray.rdir.z;
+    const float tnearz = (znear - ray.org.z) * (1/ray.dir.z);
+    const float tfarz = (zfar - ray.org.z) * (1/ray.dir.z);
 
     const float round_down = 1.0f-2.0f*float(ulp); // FIXME: use per instruction rounding for AVX512
     const float round_up   = 1.0f+2.0f*float(ulp);
