@@ -80,7 +80,7 @@ moab::ErrorCode test_file(std::string filename) {
     
     TINT.intersectRay(*root, r);
 
-    if(r.tfar >= (float)inf) {
+    if(r.primID == -1) {
       std::cout << "Ray number: " << i << std::endl;
       std::cout << r << std::endl;
     }
