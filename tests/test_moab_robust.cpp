@@ -22,24 +22,32 @@
 // defining 1/3 for convenience here
 #define third (1.0/3.0)
 
+/// test functions used for convenience ///
 
-// test functions used for convenience
+// gets all EntitySets in the MOAB instance with a Geometry Dimension Tag and a value of dim
+moab::ErrorCode get_geom_sets_with_dim(moab::Interface* mbi, int dim, moab::Range& entsets);
+
+// retrieves all volumes from the MOAB instance
 moab::ErrorCode get_all_volumes(moab::Interface* mbi, moab::Range& volumes);
 
+// retrieves all surfaces from the MOAB instance
 moab::ErrorCode get_all_surfaces(moab::Interface *mbi, moab::Range& surfaces);
 
+// retrieves all triangles from the specified volume
 moab::ErrorCode get_triangles_on_volume(moab::Interface* mbi, moab::EntityHandle volume, std::vector<moab::EntityHandle>& triangles);
 
-moab::ErrorCode get_triangles_on_volume(moab::Interface* mbi, moab::EntityHandle volume, moab::Range& triangles);
-
+// retreieves all triangles from the specified surface
 moab::ErrorCode get_triangles_on_surface(moab::Interface* mbi, moab::EntityHandle surface, std::vector<moab::EntityHandle> &triangles);
 
+// creates TriangleRefs from MOAB triangles
 std::vector<TriangleRef> create_build_triangles(moab::Interface* mbi, std::vector<moab::EntityHandle> triangles);
+
+// returns the global id of an EntitySet
+int global_id(moab::Interface* mbi, moab::EntityHandle entset);
 
 
 /// MAIN ///
 int main(int argc, char** argv) {
-  
   moab::ErrorCode rval;
 
   //create a new MOAB instance
@@ -241,75 +249,59 @@ int main(int argc, char** argv) {
 }
 
 
+moab::ErrorCode get_geom_sets_with_dim(moab::Interface* mbi, int dim, moab::Range& entsets){
+  moab::ErrorCode rval;
+  
+  int dimension_arr[1] = {dim};
+  const void* const dum[1] = {dimension_arr};
+  moab::Tag geom_tag;
+
+  // get the tag handle
+  rval = mbi->tag_get_handle(GEOM_DIMENSION_TAG_NAME, 1, moab::MB_TYPE_INTEGER, geom_tag,
+			     moab::MB_TAG_SPARSE);
+  MB_CHK_SET_ERR(rval, "Failed to find tag with name: " << GEOM_DIMENSION_TAG_NAME);
+  
+  // get the entities tagged with dimension 3 & type EntitySet
+  rval = mbi->get_entities_by_type_and_tag(0,moab::MBENTITYSET,&geom_tag,dum,1,entsets);
+  MB_CHK_SET_ERR(rval, "Failed to retrieve geom entity sets with dimension" << dim);
+
+  return rval;
+}
+
 std::vector<TriangleRef> create_build_triangles(moab::Interface* mbi, std::vector<moab::EntityHandle> triangles) {
-
+  // triangle reference container
   std::vector<TriangleRef> tris;
+
+  // create a TriangleRef for each MOAB triangle
   for(unsigned int i = 0; i < triangles.size(); i++) {
-
     TriangleRef *t = new TriangleRef(triangles[i], mbi);
-
     tris.push_back(*t);
   }
-  
+
   return tris;
 }
 
 moab::ErrorCode get_all_volumes(moab::Interface* mbi, moab::Range& volumes){
-  // get the entities tagged with dimension & type
   moab::ErrorCode rval;
+
+  rval = get_geom_sets_with_dim(mbi, 3, volumes);
+  MB_CHK_SET_ERR(rval, "Failed to retrieve volume sets");
   
-  int three[1] = {3};
-  const void* const dim[1] = {three};
-  moab::Tag geom_tag;
-
-  // get the tag handle
-  rval = mbi->tag_get_handle(GEOM_DIMENSION_TAG_NAME, 1, moab::MB_TYPE_INTEGER, geom_tag,
-			     moab::MB_TAG_SPARSE|moab::MB_TAG_CREAT);
-  // get the entities tagged with dimension & type 
-  rval = mbi->get_entities_by_type_and_tag(0,moab::MBENTITYSET,&geom_tag,dim,1,volumes);
-
-  if (rval != moab::MB_SUCCESS )
-    {
-      std::cout << "Failed to get volumes from file " << std::endl;
-    }
-  else
-    {
-      std::cout << "Found " << volumes.size() << " volumes" << std::endl;
-    }
-
   return rval;
 }
-
+  
 
 moab::ErrorCode get_all_surfaces(moab::Interface *mbi, moab::Range& surfaces){
-  // get the entities tagged with dimension & type
   moab::ErrorCode rval;
 
-  int two[1] = {2};
-  const void* const dim[1] = {two};
-  moab::Tag geom_tag;
-
-  // get the tag handle
-  rval = mbi->tag_get_handle(GEOM_DIMENSION_TAG_NAME, 1, moab::MB_TYPE_INTEGER, geom_tag,
-			     moab::MB_TAG_SPARSE|moab::MB_TAG_CREAT);
-  // get the entities tagged with dimension & type 
-  rval = mbi->get_entities_by_type_and_tag(0,moab::MBENTITYSET,&geom_tag,dim,1,surfaces);
-
-  if (rval != moab::MB_SUCCESS )
-    {
-      std::cout << "Failed to get surfaces from file " << std::endl;
-    }
-  else
-    {
-      std::cout << "Found " << surfaces.size() << " surfaces" << std::endl;
-    }
+  rval = get_geom_sets_with_dim(mbi, 2, surfaces);
+  MB_CHK_SET_ERR(rval, "Failed to retrieve surface sets");
 
   return rval;
 }
 
+int global_id(moab::Interface* mbi, moab::EntityHandle entset) {
 
-moab::ErrorCode get_triangles_on_surface(moab::Interface* mbi, moab::EntityHandle surface, std::vector<moab::EntityHandle> &triangles)
-{
   // get the entities tagged with dimension & type
   moab::ErrorCode rval;
 
@@ -319,13 +311,26 @@ moab::ErrorCode get_triangles_on_surface(moab::Interface* mbi, moab::EntityHandl
 
   // get the id tag handle
   rval = mbi->tag_get_handle(GLOBAL_ID_TAG_NAME, 1, moab::MB_TYPE_INTEGER, id_tag,
-			     moab::MB_TAG_SPARSE|moab::MB_TAG_CREAT);
-  rval = mbi->tag_get_data(id_tag,&(surface),1,&id);
+			     moab::MB_TAG_SPARSE);
+  MB_CHK_SET_ERR_CONT(rval, "Failed to get tag with name: " << GLOBAL_ID_TAG_NAME);
+  if (rval != moab::MB_SUCCESS) return -1;
   
+  rval = mbi->tag_get_data(id_tag,&(entset),1,&id);
+  MB_CHK_SET_ERR_CONT(rval, "Failed to get id for entityset " << entset);
+  if (rval != moab::MB_SUCCESS) return -1;
+  
+  return id;
+}
+
+moab::ErrorCode get_triangles_on_surface(moab::Interface* mbi, moab::EntityHandle surface, std::vector<moab::EntityHandle> &triangles)
+{
+  // get the entities tagged with dimension & type
+  moab::ErrorCode rval;  
 
   rval = mbi->get_entities_by_type(surface, moab::MBTRI,triangles);
+  MB_CHK_SET_ERR(rval, "Failed to get triangles for surface with global id " << global_id(mbi, surface));
   
-  std::cout << "Surface " << id << " has " << triangles.size() << " triangles"  << std::endl;
+  std::cout << "Surface with global id " << global_id(mbi, surface) << " has " << triangles.size() << " triangles"  << std::endl;
 
   return rval;
 }
@@ -334,60 +339,22 @@ moab::ErrorCode get_triangles_on_surface(moab::Interface* mbi, moab::EntityHandl
 moab::ErrorCode get_triangles_on_volume(moab::Interface* mbi, moab::EntityHandle volume, std::vector<moab::EntityHandle>& triangles)
 {
   // get the entities tagged with dimension & type
-  moab::ErrorCode rval;
-
-  // get the volume id tag
-  moab::Tag id_tag;
-  int id; // id number of the volume
-
-  // get the id tag handle
-  rval = mbi->tag_get_handle(GLOBAL_ID_TAG_NAME, 1, moab::MB_TYPE_INTEGER, id_tag,
-			     moab::MB_TAG_SPARSE|moab::MB_TAG_CREAT);
-  rval = mbi->tag_get_data(id_tag,&(volume),1,&id);
-  
+  moab::ErrorCode rval;  
 
   moab::Range child_surface_sets;
   // get the child sets are all the surfaces
   rval = mbi->get_child_meshsets(volume,child_surface_sets);
-
+  MB_CHK_SET_ERR(rval, "Failed to retrieve child surfaces of the volume");
+  
   moab::Range::iterator surf_it;
   // moab ranges are additive, so it gets appended to every time
   for ( surf_it = child_surface_sets.begin() ; surf_it != child_surface_sets.end() ; ++surf_it)
     {
       rval = mbi->get_entities_by_type(*surf_it,moab::MBTRI,triangles);
+      MB_CHK_SET_ERR(rval, "Failed to get triangles for surface with global id " << global_id(mbi, *surf_it));
     }
-  std::cout << "Volume " << id << " has " << triangles.size() << " triangles"  << std::endl;
-
-  return rval;
-}
-
-/* get the triangles for the given volume */
-moab::ErrorCode get_triangles_on_volume(moab::Interface* mbi, moab::EntityHandle volume, moab::Range& triangles)
-{
-  // get the entities tagged with dimension & type
-  moab::ErrorCode rval;
-
-  // get the volume id tag
-  moab::Tag id_tag;
-  int id; // id number of the volume
-
-  // get the id tag handle
-  rval = mbi->tag_get_handle(GLOBAL_ID_TAG_NAME, 1, moab::MB_TYPE_INTEGER, id_tag,
-			     moab::MB_TAG_SPARSE|moab::MB_TAG_CREAT);
-  rval = mbi->tag_get_data(id_tag,&(volume),1,&id);
   
-
-  moab::Range child_surface_sets;
-  // get the child sets are all the surfaces
-  rval = mbi->get_child_meshsets(volume,child_surface_sets);
-
-  moab::Range::iterator surf_it;
-  // moab ranges are additive, so it gets appended to every time
-  for ( surf_it = child_surface_sets.begin() ; surf_it != child_surface_sets.end() ; ++surf_it)
-    {
-      rval = mbi->get_entities_by_type(*surf_it,moab::MBTRI,triangles);
-    }
-  std::cout << "Volume " << id << " has " << triangles.size() << " triangles"  << std::endl;
+  std::cout << "Volume with global id " << global_id(mbi, volume)  << " has " << triangles.size() << " triangles"  << std::endl;
 
   return rval;
 }
