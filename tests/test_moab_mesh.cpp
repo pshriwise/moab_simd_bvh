@@ -92,6 +92,8 @@ moab::ErrorCode test_file(std::string filename) {
  delete mbi;
  delete root;
 
+ return moab::MB_SUCCESS;
+ 
 }
 
 moab::ErrorCode test_cube() {
@@ -160,24 +162,39 @@ moab::ErrorCode test_cube() {
 
   delete mbi;
   delete root;
+
+  return moab::MB_SUCCESS;
 }
 
 int main(int argc, char** argv) {
 
-  int num_fails = 0;
+  int return_val = 0;
+  
+  moab::ErrorCode rval;
   std::cout << "General test for cube model...";
-  num_fails += test_file(TEST_CUBE);
-  std::cout << "done" << std::endl;
-  std::cout << "General test for 3K triangle cube model...";
-  num_fails += test_file(TEST_3K_CUBE);
-  std::cout << "done" << std::endl;
-  std::cout << "Specific test for cube model...";
-  num_fails += test_cube();
-  std::cout << "done" << std::endl;
-  std::cout << "General test for sphere model...";
-  num_fails += test_file(TEST_SPHERE);
+  rval = test_file(TEST_CUBE);
+  MB_CHK_SET_ERR(rval, "Failed to test cube file");
+  return_val += rval;
   std::cout << "done" << std::endl;
   
-return num_fails;
+  std::cout << "General test for 3K triangle cube model...";
+  rval = test_file(TEST_3K_CUBE);
+  MB_CHK_SET_ERR(rval, "Failed to test 3k cube file");
+  return_val += rval;
+  std::cout << "done" << std::endl;
+  
+  std::cout << "Specific test for cube model...";
+  rval = test_cube();
+  MB_CHK_SET_ERR(rval, "Failed specific tests for cube model");
+  return_val += rval;
+  std::cout << "done" << std::endl;
+  
+  std::cout << "General test for sphere model...";
+  rval = test_file(TEST_SPHERE);
+  MB_CHK_SET_ERR(rval, "Failed to test sphere file");
+  return_val += rval;
+  std::cout << "done" << std::endl;
+  
+return return_val;
 
 }
