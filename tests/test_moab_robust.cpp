@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
     filename = std::string(argv[1]);
   }
   else {
-    filename = TEST_SPHERE;
+    filename = TEST_SMALL_SPHERE;
   }
     
   std::cout << "Loading file: " << filename << std::endl;
