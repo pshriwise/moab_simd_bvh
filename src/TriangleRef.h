@@ -99,7 +99,10 @@ struct TriangleRef : public BuildPrimitive {
     std::cout << std::endl;
 #endif
 
-    if (hit) ray.primID = eh;
+    if (hit) {
+      ray.primID = eh;
+      if( dist < ray.tfar ) ray.tfar = dist;
+    }
 
     return hit;
   }
