@@ -1,8 +1,12 @@
 
+// test file locations
 #include "test_files.h"
 
-#include "assert.h"
+// std lib includes
+#include <assert.h>
+#include <ctime>
 
+// MOAB includes
 #include "MBTagConventions.hpp"
 #include "moab/Core.hpp"
 #include "moab/CartVect.hpp"
@@ -10,14 +14,16 @@
 #include "moab/GeomTopoTool.hpp"
 #include "moab/GeomQueryTool.hpp"
 
+// SIMD BVH include
 #include "MBVH.h"
 
 #include "testutil.hpp"
 
-#include <ctime>
-
+// defining 1/3 for convenience here
 #define third (1.0/3.0)
 
+
+// test functions used for convenience
 moab::ErrorCode get_all_volumes(moab::Interface* mbi, moab::Range& volumes);
 
 moab::ErrorCode get_all_surfaces(moab::Interface *mbi, moab::Range& surfaces);
@@ -30,6 +36,8 @@ moab::ErrorCode get_triangles_on_surface(moab::Interface* mbi, moab::EntityHandl
 
 std::vector<TriangleRef> create_build_triangles(moab::Interface* mbi, std::vector<moab::EntityHandle> triangles);
 
+
+/// MAIN ///
 int main(int argc, char** argv) {
   
   moab::ErrorCode rval;
@@ -37,8 +45,9 @@ int main(int argc, char** argv) {
   //create a new MOAB instance
   moab::Interface* mbi = new moab::Core();
 
+  // open the file
   std::string filename;
-  
+
   // check for a user-specified file
   if (argc > 1) {
     filename = std::string(argv[1]);
@@ -48,12 +57,14 @@ int main(int argc, char** argv) {
   }
     
   std::cout << "Loading file: " << filename << std::endl;
-
   rval = mbi->load_file(filename.c_str());
   MB_CHK_SET_ERR(rval, "Failed to load file: " << filename);
-
   std::cout << "Loading complete" << std::endl;
 
+  std::cout << "Building MOAB OBB Tree" << std::endl;
+  moab::GeomTopoTool* GTT = new moab::GeomTopoTool(mbi, true);
+  moab::GeomQueryTool* GQT = new moab::GeomQueryTool(GTT);
+  
   // retrieve the volumes and surfaces
   moab::Range volumes;
   moab::Range surfaces;
@@ -71,13 +82,6 @@ int main(int argc, char** argv) {
   rval = get_triangles_on_volume(mbi, volumes[0], volume_triangles);
   MB_CHK_SET_ERR(rval, "Failed to retrieve triangles for the volume with handle: " << volumes );
 
-  moab::Range vol_tris;
-  rval = get_triangles_on_volume(mbi, volumes[0], vol_tris);
-  MB_CHK_SET_ERR(rval, "Failed to retrieve triangles for the volume with handle: " << volumes ); 
-
-  std::cout << "Building MOAB OBB Tree" << std::endl;
-  moab::GeomTopoTool* GTT = new moab::GeomTopoTool(mbi, true);
-  moab::GeomQueryTool* GQT = new moab::GeomQueryTool(GTT);
 
   rval = GTT->construct_obb_trees();
   MB_CHK_SET_ERR(rval, "Failed to construct MOAB obb tree");
