@@ -38,7 +38,7 @@ struct BuildPrimitive {
   
   Vec3fa center() const { return Vec3fa(lower.x+upper.x,lower.y+upper.y,lower.z+upper.z)/2.0f; }
   
-  inline bool intersect(const Ray &ray, float& nearest_hit) {
+  inline bool intersect(Ray &ray, float& nearest_hit) {
 
     AABB b = box();
   
@@ -88,13 +88,16 @@ struct BuildPrimitive {
 
     if (tmax > tmin && tmax >= 0) {
       nearest_hit = tmin >= 0 ? (tmin*ray.dir).length() : 0;
+      if (nearest_hit < ray.tfar) {
+	ray.tfar = nearest_hit;
+	ray.primID = primID();
+      }
       return true;
     }
     else {
       nearest_hit = inf;
       return false;
     }
-    
   }
 
 };
