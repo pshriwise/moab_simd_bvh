@@ -1,5 +1,6 @@
 
-#define TEST_SPHERE "/home/shriwise/opt/moab_simd_bvh/bld/tests/test_files/sphere.h5m"
-#define TEST_CUBE "/home/shriwise/opt/moab_simd_bvh/bld/tests/test_files/cube.h5m"
-#define TEST_3K_CUBE "/home/shriwise/opt/moab_simd_bvh/bld/tests/test_files/3k-tri-cube.h5m"
+#define TEST_SPHERE "${CMAKE_CURRENT_BINARY_DIR}/test_files/sphere.h5m"
+#define TEST_SMALL_SPHERE "${CMAKE_CURRENT_BINARY_DIR}/test_files/small_sphere.h5m"
+#define TEST_CUBE "${CMAKE_CURRENT_BINARY_DIR}/test_files/cube.h5m"
+#define TEST_3K_CUBE "${CMAKE_CURRENT_BINARY_DIR}/test_files/3k-tri-cube.h5m"
 
