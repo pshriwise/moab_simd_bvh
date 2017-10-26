@@ -50,6 +50,11 @@ int global_id(moab::Interface* mbi, moab::EntityHandle entset);
 int main(int argc, char** argv) {
   moab::ErrorCode rval;
 
+ // some time-tracking values
+  std::clock_t start;
+  double duration = 0.0;
+
+  
   //create a new MOAB instance
   moab::Interface* mbi = new moab::Core();
 
@@ -73,10 +78,12 @@ int main(int argc, char** argv) {
   // initialize the GQT/GTT interfaces and build the OBBTree
   std::cout << "Building MOAB OBB Tree" << std::endl;
   moab::GeomTopoTool* GTT = new moab::GeomTopoTool(mbi, true);
+  start = std::clock();
   moab::GeomQueryTool* GQT = new moab::GeomQueryTool(GTT);
   rval = GTT->construct_obb_trees();
+  duration = (std::clock() - start);
   MB_CHK_SET_ERR(rval, "Failed to construct MOAB obb tree");
-  std::cout << "MOAB OBB Tree Build Complete" << std::endl;
+  std::cout << "MOAB OBB Tree Build Complete after " << duration / (double)CLOCKS_PER_SEC << " seconds" << std::endl;
   
   // retrieve the volumes and surfaces
   moab::Range volumes;
@@ -99,18 +106,20 @@ int main(int argc, char** argv) {
   DblTriIntersector* TINT = new DblTriIntersector();
   BuildStateTri bs = BuildStateTri(0, tri_refs);
   std::cout << "Building SIMD BVH..." << std::endl;
+  start = std::clock();
   NodeRef* root = TBVH->Build(bs);
-  std::cout << "Build complete" << std::endl;
+  duration = (std::clock() - start);
+  std::cout << "BVH build complete after " << duration / (double)CLOCKS_PER_SEC << " seconds" << std::endl;
 
   // initialize some ray parameters
   double origin[3] = {0.0 , 0.0, 0.0};
   double ray_len = 1e17;
   Vec3da org = Vec3da(origin);
 
-  // some time-tracking values
-  std::clock_t start;
-  double duration = 0.0, total = 0.0, moab_total = 0.0;
 
+  // time summations for MOAB and BVH
+  double total = 0.0, moab_total = 0.0;
+  
   // some stat-keeping values
   int misses = 0, rays_fired = 0;
   int center_misses = 0, edge_misses = 0, node_misses = 0;
