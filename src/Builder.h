@@ -468,8 +468,8 @@ template <typename T> class BVHBuilder {
 
   }
 
-  NodeRef* Build(const BuildSettings& settings,
-		 BuildStateT<T>& current
+  NodeRef* Build(BuildStateT<T>& current,
+		 const BuildSettings& settings = BuildSettings()
 		 //	    createNodeFunc createNode,
 		 //	    linkChildrenFunc linkChildren,
 		 //	    setNodeBoundsFunc setNodeBounds,
@@ -510,7 +510,7 @@ template <typename T> class BVHBuilder {
 
     for(size_t i = 0; i < N ; i++){
       BuildStateT<T>* br = new BuildStateT<T>(current.depth+1, tempNodes[i].prims);
-      NodeRef* child_node = Build(settings, *br);
+      NodeRef* child_node = Build(*br);
       // link the child node
       aanode->setRef(i, *child_node);
     }

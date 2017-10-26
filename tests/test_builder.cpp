@@ -65,11 +65,9 @@ void test_single_primitive() {
   
   BuildPrimitiveBVH bvh(create_leaf);
 
-  BuildSettings settings;
-
   BuildState br(0, &p, 1);
   
-  NodeRef* root = bvh.Build(settings,br);
+  NodeRef* root = bvh.Build(br);
 
   write_dot_graph(root, "single.dot");
   
@@ -122,11 +120,9 @@ void test_random_primitives(int numPrimitives) {
   
   BuildPrimitiveBVH bvh(create_leaf);
 
-  BuildSettings settings;
-
   BuildState br(0, primitives);
   
-  NodeRef* root = bvh.Build(settings,br);
+  NodeRef* root = bvh.Build(br);
 
   check_leaf_pointers(root);
   write_dot_graph(root, "random_tree.dot");
@@ -163,11 +159,9 @@ void test_hollow_box(float x_min, float y_min, float z_min,
 
   BuildPrimitiveBVH bvh(create_leaf);
 
-  BuildSettings settings;
-
   BuildState br(0, primitives);
   
-  NodeRef* root = bvh.Build(settings,br);
+  NodeRef* root = bvh.Build(br);
 
   bvh.stats();
   

@@ -55,24 +55,25 @@ int main(int argc, char** argv) {
   else {
     filename = TEST_SMALL_SPHERE;
   }
-    
+
+  //load the moab file
   std::cout << "Loading file: " << filename << std::endl;
   rval = mbi->load_file(filename.c_str());
   MB_CHK_SET_ERR(rval, "Failed to load file: " << filename);
   std::cout << "Loading complete" << std::endl;
 
+  // initialize the GQT/GTT interfaces and build the OBBTree
   std::cout << "Building MOAB OBB Tree" << std::endl;
   moab::GeomTopoTool* GTT = new moab::GeomTopoTool(mbi, true);
   moab::GeomQueryTool* GQT = new moab::GeomQueryTool(GTT);
+  rval = GTT->construct_obb_trees();
+  MB_CHK_SET_ERR(rval, "Failed to construct MOAB obb tree");
+  std::cout << "MOAB OBB Tree Complete" << std::endl;
   
   // retrieve the volumes and surfaces
   moab::Range volumes;
-  moab::Range surfaces;
   rval = get_all_volumes(mbi, volumes);
   MB_CHK_SET_ERR(rval, "Failed to retrieve volume meshsets");
-
-  rval = get_all_surfaces(mbi, surfaces);
-  MB_CHK_SET_ERR(rval, "Failed to retrieve surface meshsets");
 
   // working with only one volume (for now)
   assert(volumes.size() == 1);
@@ -81,23 +82,16 @@ int main(int argc, char** argv) {
   std::vector<moab::EntityHandle> volume_triangles;
   rval = get_triangles_on_volume(mbi, volumes[0], volume_triangles);
   MB_CHK_SET_ERR(rval, "Failed to retrieve triangles for the volume with handle: " << volumes );
-
-
-  rval = GTT->construct_obb_trees();
-  MB_CHK_SET_ERR(rval, "Failed to construct MOAB obb tree");
-  std::cout << "MOAB OBB Tree Complete" << std::endl;
     
   // create build triangles
   std::vector<TriangleRef> tri_refs = create_build_triangles(mbi, volume_triangles);
 
   TriangleBVH* TBVH = new TriangleBVH();
 
-  BuildSettings settings;
-
   BuildStateTri bs = BuildStateTri(0, tri_refs);
 
   std::cout << "Building BVH..." << std::endl;
-  NodeRef* root = TBVH->Build(settings, bs);
+  NodeRef* root = TBVH->Build(bs);
   std::cout << "Build complete" << std::endl;
   
   dRay r;

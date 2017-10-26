@@ -54,12 +54,10 @@ moab::ErrorCode test_file(std::string filename) {
   }
 
   TriangleBVH TBVH(create_leaf);
-
-  BuildSettings settings;
   
   BuildStateTri bs = BuildStateTri(0, tris);
 
-  NodeRef* root = TBVH.Build(settings, bs);
+  NodeRef* root = TBVH.Build(bs);
   
   TriIntersector TINT;
 
@@ -126,12 +124,10 @@ moab::ErrorCode test_cube() {
 
 
   TriangleBVH TBVH(create_leaf);
-
-  BuildSettings settings;
   
   BuildStateTri bs = BuildStateTri(0, tris);
 
-  NodeRef* root = TBVH.Build(settings, bs);
+  NodeRef* root = TBVH.Build(bs);
 
   TriIntersector TINT;
 
