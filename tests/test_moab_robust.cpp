@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
   moab::GeomQueryTool* GQT = new moab::GeomQueryTool(GTT);
   rval = GTT->construct_obb_trees();
   MB_CHK_SET_ERR(rval, "Failed to construct MOAB obb tree");
-  std::cout << "MOAB OBB Tree Complete" << std::endl;
+  std::cout << "MOAB OBB Tree Build Complete" << std::endl;
   
   // retrieve the volumes and surfaces
   moab::Range volumes;
@@ -86,33 +86,35 @@ int main(int argc, char** argv) {
   // create build triangles
   std::vector<TriangleRef> tri_refs = create_build_triangles(mbi, volume_triangles);
 
+  // construct the SIMD BVH
   TriangleBVH* TBVH = new TriangleBVH();
-
+  DblTriIntersector* TINT = new DblTriIntersector();
   BuildStateTri bs = BuildStateTri(0, tri_refs);
-
-  std::cout << "Building BVH..." << std::endl;
+  std::cout << "Building SIMD BVH..." << std::endl;
   NodeRef* root = TBVH->Build(bs);
   std::cout << "Build complete" << std::endl;
-  
-  dRay r;
-  Vec3da org = Vec3da(0.0, 0.0, 0.0);
-  moab::CartVect origin = moab::CartVect(0.0, 0.0, 0.0);
-  double location[3];
-  origin.get(location);
-  
-  DblTriIntersector TINT;
 
+  // initialize some ray parameters
+  double origin[3] = {0.0 , 0.0, 0.0};
   double ray_len = 1e17;
-  
+  Vec3da org = Vec3da(origin);
+
+  // some time-tracking values
   std::clock_t start;
-  double duration;
-  double total = 0.0;
-  double moab_total = 0.0;
-  
+  double duration = 0.0, total = 0.0, moab_total = 0.0;
+
+  // some stat-keeping values
   int misses = 0, rays_fired = 0;
   int center_misses = 0, edge_misses = 0, node_misses = 0;
 
   std::cout << "Firing Rays" << std::endl;
+
+  //some return values from MOAB
+  double next_surf_dist;
+  moab::EntityHandle surf_hit;
+  
+  // create a new ray struct for firing
+  dRay r;
   
   for ( int i = 0; i < volume_triangles.size(); i++ ) {
 
@@ -169,30 +171,30 @@ int main(int argc, char** argv) {
 	r = dRay(org, dir, 0.0, inf);
        
 	start = std::clock();
-	TINT.intersectRay(*root, r);
+	TINT->intersectRay(*root, r);
 	duration = (std::clock() - start);
 	total += duration;
 
 	rays_fired++;
 
 	double direction[3];
-	direction[0] = this_dir[0];
-	direction[1] = this_dir[1];
-	direction[2] = this_dir[2];
-	moab::EntityHandle surf_hit;
-	double next_surf_dist;
+	this_dir.get(direction);
+
+
 	start = std::clock();
-	rval = GQT->ray_fire(volumes[0], location, direction, surf_hit, next_surf_dist);
+	rval = GQT->ray_fire(volumes[0], origin, direction, surf_hit, next_surf_dist);
 	duration = (std::clock() - start);
 	MB_CHK_SET_ERR(rval, "Failed in MOAB to intersect a ray with the mesh");
 	moab_total += duration;
-	
+
+	// make sure the distance to hit is the same
 	CHECK_REAL_EQUAL(next_surf_dist, r.tfar, 0.0);
-	
+
+	// add some stats if the ray misses the mesh
 	if (r.primID == -1) {
-	  
 	  misses++; 
 
+	  // mark what type miss this is
 	  if ( 0 == j)
 	    center_misses++;
 	  else if ( j > 0 && j < 4)
@@ -201,9 +203,11 @@ int main(int argc, char** argv) {
 	    node_misses++;		
 	}
 	
-      }
-  }
+      } // end directions loop
+      
+  } // end triangle loop
 
+  // write out information about the test
   total /= (double)CLOCKS_PER_SEC;
   moab_total /= (double)CLOCKS_PER_SEC;
   
@@ -232,6 +236,7 @@ int main(int argc, char** argv) {
     	    << " (" << 100*double(misses)/double(rays_fired) << "% of total rays fired) "
 	    << std::endl; 
 
+  // if any rays miss the mesh, then this is considered a failure
   return misses;
 }
 
