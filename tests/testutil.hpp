@@ -193,8 +193,8 @@ void check_equal( const char* A, const char* B, const char* sA, const char* sB, 
 void check_equal( float A, float B, float eps, const char* sA, const char* sB, int line, const char* file )
   {  EQUAL_TEST_IMPL( fabsf(A - B) <= eps, f ) }
 
-// void check_equal( double A, double B, double eps, const char* sA, const char* sB, int line, const char* file )
-//   {  EQUAL_TEST_IMPL( fabs(A - B) <= eps, f ) }
+void check_equal( double A, double B, double eps, const char* sA, const char* sB, int line, const char* file )
+   {  EQUAL_TEST_IMPL( fabs(A - B) <= eps, f ) }
 
 /*
 void check_equal( moab::EntityHandle A, moab::EntityHandle B, const char* sA, const char* sB, int line, const char* file )

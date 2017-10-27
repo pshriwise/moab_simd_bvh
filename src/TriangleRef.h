@@ -12,14 +12,13 @@ struct TriangleRef : public BuildPrimitive {
   
   //  inline TriangleRef(long unsigned int tri_handle): eh(tri_handle){ set_primID(eh); }
 
-  inline TriangleRef(long unsigned int tri_handle, moab::Interface* mbi): eh(tri_handle) { set_bounds(mbi); set_primID(eh); set_sceneID((size_t)mbi); }
+  inline TriangleRef(moab::EntityHandle tri_handle, moab::Interface* mbi): eh(tri_handle) { set_bounds(mbi); set_primID(eh); set_sceneID((size_t)mbi); }
 
   friend bool operator< (const TriangleRef& a, const TriangleRef& b) { return a.eh < b.eh; }
 
   friend bool operator!= (const TriangleRef& a, const TriangleRef& b) { return a.eh != b.eh; }
 
   friend bool operator== (const TriangleRef& a, const TriangleRef& b) { return a.eh == b.eh; }
-
 
   inline void set_bounds(moab::Interface * mbi) {
     
@@ -54,8 +53,6 @@ struct TriangleRef : public BuildPrimitive {
     lower.z = std::min(coords[0][2],std::min(coords[1][2], coords[2][2]));
     lower.z -= bump;
     	
-
-    
   }
 
 
@@ -99,9 +96,10 @@ struct TriangleRef : public BuildPrimitive {
     std::cout << std::endl;
 #endif
 
-    if (hit) {
+    if (hit && dist < ray.tfar) {
       ray.primID = eh;
-      if( dist < ray.tfar ) ray.tfar = dist;
+      ray.eh = eh;
+      ray.tfar = dist;
     }
 
     return hit;
@@ -145,9 +143,10 @@ struct TriangleRef : public BuildPrimitive {
     std::cout << std::endl;
 #endif
 
-    if (hit) {
+    if (hit && dist < ray.tfar ) {
       ray.primID = eh;
-      if ( dist < ray.tfar ) ray.tfar = dist;
+      ray.eh = eh;
+      ray.tfar = dist;
     }
     
     return hit;

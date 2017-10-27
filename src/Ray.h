@@ -44,7 +44,7 @@ struct RayT {
   int geomID; // geometry ID (equivalent to surface ID for us)
   int primID; // triangle ID (equivalent to triangle EntityHandle)
   int instID; // kernel instance ID (might be able to replace with volume EntityHandle
-
+  long unsigned int eh;
 
 };
 

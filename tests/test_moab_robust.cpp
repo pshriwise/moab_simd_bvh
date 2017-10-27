@@ -116,7 +116,6 @@ int main(int argc, char** argv) {
   double ray_len = 1e17;
   Vec3da org = Vec3da(origin);
 
-
   // time summations for MOAB and BVH
   double total = 0.0, moab_total = 0.0;
   
@@ -129,6 +128,10 @@ int main(int argc, char** argv) {
   //some return values from MOAB
   double next_surf_dist;
   moab::EntityHandle surf_hit;
+
+  //now prepare the different directions for firing...
+  std::vector<moab::CartVect> dirs;
+
   
   // create a new ray struct for firing
   dRay r;
@@ -161,9 +164,8 @@ int main(int argc, char** argv) {
       moab::CartVect v1(xs[1],ys[1],zs[1]);
       moab::CartVect v2(xs[2],ys[2],zs[2]);
 
-      //now prepare the different directions for firing...
-      std::vector<moab::CartVect> dirs;
-      
+      // clear out directions
+      dirs.clear();
       //center of triangle
       dirs.push_back(unit(third*v0+third*v2+third*v2));
       //middle of edge 0
@@ -172,7 +174,6 @@ int main(int argc, char** argv) {
       dirs.push_back(unit(0.5*v1+0.5*v2));
       //middle of edge 2
       dirs.push_back(unit(0.5*v2+0.5*v0));
-
       //at vert 0
       dirs.push_back(unit(v0));
       //at vert 1
@@ -197,13 +198,44 @@ int main(int argc, char** argv) {
 	double direction[3];
 	this_dir.get(direction);
 
+	bool obb_fire = true;
+	if (obb_fire) {
+	  // some extra setup for this call
+	  std::vector<double> hits;
+	  std::vector<moab::EntityHandle> sets, facets;
+	  moab::EntityHandle root_set;
+	  rval = GTT->get_root(volumes[0], root_set);
+	  MB_CHK_SET_ERR(rval, "Failed to retrieve OBB root set for volume");
 
-	start = std::clock();
-	rval = GQT->ray_fire(volumes[0], origin, direction, surf_hit, next_surf_dist);
-	duration = (std::clock() - start);
-	MB_CHK_SET_ERR(rval, "Failed in MOAB to intersect a ray with the mesh");
-	moab_total += duration;
+	  // fire ray
+	  start = std::clock();
+	  rval = GTT->obb_tree()->ray_intersect_sets(hits, sets, facets, root_set, 1e-03, origin, direction);
+	  duration = (std::clock() - start);
+	  MB_CHK_SET_ERR(rval, "Failed in MOAB to intersect a ray with the mesh");
+	  moab_total += duration;
 
+	  CHECK( hits.size() >= 1 && sets.size() >= 1);
+	  
+	  next_surf_dist = hits[0];
+	  surf_hit = sets[0];
+
+	  std::cout << facets[0] << std::endl;
+	  std::cout << r.eh << std::endl;
+	  
+	  if (j == 0) {
+	    std::cout << r << std::endl;
+	    //	    CHECK_EQUAL( facets[0], r.eh );
+	  }
+	  
+	}
+	else{
+	  // fire ray
+	  start = std::clock();
+	  rval = GQT->ray_fire(volumes[0], origin, direction, surf_hit, next_surf_dist);
+	  duration = (std::clock() - start);
+	  MB_CHK_SET_ERR(rval, "Failed in MOAB to intersect a ray with the mesh");
+	  moab_total += duration;
+	}
 	// make sure the distance to hit is the same
 	CHECK_REAL_EQUAL(next_surf_dist, r.tfar, 0.0);
 
@@ -219,7 +251,7 @@ int main(int argc, char** argv) {
 	  else
 	    node_misses++;		
 	}
-	
+
       } // end directions loop
       
   } // end triangle loop
