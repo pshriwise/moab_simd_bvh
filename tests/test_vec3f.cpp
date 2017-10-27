@@ -37,26 +37,26 @@ void constructor_tests() {
   // create Vec3
   Vec3f v = Vec3f(x,y,z);
   // test Vec3 values by attribute
-  CHECK_REAL_EQUAL(x, v.x, 0.);
-  CHECK_REAL_EQUAL(y, v.y, 0.);
-  CHECK_REAL_EQUAL(z, v.z, 0.);
+  CHECK_REAL_EQUAL(x, v.x, 0.0f);
+  CHECK_REAL_EQUAL(y, v.y, 0.0f);
+  CHECK_REAL_EQUAL(z, v.z, 0.0f);
 
   // test values using iterator
-  CHECK_REAL_EQUAL(x, v[0], 0.);
-  CHECK_REAL_EQUAL(y, v[1], 0.);
-  CHECK_REAL_EQUAL(z, v[2], 0.);
+  CHECK_REAL_EQUAL(x, v[0], 0.0f);
+  CHECK_REAL_EQUAL(y, v[1], 0.0f);
+  CHECK_REAL_EQUAL(z, v[2], 0.0f);
 
   // test copy constructor
   Vec3f v1 = v;
-  CHECK_REAL_EQUAL(x, v1.x, 0.);
-  CHECK_REAL_EQUAL(y, v1.y, 0.);
-  CHECK_REAL_EQUAL(z, v1.z, 0.);
+  CHECK_REAL_EQUAL(x, v1.x, 0.0f);
+  CHECK_REAL_EQUAL(y, v1.y, 0.0f);
+  CHECK_REAL_EQUAL(z, v1.z, 0.0f);
 
   // test another form of copy constructor
   Vec3f v2 = Vec3f(v);
-  CHECK_REAL_EQUAL(x, v1.x, 0.);
-  CHECK_REAL_EQUAL(y, v1.y, 0.);
-  CHECK_REAL_EQUAL(z, v1.z, 0.);
+  CHECK_REAL_EQUAL(x, v1.x, 0.0f);
+  CHECK_REAL_EQUAL(y, v1.y, 0.0f);
+  CHECK_REAL_EQUAL(z, v1.z, 0.0f);
 
   // test empty constructor
   Vec3f empty = Vec3f();
@@ -167,36 +167,36 @@ void convenience_method_tests() {
 
   Vec3f test_vec(3.0,4.0,-2.0);
   float expected_result = -24.0;
-  CHECK_REAL_EQUAL(expected_result, reduce_mul(test_vec), 0.0);
+  CHECK_REAL_EQUAL(expected_result, reduce_mul(test_vec), 0.0f);
 
   expected_result = 5.0;
-  CHECK_REAL_EQUAL(expected_result, reduce_add(test_vec), 0.0);
+  CHECK_REAL_EQUAL(expected_result, reduce_add(test_vec), 0.0f);
 
   expected_result = -2.0;
-  CHECK_REAL_EQUAL(expected_result, reduce_min(test_vec), 0.0);
+  CHECK_REAL_EQUAL(expected_result, reduce_min(test_vec), 0.0f);
 
   expected_result = 4.0;
-  CHECK_REAL_EQUAL(expected_result, reduce_max(test_vec), 0.0);
+  CHECK_REAL_EQUAL(expected_result, reduce_max(test_vec), 0.0f);
 
   Vec3f test_vec1 = Vec3f(4.0,3.0,2.0);
   expected_result = 24.0;
-  CHECK_REAL_EQUAL(expected_result, reduce_mul(test_vec1), 0.0);
+  CHECK_REAL_EQUAL(expected_result, reduce_mul(test_vec1), 0.0f);
 
   expected_result = 9.0;
-  CHECK_REAL_EQUAL(expected_result, reduce_add(test_vec1), 0.0);
+  CHECK_REAL_EQUAL(expected_result, reduce_add(test_vec1), 0.0f);
 
   expected_result = 2.0;
-  CHECK_REAL_EQUAL(expected_result, reduce_min(test_vec1), 0.0);
+  CHECK_REAL_EQUAL(expected_result, reduce_min(test_vec1), 0.0f);
 
   expected_result = 4.0;
-  CHECK_REAL_EQUAL(expected_result, reduce_max(test_vec1), 0.0);
+  CHECK_REAL_EQUAL(expected_result, reduce_max(test_vec1), 0.0f);
 
   expected_result = 26.0;
-  CHECK_REAL_EQUAL(expected_result, halfArea(test_vec1), 0.0);
+  CHECK_REAL_EQUAL(expected_result, halfArea(test_vec1), 0.0f);
 
   test_vec = Vec3f(5.0, 5.0, 5.0);
   float expected_length = sqrt(75.0);
-  CHECK_REAL_EQUAL(expected_length, test_vec.length(), 0.0);
+  CHECK_REAL_EQUAL(expected_length, test_vec.length(), 0.0f);
 
   // make into a vector of unit length
   test_vec.normalize();

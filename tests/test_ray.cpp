@@ -21,7 +21,7 @@ void test_constructors() {
   Ray r = Ray(origin, direction);
   CHECK_VECREAL_EQUAL(origin, r.org);
   CHECK_VECREAL_EQUAL(direction, r.dir);
-  CHECK_REAL_EQUAL(zero, r.tnear, 0.0);
+  CHECK_REAL_EQUAL((float)zero, r.tnear, 0.0);
   CHECK_INF(r.tfar);
   CHECK_EQUAL(-1, r.mask);
   

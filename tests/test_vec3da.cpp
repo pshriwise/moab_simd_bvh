@@ -173,7 +173,7 @@ void convenience_method_tests() {
   CHECK_REAL_EQUAL(expected_result, halfArea(test_vec1), 0.0);
 
   test_vec = Vec3da(5.0, 5.0, 5.0);
-  float expected_length = sqrt(75.0);
+  double expected_length = sqrt(75.0);
   CHECK_REAL_EQUAL(expected_length, test_vec.length(), 0.0);
 
   // make into a vector of unit length

@@ -96,16 +96,16 @@ void test_intersect() {
   // should only hit the first box
   size_t expected_result = 1;
   CHECK_EQUAL(expected_result, result);
-  CHECK_REAL_EQUAL(0.5*diag, dist[0], eps);
+  CHECK_REAL_EQUAL(0.5f*diag, dist[0], eps);
   
   //extend the length of this ray
-  len = vfloat4(1.5*diag);
+  len = vfloat4(1.5f*diag);
   result = intersectBox(man_n, r, z, len, dist);
   //should hit two boxes
   expected_result = 3;
   CHECK_EQUAL(expected_result, result);
-  CHECK_REAL_EQUAL(0.5*diag, dist[0], eps);
-  CHECK_REAL_EQUAL(1.5*diag, dist[1], eps);
+  CHECK_REAL_EQUAL(0.5f*diag, dist[0], eps);
+  CHECK_REAL_EQUAL(1.5f*diag, dist[1], eps);
 
   //extend the length of this ray
   len = vfloat4(2.5*diag);
@@ -113,9 +113,9 @@ void test_intersect() {
   //should hit three boxes
   expected_result = 7;
   CHECK_EQUAL(expected_result, result);
-  CHECK_REAL_EQUAL(0.5*diag, dist[0], eps);
-  CHECK_REAL_EQUAL(1.5*diag, dist[1], eps);
-  CHECK_REAL_EQUAL(2.5*diag, dist[2], eps);
+  CHECK_REAL_EQUAL(0.5f*diag, dist[0], eps);
+  CHECK_REAL_EQUAL(1.5f*diag, dist[1], eps);
+  CHECK_REAL_EQUAL(2.5f*diag, dist[2], eps);
 
   //extend the length of this ray
   len = vfloat4(3.5*diag);
@@ -123,9 +123,9 @@ void test_intersect() {
   //should hit three boxes STILL, last box is a point
   expected_result = 7;
   CHECK_EQUAL(expected_result, result);
-  CHECK_REAL_EQUAL(0.5*diag, dist[0], eps);
-  CHECK_REAL_EQUAL(1.5*diag, dist[1], eps);
-  CHECK_REAL_EQUAL(2.5*diag, dist[2], eps);
+  CHECK_REAL_EQUAL(0.5f*diag, dist[0], eps);
+  CHECK_REAL_EQUAL(1.5f*diag, dist[1], eps);
+  CHECK_REAL_EQUAL(2.5f*diag, dist[2], eps);
 
   //extend the length of this ray
   len = vfloat4(inf);

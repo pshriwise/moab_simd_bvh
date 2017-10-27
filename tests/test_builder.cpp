@@ -15,6 +15,8 @@
 
 #define MAX_LEAF_SIZE 8
 
+#define EPS 1e-06f
+
 void test_single_primitive();
 void test_random_primitives(int numPrimitives);
 void test_hollow_box(float x_min, float y_min, float z_min,
@@ -82,7 +84,7 @@ void test_single_primitive() {
   // use the root reference node to traverse the ray
   INT.intersectRay(*root, r);
 
-  CHECK_REAL_EQUAL(1.0f, r.tfar, 1e-06);
+  CHECK_REAL_EQUAL(1.0f, r.tfar, EPS);
 
   org = Vec3fa(2.0,2.0,2.0);
 
@@ -91,7 +93,7 @@ void test_single_primitive() {
   // use the root reference node to traverse the ray
   INT.intersectRay(*root, r);
   
-  CHECK_REAL_EQUAL(0.0f, r.tfar, 1e-06);
+  CHECK_REAL_EQUAL(0.0f, r.tfar, EPS);
   
   delete root;
 }
@@ -197,7 +199,7 @@ void test_hollow_box(float x_min, float y_min, float z_min,
     // minus the size of the build primitive
     dist -=(min[dim]+max[dim])/num[dim];
 
-    CHECK_REAL_EQUAL(dist, r.tfar, 1e-06);
+    CHECK_REAL_EQUAL(dist, r.tfar, EPS);
 
     // now do the same for the positive direction
     dir = Vec3fa(0.0);
@@ -213,7 +215,7 @@ void test_hollow_box(float x_min, float y_min, float z_min,
     // minus the size of the build primitive
     dist -=(max[dim]-min[dim])/num[dim];
     
-    CHECK_REAL_EQUAL(dist, r.tfar, 1e-06);
+    CHECK_REAL_EQUAL(dist, r.tfar, EPS);
   }
 
   // create a ray origin at the exact center of the box
@@ -250,7 +252,7 @@ void test_hollow_box(float x_min, float y_min, float z_min,
     r = Ray(org,dir);
 
     BVH.intersectRay(*root,r);
-    CHECK_REAL_EQUAL(corner_dist, r.tfar, 1e-06);
+    CHECK_REAL_EQUAL(corner_dist, r.tfar, EPS);
       
   }
 
