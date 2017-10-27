@@ -2,6 +2,7 @@
 #define TEST_UTIL_HPP
 
 #include <string>
+#include <iostream>
 #include "constants.h"
 #include "vfloat.h"
 #include "Vec3fa.h"
@@ -148,11 +149,11 @@ inline void flag_error()
 
 // Common implementatation for most types
 #define EQUAL_TEST_IMPL( TEST, TYPE ) if( !(TEST) ) { \
-  printf( "Equality Test Failed: %s == %s\n", sA, sB ); \
-  printf( "  at line %d of '%s'\n", line, file ); \
-  printf( "  Expected value: %" #TYPE "\n", A ); \
-  printf( "  Actual value:   %" #TYPE "\n", B ); \
-  printf( "\n" ); \
+  std::cout << "Equality Test Failed: " << sA << " == " << sB << std::endl; \
+  std::cout << "  at line " << line << " of " << file << std::endl; \
+  std::cout << "  Expected value: " << A << std::endl; \
+  std::cout << "  Actual value: " << B << std::endl; \
+  std::cout << std::endl; \
   flag_error(); \
 }
 
@@ -196,6 +197,11 @@ void check_equal( float A, float B, float eps, const char* sA, const char* sB, i
 void check_equal( double A, double B, double eps, const char* sA, const char* sB, int line, const char* file )
    {  EQUAL_TEST_IMPL( fabs(A - B) <= eps, f ) }
 
+
+template<typename T>
+void check_equal( T A, T B, T eps, const char* sA, const char* sB, int line, const char* file )
+     {  EQUAL_TEST_IMPL( fabs(A - B) <= eps, f ) }
+
 /*
 void check_equal( moab::EntityHandle A, moab::EntityHandle B, const char* sA, const char* sB, int line, const char* file )
 {
@@ -233,7 +239,7 @@ void check_equal_Vec3( const Vec3<T>& A,
 		       const char* sA, const char* sB, 
 		       int line, const char* file )
 {
-  check_equal( A.length(), B.length(), 0.0, sA, sB, line, file);
+  check_equal<T>( A.length(), B.length(), (T)0.0, sA, sB, line, file);
 
   if( (A[0] == B[0]) && (A[1] == B[1]) && (A[2] == B[2]) )
     return;
@@ -255,7 +261,7 @@ void check_equal_Vec3( const Vec3fa& A,
 		       const char* sA, const char* sB, 
 		       int line, const char* file )
 {
-  check_equal( A.length(), B.length(), 0.0, sA, sB, line, file);
+  check_equal( A.length(), B.length(), 0.0f, sA, sB, line, file);
 
   if( (A[0] == B[0]) && (A[1] == B[1]) && (A[2] == B[2]) )
     return;
