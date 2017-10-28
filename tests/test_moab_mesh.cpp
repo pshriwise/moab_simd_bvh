@@ -10,6 +10,8 @@
 #include "Intersector.h"
 #include "MBVH.h"
 
+#define EPS 1e-06f
+
 #include "testutil.hpp"
 
 static const float PI = acos(-1.0);
@@ -138,7 +140,7 @@ moab::ErrorCode test_cube() {
   
   TINT.intersectRay(*root, ray);
   
-  CHECK_REAL_EQUAL(ray.tfar, 5.0f, 1e-6);
+  CHECK_REAL_EQUAL(ray.tfar, 5.0f, EPS);
 
   dir = Vec3fa(0.0,1.0,0.0);
 
@@ -146,7 +148,7 @@ moab::ErrorCode test_cube() {
   
   TINT.intersectRay(*root, ray);
   
-  CHECK_REAL_EQUAL(ray.tfar, 5.0f, 1e-6);
+  CHECK_REAL_EQUAL(ray.tfar, 5.0f, EPS);
 
   dir = Vec3fa(0.0,0.0,1.0);
 
@@ -154,7 +156,7 @@ moab::ErrorCode test_cube() {
   
   TINT.intersectRay(*root, ray);
   
-  CHECK_REAL_EQUAL(ray.tfar, 5.0f, 1e-6);
+  CHECK_REAL_EQUAL(ray.tfar, 5.0f, EPS);
 
   delete mbi;
   delete root;

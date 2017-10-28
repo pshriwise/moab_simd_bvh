@@ -31,30 +31,30 @@ int main( int argc, char** argv) {
 
 void constructor_tests() {
   // test construction values
-  float x = 0.0, y = 1.0 , z = 2.0;
+  double x = 0.0, y = 1.0 , z = 2.0;
   // create Vec3da
   Vec3da v = Vec3da(x,y,z);
   // test Vec3da values by attribute
-  CHECK_REAL_EQUAL(x, v.x, 0.);
-  CHECK_REAL_EQUAL(y, v.y, 0.);
-  CHECK_REAL_EQUAL(z, v.z, 0.);
+  CHECK_REAL_EQUAL(x, v.x, 0.0);
+  CHECK_REAL_EQUAL(y, v.y, 0.0);
+  CHECK_REAL_EQUAL(z, v.z, 0.0);
 
   // test values using iterator
-  CHECK_REAL_EQUAL(x, v[0], 0.);
-  CHECK_REAL_EQUAL(y, v[1], 0.);
-  CHECK_REAL_EQUAL(z, v[2], 0.);
+  CHECK_REAL_EQUAL(x, v[0], 0.0);
+  CHECK_REAL_EQUAL(y, v[1], 0.0);
+  CHECK_REAL_EQUAL(z, v[2], 0.0);
 
   // test copy constructor
   Vec3da v1 = v;
-  CHECK_REAL_EQUAL(x, v1.x, 0.);
-  CHECK_REAL_EQUAL(y, v1.y, 0.);
-  CHECK_REAL_EQUAL(z, v1.z, 0.);
+  CHECK_REAL_EQUAL(x, v1.x, 0.0);
+  CHECK_REAL_EQUAL(y, v1.y, 0.0);
+  CHECK_REAL_EQUAL(z, v1.z, 0.0);
 
   // test another form of copy constructor
   Vec3da v2 = Vec3da(v);
-  CHECK_REAL_EQUAL(x, v1.x, 0.);
-  CHECK_REAL_EQUAL(y, v1.y, 0.);
-  CHECK_REAL_EQUAL(z, v1.z, 0.);
+  CHECK_REAL_EQUAL(x, v1.x, 0.0);
+  CHECK_REAL_EQUAL(y, v1.y, 0.0);
+  CHECK_REAL_EQUAL(z, v1.z, 0.0);
 
   // test empty constructor
   Vec3da empty = Vec3da();
@@ -144,7 +144,7 @@ void binary_op_tests() {
 void convenience_method_tests() {
 
   Vec3da test_vec(3.0,4.0,-2.0);
-  float expected_result = -24.0;
+  double expected_result = -24.0;
   CHECK_REAL_EQUAL(expected_result, reduce_mul(test_vec), 0.0);
 
   expected_result = 5.0;

@@ -21,7 +21,7 @@ void test_constructors() {
   Ray r = Ray(origin, direction);
   CHECK_VECREAL_EQUAL(origin, r.org);
   CHECK_VECREAL_EQUAL(direction, r.dir);
-  CHECK_REAL_EQUAL((float)zero, r.tnear, 0.0);
+  CHECK_REAL_EQUAL((float)zero, r.tnear, 0.0f);
   CHECK_INF(r.tfar);
   CHECK_EQUAL(-1, r.mask);
   
@@ -30,7 +30,7 @@ void test_constructors() {
   r = Ray(origin, direction, tn);
   CHECK_VECREAL_EQUAL(origin, r.org);
   CHECK_VECREAL_EQUAL(direction, r.dir);
-  CHECK_REAL_EQUAL(tn, r.tnear, 0.0);
+  CHECK_REAL_EQUAL(tn, r.tnear, 0.0f);
   CHECK_INF(r.tfar);
   CHECK_EQUAL(-1, r.mask);
 
@@ -39,8 +39,8 @@ void test_constructors() {
   r = Ray(origin, direction, tn, tf);
   CHECK_VECREAL_EQUAL(origin, r.org);
   CHECK_VECREAL_EQUAL(direction, r.dir);
-  CHECK_REAL_EQUAL(tn, r.tnear, 0.0);
-  CHECK_REAL_EQUAL(tf, r.tfar, 0.0);
+  CHECK_REAL_EQUAL(tn, r.tnear, 0.0f);
+  CHECK_REAL_EQUAL(tf, r.tfar, 0.0f);
   CHECK_EQUAL(-1, r.mask);
 
 
@@ -49,8 +49,8 @@ void test_constructors() {
   r = Ray(origin, direction, tn, tf, msk);
   CHECK_VECREAL_EQUAL(origin, r.org);
   CHECK_VECREAL_EQUAL(direction, r.dir);
-  CHECK_REAL_EQUAL(tn, r.tnear, 0.0);
-  CHECK_REAL_EQUAL(tf, r.tfar, 0.0);
+  CHECK_REAL_EQUAL(tn, r.tnear, 0.0f);
+  CHECK_REAL_EQUAL(tf, r.tfar, 0.0f);
   CHECK_EQUAL(msk, r.mask);
     
   // test empty constructor
