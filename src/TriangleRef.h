@@ -54,9 +54,9 @@ struct TriangleRef : public BuildPrimitive {
     lower.z -= bump;
     	
   }
-
-
-  inline bool intersect(Ray &ray, float& nearest_hit) {
+  
+  template <typename R>
+  inline bool intersect(R &ray) {
 
     moab::ErrorCode rval;
 
@@ -86,8 +86,6 @@ struct TriangleRef : public BuildPrimitive {
 							 direction,
 							 dist,
 							 nonneg_ray_len);
-
-    if (hit) { nearest_hit = dist; }
 
 #ifdef VERBOSE_MODE
     std::cout << *this;
@@ -103,54 +101,6 @@ struct TriangleRef : public BuildPrimitive {
     }
 
     return hit;
-  }
-  
-  inline bool intersect(dRay &ray, double& nearest_hit) {
-
-    moab::ErrorCode rval;
-
-    moab::Interface* mbi = (moab::Interface*)sceneID();
-    
-    std::vector<moab::EntityHandle> conn;
-    rval = mbi->get_connectivity(&eh, 1, conn);
-    MB_CHK_SET_ERR_CONT(rval, "Failed to get triangle connectivity.");
-
-    assert(conn.size() == 3);
-
-    moab::CartVect coords[3];
-    
-    rval = mbi->get_coords(&(conn[0]), 3, coords[0].array() );
-    MB_CHK_SET_ERR_CONT(rval, "Failed to get triangle vert coords");
-    
-    moab::CartVect origin, direction;
-
-    origin = moab::CartVect(ray.org.x, ray.org.y, ray.org.z);
-    direction = moab::CartVect(ray.dir.x, ray.dir.y, ray.dir.z);
-    double dist;
-    double huge_val = 1E37;
-    double* nonneg_ray_len = &huge_val;
-
-    bool hit = moab::GeomUtil::plucker_ray_tri_intersect(coords,
-							 origin,
-							 direction,
-							 dist,
-							 nonneg_ray_len);
-
-#ifdef VERBOSE_MODE
-    std::cout << *this;
-    std::cout << "Triangle Vert Coords: " << coords[0] << coords[1] << coords[2] << std::endl;
-    if (hit) std::cout << "Hit found at distance: " << dist << std::endl;
-    std::cout << std::endl;
-#endif
-
-    if (hit && dist < ray.tfar ) {
-      ray.primID = eh;
-      ray.eh = eh;
-      ray.tfar = dist;
-    }
-    
-    return hit;
-
   }
   
   long unsigned int eh;

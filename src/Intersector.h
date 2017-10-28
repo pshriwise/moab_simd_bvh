@@ -151,12 +151,11 @@ template <typename T, typename V, typename P> class BVHIntersectorT {
 	// leaf (set distance to nearest/farthest box intersection for now)
 	size_t numPrims;
 	T* prims = (T*)cur.leaf(numPrims);
-	P hit;
 
 	if ( !cur.isEmpty() ) {
 	  for (size_t i = 0; i < numPrims; i++) {
 	    T p = prims[i];
-	    p.intersect(ray, hit);
+	    p.template intersect< RayT<V,P> >(ray);
 	  }
 	}
 
