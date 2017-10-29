@@ -140,7 +140,7 @@ int main(int argc, char** argv) {
 
   //some return values from MOAB
   double next_surf_dist;
-  moab::EntityHandle surf_hit;
+  moab::EntityHandle surf_hit, facet_hit;
 
   //now prepare the different directions for firing...
   std::vector<moab::CartVect> dirs;
@@ -226,17 +226,27 @@ int main(int argc, char** argv) {
 	  MB_CHK_SET_ERR(rval, "Failed in MOAB to intersect a ray with the mesh");
 	  moab_total += duration;
 
-	  // make sure that there is a hit
-	  CHECK( hits.size() >= 1 && sets.size() >= 1);
-	  
-	  next_surf_dist = hits[0];
-	  surf_hit = sets[0];
+	  // make sure that there is a hit (RIS always returns 2 hits)
+	  CHECK( 1 <= sets.size() );
+	  CHECK( 1 <= facets.size() );
+	  CHECK( 1 <= hits.size() );
 
-		    
+	  std::vector<double>::iterator hit_it = std::min_element(hits.begin(), hits.end());
+
+	  next_surf_dist = *hit_it;
+
+	  // EntityHandle check
 	  if (eh_check && 0 == j) {
-	    // check EntityHandles if requested
-	    CHECK_EQUAL( facets[0], r.eh );
+
+	    // make sure that the entity handle found by the SIMD BVH is in the list of returned facets from RIS
+	    std::vector<moab::EntityHandle>::iterator eh_it = std::find(facets.begin(), facets.end(), r.eh);
+	    CHECK( eh_it != facets.end() );
+
+	    // ensure that facet hit distance matches the minimum distance found by both
+	    CHECK_REAL_EQUAL( hits[eh_it - facets.begin()], next_surf_dist, EPS);
+	    CHECK_REAL_EQUAL( hits[eh_it - facets.begin()], r.tfar, EPS);
 	  }
+	  
 	}
 	else{
 	  // fire ray
