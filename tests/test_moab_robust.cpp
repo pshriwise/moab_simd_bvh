@@ -5,6 +5,7 @@
 // std lib includes
 #include <assert.h>
 #include <ctime>
+#include <iomanip>
 
 // MOAB includes
 #include "MBTagConventions.hpp"
@@ -21,6 +22,9 @@
 
 // defining 1/3 for convenience here
 #define third (1.0/3.0)
+
+// floating point epsilon check value
+#define EPS 0.0
 
 /// test functions used for convenience ///
 
@@ -219,11 +223,13 @@ int main(int argc, char** argv) {
 	  next_surf_dist = hits[0];
 	  surf_hit = sets[0];
 
-	  std::cout << facets[0] << std::endl;
-	  std::cout << r.eh << std::endl;
-	  
+	  if(fabs(next_surf_dist-r.tfar) > EPS) {
+	    std::cout << "MOAB Triangle: " << facets[0] << std::endl;
+	    std::cout << "MOAB Intersection Distance: " << std::setprecision(17) << next_surf_dist << std::endl;
+	    std::cout << "SIMD BVH Triangle: " << r.eh << std::endl;
+	    std::cout << "SIMD BVH Intersection Distance: " << std::setprecision(17) << r.tfar << std::endl;
+	  }
 	  if (j == 0) {
-	    std::cout << r << std::endl;
 	    //	    CHECK_EQUAL( facets[0], r.eh );
 	  }
 	  
@@ -236,8 +242,9 @@ int main(int argc, char** argv) {
 	  MB_CHK_SET_ERR(rval, "Failed in MOAB to intersect a ray with the mesh");
 	  moab_total += duration;
 	}
+	
 	// make sure the distance to hit is the same
-	CHECK_REAL_EQUAL(next_surf_dist, r.tfar, 0.0);
+	CHECK_REAL_EQUAL(next_surf_dist, r.tfar, EPS);
 
 	// add some stats if the ray misses the mesh
 	if (r.primID == -1) {
