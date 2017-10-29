@@ -1,4 +1,5 @@
 
+
 // test file locations
 #include "test_files.h"
 
@@ -14,6 +15,7 @@
 #include "moab/Range.hpp"
 #include "moab/GeomTopoTool.hpp"
 #include "moab/GeomQueryTool.hpp"
+#include "moab/ProgOptions.hpp"
 
 // SIMD BVH include
 #include "MBVH.h"
@@ -52,26 +54,33 @@ int global_id(moab::Interface* mbi, moab::EntityHandle entset);
 
 /// MAIN ///
 int main(int argc, char** argv) {
+
+  ProgOptions po("MOAB Robustness Tests: a program for testing robustness of the MOAB SIMD BVH against MOAB's native ray fire engine.");
+
+  bool obb_fire = false;
+  bool eh_check = false;
+  std::string filename;
+  
+  po.addOpt<std::string>("moab_mesh_file,f", "typically a .h5m file, this file should contain a DAGMC surface mesh", &filename);
+  
+  po.addOpt<void>("obb_fire,o", "Fire using MOAB's OBBTree Directly (typically faster than using the GeomQueryTool", &obb_fire);
+
+  po.addOpt<void>("eh_check,e", "Check that EntityHandles of facets returned from the SIMD BVH match those returned from MOAB when firing at the center of triangles (only works with obb_fire option)", &eh_check);
+
+  po.addOptionHelpHeading("Options for performing robustness test");
+  po.parseCommandLine(argc, argv);
+  
   moab::ErrorCode rval;
 
- // some time-tracking values
+  // some time-tracking values
   std::clock_t start;
   double duration = 0.0;
-
   
   //create a new MOAB instance
   moab::Interface* mbi = new moab::Core();
 
-  // open the file
-  std::string filename;
-
   // check for a user-specified file
-  if (argc > 1) {
-    filename = std::string(argv[1]);
-  }
-  else {
-    filename = TEST_SMALL_SPHERE;
-  }
+  if ( filename.empty() )filename = TEST_SMALL_SPHERE;
 
   //load the moab file
   std::cout << "Loading file: " << filename << std::endl;
@@ -202,7 +211,6 @@ int main(int argc, char** argv) {
 	double direction[3];
 	this_dir.get(direction);
 
-	bool obb_fire = true;
 	if (obb_fire) {
 	  // some extra setup for this call
 	  std::vector<double> hits;
@@ -218,21 +226,17 @@ int main(int argc, char** argv) {
 	  MB_CHK_SET_ERR(rval, "Failed in MOAB to intersect a ray with the mesh");
 	  moab_total += duration;
 
+	  // make sure that there is a hit
 	  CHECK( hits.size() >= 1 && sets.size() >= 1);
 	  
 	  next_surf_dist = hits[0];
 	  surf_hit = sets[0];
 
-	  if(fabs(next_surf_dist-r.tfar) > EPS) {
-	    std::cout << "MOAB Triangle: " << facets[0] << std::endl;
-	    std::cout << "MOAB Intersection Distance: " << std::setprecision(17) << next_surf_dist << std::endl;
-	    std::cout << "SIMD BVH Triangle: " << r.eh << std::endl;
-	    std::cout << "SIMD BVH Intersection Distance: " << std::setprecision(17) << r.tfar << std::endl;
+		    
+	  if (eh_check && 0 == j) {
+	    // check EntityHandles if requested
+	    CHECK_EQUAL( facets[0], r.eh );
 	  }
-	  if (j == 0) {
-	    //	    CHECK_EQUAL( facets[0], r.eh );
-	  }
-	  
 	}
 	else{
 	  // fire ray
@@ -242,7 +246,7 @@ int main(int argc, char** argv) {
 	  MB_CHK_SET_ERR(rval, "Failed in MOAB to intersect a ray with the mesh");
 	  moab_total += duration;
 	}
-	
+
 	// make sure the distance to hit is the same
 	CHECK_REAL_EQUAL(next_surf_dist, r.tfar, EPS);
 
