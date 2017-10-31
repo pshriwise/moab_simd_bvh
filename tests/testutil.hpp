@@ -3,6 +3,7 @@
 
 #include <string>
 #include <iostream>
+#include <iomanip>
 #include "constants.h"
 #include "vfloat.h"
 #include "Vec3fa.h"
@@ -151,8 +152,8 @@ inline void flag_error()
 #define EQUAL_TEST_IMPL( TEST, TYPE ) if( !(TEST) ) { \
   std::cout << "Equality Test Failed: " << sA << " == " << sB << std::endl; \
   std::cout << "  at line " << line << " of " << file << std::endl; \
-  std::cout << "  Expected value: " << A << std::endl; \
-  std::cout << "  Actual value: " << B << std::endl; \
+  std::cout << "  Expected value: " << std::setprecision(17) << A << std::endl; \
+  std::cout << "  Actual value: " << std::setprecision(17) << B << std::endl; \
   std::cout << std::endl; \
   flag_error(); \
 }
