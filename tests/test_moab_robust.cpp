@@ -269,7 +269,7 @@ int main(int argc, char** argv) {
 	// make sure the distance to hit is the same
 	if( next_surf_dist != r.tfar ) {
 	  incorrect_distances++;
-	  accumulated_error = abs(next_surf_dist - r.tfar);
+	  accumulated_error = fabs(next_surf_dist - r.tfar);
 	}
 
 	// add some stats if the ray misses the mesh
@@ -300,7 +300,9 @@ int main(int argc, char** argv) {
   std::cout << rays_fired << " took " << total << " seconds, time per ray " << total/double(rays_fired) << std::endl;
   std::cout << "MOAB" << std::endl << "----" << std::endl;
   std::cout << rays_fired << " took " << moab_total << " seconds, time per ray " << moab_total/double(rays_fired) << std::endl;
+  std::cout << std::endl << "Ratio of MOAB time to SIMD BVH time: " << std::setprecision(3) << moab_total/total << std::endl;
 
+  
   std::cout << std::endl << "Missed rays summary: " << std::endl << "----------------" << std::endl;
   std::cout << "Triangle Center Misses: " << center_misses 
 	    << " (" << 100*double(center_misses)/double(rays_fired) << "% of total rays) " 
