@@ -136,7 +136,11 @@ int main(int argc, char** argv) {
   int misses = 0, rays_fired = 0;
   int center_misses = 0, edge_misses = 0, node_misses = 0;
   int incorrect_distances = 0;
+  
+  int moab_misses = 0;
+  
   double accumulated_error = 0.0;
+
   
   std::cout << "Firing Rays" << std::endl;
 
@@ -229,11 +233,10 @@ int main(int argc, char** argv) {
 	  moab_total += duration;
 
 	  // if MOAB misses, but we don't, call it a win
-	  if ( !sets.size() && r.primID != -1) {
+	  if (sets.size() == 0) {
+	    moab_misses++;
 	    continue;
 	  }
-
-	  if (sets.size() == 0) continue;
 	  
 	  // make sure that there is a hit (RIS always returns 2 hits)
 	  // CHECK( sets.size() );
@@ -318,7 +321,10 @@ int main(int argc, char** argv) {
 	    << std::endl; 
   std::cout << "Missed Rays Total: " << misses
     	    << " (" << 100*double(misses)/double(rays_fired) << "% of total rays fired) "
-	    << std::endl; 
+	    << std::endl;
+
+  std::cout << "MOAB Missed Rays Total: " << moab_misses << std::endl;
+	   
 
   std::cout << "Incorrect disatnces found (Epsilon = " << EPS << "):" << std::endl;
   std::cout << incorrect_distances
