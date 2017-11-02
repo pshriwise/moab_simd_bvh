@@ -7,6 +7,9 @@
 #include <assert.h>
 #include <ctime>
 #include <iomanip>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/resource.h>
 
 // MOAB includes
 #include "MBTagConventions.hpp"
@@ -51,6 +54,51 @@ std::vector<TriangleRef> create_build_triangles(moab::Interface* mbi, std::vecto
 // returns the global id of an EntitySet
 int global_id(moab::Interface* mbi, moab::EntityHandle entset);
 
+// function for reporting the current memory usage of the test
+void report_memory_usage()
+{
+  struct rusage r_usage;
+  getrusage(RUSAGE_SELF, &r_usage);
+
+  // try going to /proc to estimate total memory
+  char file_str[4096], dum_str[4096];
+  int file_ptr = open("/proc/self/stat", O_RDONLY);
+  int file_len = read(file_ptr, file_str, sizeof(file_str)-1);
+  if (file_len == 0) {
+    close(file_ptr);
+    return;
+  }
+
+  close(file_ptr);
+  file_str[file_len] = '\0';
+  // read the preceeding fields and the ones we really want...
+  int dum_int;
+  unsigned int dum_uint, vm_size, rss;
+  int num_fields = sscanf(file_str,
+			  "%d " // pid
+			  "%s " // comm
+			  "%c " // state
+			  "%d %d %d %d %d " // ppid, pgrp, session, tty, tpgid
+			  "%u %u %u %u %u " // flags, minflt, cminflt, majflt, cmajflt
+			  "%d %d %d %d %d %d " // utime, stime, cutime, cstime, counter, priority
+			  "%u %u " // timeout, itrealvalue
+			  "%d " // starttime
+			  "%u %u", // vsize, rss
+			  &dum_int,
+			  dum_str,
+			  dum_str,
+			  &dum_int, &dum_int, &dum_int, &dum_int, &dum_int,
+			  &dum_uint, &dum_uint, &dum_uint, &dum_uint, &dum_uint,
+			  &dum_int, &dum_int, &dum_int, &dum_int, &dum_int, &dum_int,
+			  &dum_uint, &dum_uint,
+			  &dum_int,
+			  &vm_size, &rss);
+  if (num_fields == 24)
+    std::cout << "Current memory usage in bytes: " << ((double)vm_size) << std::endl;
+  else
+    std::cout << "Could not retrieve memory usage" << std::endl;
+
+}
 
 /// MAIN ///
 int main(int argc, char** argv) {
@@ -59,6 +107,7 @@ int main(int argc, char** argv) {
 
   bool obb_fire = false;
   bool eh_check = false;
+  bool mem_report = false;
   std::string filename;
   
   po.addOpt<std::string>("moab_mesh_file,f", "typically a .h5m file, this file should contain a DAGMC surface mesh", &filename);
@@ -67,6 +116,8 @@ int main(int argc, char** argv) {
 
   po.addOpt<void>("eh_check,e", "Check that EntityHandles of facets returned from the SIMD BVH match those returned from MOAB when firing at the center of triangles (only works with obb_fire option)", &eh_check);
 
+  po.addOpt<void>("mem_rep,m", "Report memory at critical points throughout the test", &mem_report);
+  
   po.addOptionHelpHeading("Options for performing robustness test");
   po.parseCommandLine(argc, argv);
   
@@ -87,7 +138,8 @@ int main(int argc, char** argv) {
   rval = mbi->load_file(filename.c_str());
   MB_CHK_SET_ERR(rval, "Failed to load file: " << filename);
   std::cout << "Loading complete" << std::endl;
-
+  if ( mem_report ) report_memory_usage();
+  
   // initialize the GQT/GTT interfaces and build the OBBTree
   std::cout << "Building MOAB OBB Tree" << std::endl;
   moab::GeomTopoTool* GTT = new moab::GeomTopoTool(mbi, true);
@@ -97,7 +149,8 @@ int main(int argc, char** argv) {
   duration = (std::clock() - start);
   MB_CHK_SET_ERR(rval, "Failed to construct MOAB obb tree");
   std::cout << "MOAB OBB Tree Build Complete after " << duration / (double)CLOCKS_PER_SEC << " seconds" << std::endl;
-  
+  if ( mem_report ) report_memory_usage();
+
   // retrieve the volumes and surfaces
   moab::Range volumes;
   rval = get_all_volumes(mbi, volumes);
@@ -112,7 +165,10 @@ int main(int argc, char** argv) {
   MB_CHK_SET_ERR(rval, "Failed to retrieve triangles for the volume with handle: " << volumes );
     
   // create build triangles
+  std::cout << "Creating triangle references..." << std::endl;
   std::vector<TriangleRef> tri_refs = create_build_triangles(mbi, volume_triangles);
+  std::cout << "Triangle references created" << std::endl;
+  if ( mem_report ) report_memory_usage();
 
   // construct the SIMD BVH
   TriangleBVH* TBVH = new TriangleBVH();
@@ -123,6 +179,7 @@ int main(int argc, char** argv) {
   NodeRef* root = TBVH->Build(bs);
   duration = (std::clock() - start);
   std::cout << "BVH build complete after " << duration / (double)CLOCKS_PER_SEC << " seconds" << std::endl;
+  if ( mem_report ) report_memory_usage();
 
   // initialize some ray parameters
   double origin[3] = {0.0 , 0.0, 0.0};
