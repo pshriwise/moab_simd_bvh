@@ -240,27 +240,27 @@ template <typename T> class BVHBuilder {
 		    bounds[3][3],
 		    bounds[5][3]);
 
-    /* tn[0].clear(); */
-    /* tn[1].clear(); */
-    /* tn[2].clear(); */
-    /* tn[3].clear(); */
+    tn[0].clear();
+    tn[1].clear();
+    tn[2].clear();
+    tn[3].clear();
 
-    new (&tn[0]) TempNode<T>();
-    new (&tn[1]) TempNode<T>();
-    new (&tn[2]) TempNode<T>();
-    new (&tn[3]) TempNode<T>();
+    /* new (&tn[0]) TempNode<T>(); */
+    /* new (&tn[1]) TempNode<T>(); */
+    /* new (&tn[2]) TempNode<T>(); */
+    /* new (&tn[3]) TempNode<T>(); */
   
     // sort primitives into boxes by their centroid
     for(size_t i = 0; i < numPrimitives; i++) {
-      T p = primitives[i];
+      const T* p = &(primitives[i]);
       bool placed = false;
       for(size_t j = 0; j < 4 ; j++) {
 	// if the centroid is in the box, place it there
-	if( inside(boxes[j], p.center()) ){
+	if( inside(boxes[j], p->center()) ){
 	  placed = true;
-	  tn[j].prims.push_back(p);
-	  tn[j].box.update(p.lower.x, p.lower.y, p.lower.z);
-	  tn[j].box.update(p.upper.x, p.upper.y, p.upper.z);
+	  tn[j].prims.push_back(*p);
+	  tn[j].box.update(p->lower.x, p->lower.y, p->lower.z);
+	  tn[j].box.update(p->upper.x, p->upper.y, p->upper.z);
 	  break;
 	}
       }
