@@ -93,10 +93,13 @@ void report_memory_usage()
 			  &dum_uint, &dum_uint,
 			  &dum_int,
 			  &vm_size, &rss);
-  if (num_fields == 24)
-    std::cout << "Current memory usage in bytes: " << ((double)vm_size) << std::endl;
-  else
+  if (num_fields == 24) {
+    std::cout << "Current memory usage in bytes: " << ((double)vm_size)
+	      << "( " << ((double)vm_size)/(1024*1024) << " MB)" << std::endl;
+  }
+  else {
     std::cout << "Could not retrieve memory usage" << std::endl;
+  }
 
 }
 
@@ -177,6 +180,7 @@ int main(int argc, char** argv) {
   std::cout << "Building SIMD BVH..." << std::endl;
   start = std::clock();
   NodeRef* root = TBVH->Build(bs);
+  TBVH->stats();
   duration = (std::clock() - start);
   std::cout << "BVH build complete after " << duration / (double)CLOCKS_PER_SEC << " seconds" << std::endl;
   if ( mem_report ) report_memory_usage();
