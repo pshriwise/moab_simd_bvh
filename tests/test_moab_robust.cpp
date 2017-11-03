@@ -333,7 +333,7 @@ int main(int argc, char** argv) {
 	// make sure the distance to hit is the same
 	if( next_surf_dist != r.tfar ) {
 	  incorrect_distances++;
-	  accumulated_error = fabs(next_surf_dist - r.tfar);
+	  accumulated_error += fabs(next_surf_dist - r.tfar);
 	}
 
 	// add some stats if the ray misses the mesh
