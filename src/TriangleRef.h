@@ -81,7 +81,7 @@ struct TriangleRef : public BuildPrimitive {
     double huge_val = 1E37;
     double* nonneg_ray_len = &huge_val;
 
-    bool hit = moab::GeomUtil::plucker_ray_tri_intersect(coords,
+    bool hit = moab::GeomUtil::woop_ray_tri_intersect(coords,
 							 origin,
 							 direction,
 							 dist,

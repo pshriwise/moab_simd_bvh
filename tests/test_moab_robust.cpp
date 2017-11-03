@@ -199,6 +199,7 @@ int main(int argc, char** argv) {
   int incorrect_distances = 0;
   
   int moab_misses = 0;
+  int simd_bvh_misses = 0;
   
   double accumulated_error = 0.0;
 
@@ -275,6 +276,8 @@ int main(int argc, char** argv) {
 
 	rays_fired++;
 
+	if (r.primID == -1) simd_bvh_misses++;
+	
 	double direction[3];
 	this_dir.get(direction);
 
@@ -385,6 +388,7 @@ int main(int argc, char** argv) {
 	    << std::endl;
 
   std::cout << "MOAB Missed Rays Total: " << moab_misses << std::endl;
+  std::cout << "SIMD BVH Missed Rays Total: " << simd_bvh_misses << std::endl;
 	   
 
   std::cout << "Incorrect disatnces found (Epsilon = " << EPS << "):" << std::endl;
