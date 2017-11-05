@@ -95,7 +95,7 @@ void report_memory_usage()
 			  &vm_size, &rss);
   if (num_fields == 24) {
     std::cout << "Current memory usage in bytes: " << ((double)vm_size)
-	      << "( " << ((double)vm_size)/(1024*1024) << " MB)" << std::endl;
+	      << " (" << ((double)vm_size)/(1024*1024) << " MB)" << std::endl;
   }
   else {
     std::cout << "Could not retrieve memory usage" << std::endl;
