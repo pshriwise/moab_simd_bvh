@@ -108,3 +108,49 @@ struct TriangleRef : public BuildPrimitive {
 };
   
   
+struct MBTriangleRef {
+  
+  moab::EntityHandle *eh;
+  
+  inline MBTriangleRef(moab::EntityHandle* conn_ptr) : eh(conn_ptr) {}
+
+  inline void get_bounds(Vec3fa& lower, Vec3fa& upper, void* mesh_ptr = NULL) {
+
+    if( !mesh_ptr ) MB_CHK_SET_ERR_RET(moab::MB_FAILURE, "No Mesh Pointer");
+    
+    moab::Interface* mbi = (moab::Interface*) mesh_ptr;
+    
+    std::vector<moab::EntityHandle> conn;
+    moab::ErrorCode rval = mbi->get_connectivity(eh, 1, conn);
+    MB_CHK_SET_ERR_RET(rval, "Failed to get triangle connectivity.");
+
+    assert(conn.size() == 3);
+
+    moab::CartVect coords[3];
+    
+    rval = mbi->get_coords(&(conn[0]), 3, coords[0].array() );
+    MB_CHK_SET_ERR_RET(rval, "Failed to get triangle vert coords");
+
+
+    const float round_down = 1.0f-2.0f*float(ulp); // FIXME: use per instruction rounding for AVX512
+    const float round_up   = 1.0f+2.0f*float(ulp);
+
+    float bump = 5e-03;
+    
+    upper.x = std::max(coords[0][0],std::max(coords[1][0], coords[2][0]));
+    upper.x += bump;
+    upper.y = std::max(coords[0][1],std::max(coords[1][1], coords[2][1]));
+    upper.y += bump;
+    upper.z = std::max(coords[0][2],std::max(coords[1][2], coords[2][2]));
+    upper.z += bump;
+    
+    lower.x = std::min(coords[0][0],std::min(coords[1][0], coords[2][0]));
+    lower.x -= bump;
+    lower.y = std::min(coords[0][1],std::min(coords[1][1], coords[2][1]));
+    lower.y -= bump;
+    lower.z = std::min(coords[0][2],std::min(coords[1][2], coords[2][2]));
+    lower.z -= bump;
+    	
+  }
+
+};
