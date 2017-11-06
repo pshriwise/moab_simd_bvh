@@ -1,5 +1,7 @@
 #pragma once
 
+// #define VERBOSE_MODE
+
 #include "Primitive.h"
 
 #include "moab/Core.hpp"
@@ -149,8 +151,7 @@ struct MBTriangleRef {
     	
   }
 
-  template <typename R>
-  inline bool intersect(R &ray, moab::Interface* mbi) {
+  inline bool intersect(dRay &ray, moab::Interface* mbi) {
 
     moab::ErrorCode rval;
     
@@ -174,7 +175,6 @@ struct MBTriangleRef {
 							 nonneg_ray_len);
 
 #ifdef VERBOSE_MODE
-    std::cout << *this;
     std::cout << "Triangle Vert Coords: " << coords[0] << coords[1] << coords[2] << std::endl;
     if (hit) std::cout << "Hit found at distance: " << dist << std::endl;
     std::cout << std::endl;
