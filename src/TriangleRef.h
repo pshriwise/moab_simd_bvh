@@ -111,6 +111,8 @@ struct TriangleRef : public BuildPrimitive {
 struct MBTriangleRef {
   
   moab::EntityHandle *eh;
+
+  inline MBTriangleRef() {}
   
   inline MBTriangleRef(moab::EntityHandle* conn_ptr) : eh(conn_ptr) {}
 
@@ -152,15 +154,9 @@ struct MBTriangleRef {
 
     moab::ErrorCode rval;
     
-    std::vector<moab::EntityHandle> conn;
-    rval = mbi->get_connectivity(eh, 1, conn);
-    MB_CHK_SET_ERR_CONT(rval, "Failed to get triangle connectivity.");
-
-    assert(conn.size() == 3);
-
     moab::CartVect coords[3];
     
-    rval = mbi->get_coords(&(conn[0]), 3, coords[0].array() );
+    rval = mbi->get_coords(eh, 3, coords[0].array() );
     MB_CHK_SET_ERR_CONT(rval, "Failed to get triangle vert coords");
     
     moab::CartVect origin, direction;
