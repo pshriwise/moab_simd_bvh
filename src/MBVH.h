@@ -20,7 +20,7 @@ struct PrimRef{
   
   inline PrimRef () {}
 
-  inline PrimRef( const Vec3fa& lower, const Vec3fa& upper, void* p) : lower(lower), upper(upper), primitivePtr(p) {}
+  inline PrimRef( const Vec3fa& lower, const Vec3fa& upper, void* p, int i) : lower(lower), upper(upper), primitivePtr(p) { this->upper.a = i; }
   
   inline PrimRef (const AABB& bounds, unsigned int geomID, unsigned int primID)
   {
@@ -64,11 +64,16 @@ typedef TempNode<PrimRef> MBTempNode;
 class MBVH {
 
  public:
-  inline MBVH(moab::Interface *mesh_ptr, moab::Range tris) : MBI(mesh_ptr), maxLeafSize(8), depth(0), maxDepth(BVH_MAX_DEPTH), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0)
+  inline MBVH(moab::Interface *mesh_ptr, moab::Range tris) : MBI(mesh_ptr), maxLeafSize(7), depth(0), maxDepth(BVH_MAX_DEPTH), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0)
     {
       //set the connectivity pointer
       moab::ErrorCode rval = mesh_ptr->connect_iterate(tris.begin(), tris.end(), connPointer, vpere, numPrimitives);
       MB_CHK_SET_ERR_CONT(rval, "Failed to retrieve connectivity pointer");
+
+      num_stored = 0;
+      //      leaf_storage = (int*) malloc(numPrimitives*sizeof(int));
+
+      storage.resize(numPrimitives);
     }
      
  private:
@@ -78,7 +83,10 @@ class MBVH {
   size_t largest_leaf_size, smallest_leaf_size;
   size_t numLeaves;
 
-  std::list< std::list< MBTriangleRef > > storage;
+  int* leaf_storage;
+  int num_stored;
+
+  std::vector<MBTriangleRef> storage;
 
   moab::EntityHandle* connPointer;
   double* xPointer;
@@ -109,7 +117,7 @@ class MBVH {
       
       triref.get_bounds(lower, upper, MBI);
 	
-      PrimRef p(lower, upper, (void*)triref.eh);
+      PrimRef p(lower, upper, (void*)triref.eh, i);
 
       bs.prims.push_back(p);
     }
@@ -127,7 +135,7 @@ class MBVH {
 #ifdef VERBOSE_MODE
       std::cout << "Sending " << current.size() << std::endl;
 #endif
-      // return createLargeLeaf(current);
+      return createLargeLeaf(current);
     }
     
     // created a new node and set the bounds
@@ -150,8 +158,18 @@ class MBVH {
     std::cout << "At depth: " << depth << std::endl;
 #endif
 
+    for(size_t i = 0; i < N ; i++){
+      MBBuildState* br = new MBBuildState(current.depth+1, tempNodes[i].prims);
+      NodeRef* child_node = Build(*br);
+      // link the child node
+      aanode->setRef(i, *child_node);
+    }
+
+    depth = current.depth > depth ? current.depth : depth;
     
-  }
+    return this_node;
+  } // end build
+
 
   void splitNode(NodeRef* node, const PrimRef* primitives, const size_t numPrimitives, MBTempNode tempNodes[N]) {
 
@@ -325,13 +343,28 @@ class MBVH {
       if (current.size() < smallest_leaf_size) smallest_leaf_size = current.size();
       numLeaves++;
       depth = current.depth > depth ? current.depth : depth;
-      std::list<MBTriangleRef> l;
-      for( size_t i = 0; i < current.size(); i ++) {
-	MBTriangleRef t( (moab::EntityHandle*)current.prims[i].primitivePtr );
-	l.push_back(t);
+
+      if(current.size() == 0 ) return new NodeRef();
+
+      /* int* position = &(leaf_storage[num_stored]); */
+            
+      /* for( size_t i = 0; i < current.size(); i++) { */
+      /* 	leaf_storage[num_stored+i] = current.prims[i].primID(); */
+      /* } */
+
+      MBTriangleRef* position = &(*(storage.begin()+num_stored));
+
+      for( size_t i = 0; i < current.size(); i++) {
+	
+	MBTriangleRef t = MBTriangleRef(connPointer+(current.prims[i].primID()*vpere));
+	storage[num_stored+i] = t;
+	
       }
-      storage.push_back(l);
-      return storage.back().size() ? (NodeRef*) createLeaf(&(storage.back().back()), storage.back().size()) : new NodeRef();
+      
+      num_stored += (int)current.size();
+
+            
+      return current.size() ? (NodeRef*) createLeaf(position, current.size()) : new NodeRef();
     }
 
     
@@ -511,12 +544,12 @@ class MBVH {
 
 	// leaf (set distance to nearest/farthest box intersection for now)
 	size_t numPrims;
-	MBTriangleRef* prims = (MBTriangleRef*)cur.leaf(numPrims);
+	MBTriangleRef* primIDs = (MBTriangleRef*)cur.leaf(numPrims);
 	
 	if ( !cur.isEmpty() ) {
 	  for (size_t i = 0; i < numPrims; i++) {
-	    MBTriangleRef p = prims[i];
-	    p.template intersect< RayT<V,P> >(ray, MBI);
+	    MBTriangleRef t = primIDs[i];
+	    t.intersect< RayT<V,P> >(ray, MBI);
 	  }
 	}
 	
