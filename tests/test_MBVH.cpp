@@ -33,10 +33,13 @@ int main( int argc, char** argv ) {
 
   r.org = Vec3da(0,0,0);
   r.dir = Vec3da(1,0,0);
-
+  r.tfar = inf;
+  
   BVH.intersectRay( *root, r );
 
+
   CHECK( r.primID != -1 );
+  CHECK_REAL_EQUAL( 5.0, r.tfar, EPS);
   
   return 0;
   
