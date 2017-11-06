@@ -111,7 +111,8 @@ struct TriangleRef : public BuildPrimitive {
   
   
 struct MBTriangleRef {
-  
+
+  moab::EntityHandle *surf;
   moab::EntityHandle *eh;
 
   inline MBTriangleRef() {}
