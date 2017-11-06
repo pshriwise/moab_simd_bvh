@@ -363,7 +363,8 @@ class MBVH {
       
       num_stored += (int)current.size();
 
-            
+      if ((size_t)position & 8 )  std::cout << "Uh-oh" << std::endl;
+      
       return current.size() ? (NodeRef*) createLeaf(position, current.size()) : new NodeRef();
     }
 

@@ -151,9 +151,6 @@ int main(int argc, char** argv) {
   moab::GeomQueryTool* GQT = new moab::GeomQueryTool(GTT);
   rval = GTT->construct_obb_trees();
   duration = (std::clock() - start);
-  MB_CHK_SET_ERR(rval, "Failed to construct MOAB obb tree");
-  std::cout << "MOAB OBB Tree Build Complete after " << duration / (double)CLOCKS_PER_SEC << " seconds" << std::endl;
-  if ( mem_report ) report_memory_usage();
 
   // retrieve the volumes and surfaces
   moab::Range volumes;
@@ -162,6 +159,19 @@ int main(int argc, char** argv) {
 
   // working with only one volume (for now)
   assert(volumes.size() == 1);
+  
+  //print stats about MOAB tree
+  moab::EntityHandle root_set;
+  rval = GTT->get_root(volumes[0], root_set);
+  MB_CHK_SET_ERR(rval, "Failed to retrieve OBB root set for volume");
+
+  rval = GTT->obb_tree()->stats(root_set, std::cout);
+  MB_CHK_SET_ERR(rval, "Unable to print OBBTree stats");
+  
+  MB_CHK_SET_ERR(rval, "Failed to construct MOAB obb tree");
+  std::cout << "MOAB OBB Tree Build Complete after " << duration / (double)CLOCKS_PER_SEC << " seconds" << std::endl;
+  if ( mem_report ) report_memory_usage();
+
   
   // get all of the triangles in the volume
   moab::Range volume_triangles;
@@ -275,9 +285,6 @@ int main(int argc, char** argv) {
 	  // some extra setup for this call
 	  std::vector<double> hits;
 	  std::vector<moab::EntityHandle> sets, facets;
-	  moab::EntityHandle root_set;
-	  rval = GTT->get_root(volumes[0], root_set);
-	  MB_CHK_SET_ERR(rval, "Failed to retrieve OBB root set for volume");
 
 	  // fire ray
 	  start = std::clock();
