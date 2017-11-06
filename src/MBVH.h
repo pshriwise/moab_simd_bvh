@@ -16,8 +16,8 @@ typedef BVHIntersectorT<TriangleRef, Vec3fa, float> TriIntersector;
 
 typedef BVHIntersectorT<TriangleRef, Vec3da, double> DblTriIntersector;
 
-
 struct PrimRef{
+  
   inline PrimRef () {}
 
   inline PrimRef( const Vec3fa& lower, const Vec3fa& upper, void* p) : lower(lower), upper(upper), primitivePtr(p) {}
@@ -64,8 +64,13 @@ typedef TempNode<PrimRef> MBTempNode;
 class MBVH {
 
  public:
-  inline MBVH() : maxLeafSize(8), depth(0), maxDepth(BVH_MAX_DEPTH), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0) {}
-
+  inline MBVH(moab::Interface *mesh_ptr, moab::Range tris) : MBI(mesh_ptr), maxLeafSize(8), depth(0), maxDepth(BVH_MAX_DEPTH), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0)
+    {
+      //set the connectivity pointer
+      moab::ErrorCode rval = mesh_ptr->connect_iterate(tris.begin(), tris.end(), connPointer, vpere, numPrimitives);
+      MB_CHK_SET_ERR_CONT(rval, "Failed to retrieve connectivity pointer");
+    }
+     
  private:
   size_t maxLeafSize;
   size_t depth;
@@ -75,14 +80,17 @@ class MBVH {
 
   std::list< std::list< MBTriangleRef > > storage;
 
-  long unsigned int* connPointer;
+  moab::EntityHandle* connPointer;
   double* xPointer;
   double* yPointer;
   double* zPointer;
   moab::Interface* MBI;
   
   int numPrimitives;
-  
+  int vpere;
+
+  static const size_t stackSize = 1+(N-1)*BVH_MAX_DEPTH;
+
  public:
   
   
@@ -95,7 +103,7 @@ class MBVH {
     MBBuildState bs(0);
     for( size_t i = 0; i < numPrimitives; i++ ) {
       
-      MBTriangleRef triref = MBTriangleRef(connPointer+(i*3));
+      MBTriangleRef triref = MBTriangleRef(connPointer+(i*vpere));
 
       Vec3fa lower, upper;
       
@@ -426,6 +434,98 @@ class MBVH {
     
     return;
   }
+
+
+  static inline bool intersect(NodeRef& node, const TravRay& ray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& dist, size_t& mask) {
+    if(node.isLeaf()) return false;
+    mask = intersectBox(*node.node(),ray,tnear,tfar,dist);
+    return true;
+  }
+
+  template <typename V, typename P>
+  inline void intersectRay (NodeRef root, RayT<V,P> & ray) {
+    /* initialiez stack state */
+    StackItemT<NodeRef> stack[stackSize];
+    StackItemT<NodeRef>* stackPtr = stack+1;
+    StackItemT<NodeRef>* stackEnd = stack+stackSize;
+    stack[0].ptr = root;
+    stack[0].dist = neg_inf;
+    
+    /* verify correct inputs */
+    assert(ray.valid());
+    assert(ray.tnear >= 0.0f);
+    
+    TravRay vray = TravRay(ray.org, ray.dir);
+    vfloat4 ray_near = std::max(ray.tnear, (P)0.0);
+    vfloat4 ray_far = std::max(ray.tfar, (P)0.0);
+    
+    BVHTraverser nodeTraverser;
+    new (&nodeTraverser) BVHTraverser();
+    
+    TraversalTracker t;
+    
+    while (true) pop:
+      {
+	if(stackPtr == stack) break;
+	stackPtr--;
+	NodeRef cur = NodeRef(stackPtr->ptr);
+	t.up();
+	
+	// if the ray doesn't reach this node, move to next
+	if(*(float*)&stackPtr->dist > ray.tfar) { continue; }
+        
+	while (true)
+	  {
+	    size_t mask = 0; vfloat4 tNear(inf);
+	    bool nodeIntersected = intersect(cur, vray, ray_near, ray_far, tNear, mask);
+	    
+#ifdef VERBOSE_MODE
+	    AANode* curaa = cur.node();
+	    if( !cur.isEmpty() ) std::cout << curaa->bounds() << std::endl;
+	    else std::cout << "EMPTY NODE" << std::endl;
+	    
+	    if (nodeIntersected) {
+	      std::cout << "INTERIOR NODE" << std::endl;
+	      std::cout << std::bitset<4>(mask) << std::endl;
+	      std::cout << "Distances to hit: " << tNear << std::endl;
+	      std::cout << *cur.node() << std::endl;
+	    }
+	    else
+	      std::cout << "LEAF NODE" << std::endl;
+	    std::cout << std::endl;
+#endif
+	    
+	    // if no intersection, this is a leaf - check primitives
+	    if (!nodeIntersected) {
+	      // temporary setting of ray values
+	      //	    ray.tnear = std::min(min(tNear),ray.tnear);
+	      //	    ray.tfar = std::min(min(tNear),ray.tfar);
+	      break; }
+	    
+	    t.down(mask);
+	    // if no children were hit, pop next node
+	    if (mask == 0) { goto pop; }
+	    
+	    nodeTraverser.traverseClosest(cur, mask, tNear, stackPtr, stackEnd);
+	  }
+
+	// leaf (set distance to nearest/farthest box intersection for now)
+	size_t numPrims;
+	MBTriangleRef* prims = (MBTriangleRef*)cur.leaf(numPrims);
+	
+	if ( !cur.isEmpty() ) {
+	  for (size_t i = 0; i < numPrims; i++) {
+	    MBTriangleRef p = prims[i];
+	    p.template intersect< RayT<V,P> >(ray, MBI);
+	  }
+	}
+	
+      }
+    
+    return;
+  }
+
+
   
 };
 
