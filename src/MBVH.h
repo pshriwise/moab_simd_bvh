@@ -475,8 +475,7 @@ class MBVH {
     return true;
   }
 
-  template <typename V, typename P>
-  inline void intersectRay (NodeRef root, RayT<V,P> & ray) {
+  inline void intersectRay (NodeRef root, dRay & ray) {
     /* initialiez stack state */
     StackItemT<NodeRef> stack[stackSize];
     StackItemT<NodeRef>* stackPtr = stack+1;
@@ -489,8 +488,8 @@ class MBVH {
     assert(ray.tnear >= 0.0f);
     
     TravRay vray = TravRay(ray.org, ray.dir);
-    vfloat4 ray_near = std::max(ray.tnear, (P)0.0);
-    vfloat4 ray_far = std::max(ray.tfar, (P)0.0);
+    vfloat4 ray_near = std::max(ray.tnear, 0.0);
+    vfloat4 ray_far = std::max(ray.tfar, 0.0);
     
     BVHTraverser nodeTraverser;
     new (&nodeTraverser) BVHTraverser();
@@ -549,7 +548,7 @@ class MBVH {
 	if ( !cur.isEmpty() ) {
 	  for (size_t i = 0; i < numPrims; i++) {
 	    MBTriangleRef t = primIDs[i];
-	    t.intersect< RayT<V,P> >(ray, MBI);
+	    t.intersect(ray, MBI);
 	  }
 	}
 	
@@ -558,6 +557,11 @@ class MBVH {
     return;
   }
 
+  void stats () { std::cout << "Depth: " << depth << std::endl;
+    std::cout << "Largest leaf: " << largest_leaf_size << std::endl;
+    std::cout <<  "Smallest leaf: " << smallest_leaf_size << std::endl;
+    std::cout << "Number of leaves: " << numLeaves << std::endl;  
+  }
 
   
 };
