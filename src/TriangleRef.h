@@ -119,16 +119,10 @@ struct MBTriangleRef {
     if( !mesh_ptr ) MB_CHK_SET_ERR_RET(moab::MB_FAILURE, "No Mesh Pointer");
     
     moab::Interface* mbi = (moab::Interface*) mesh_ptr;
-    
-    std::vector<moab::EntityHandle> conn;
-    moab::ErrorCode rval = mbi->get_connectivity(eh, 1, conn);
-    MB_CHK_SET_ERR_RET(rval, "Failed to get triangle connectivity.");
-
-    assert(conn.size() == 3);
-
+   
     moab::CartVect coords[3];
     
-    rval = mbi->get_coords(&(conn[0]), 3, coords[0].array() );
+    moab::ErrorCode rval = mbi->get_coords(eh, 3, coords[0].array() );
     MB_CHK_SET_ERR_RET(rval, "Failed to get triangle vert coords");
 
 
@@ -191,8 +185,8 @@ struct MBTriangleRef {
 #endif
 
     if (hit && dist < ray.tfar) {
-      ray.primID = eh;
-      ray.eh = eh;
+      ray.primID = *eh;
+      ray.eh = *eh;
       ray.tfar = dist;
     }
 

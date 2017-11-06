@@ -27,6 +27,17 @@ int main( int argc, char** argv ) {
 
   MBVH BVH(mbi, all_tris);
 
+  NodeRef* root = BVH.Build();
+
+  dRay r;
+
+  r.org = Vec3da(0,0,0);
+  r.dir = Vec3da(1,0,0);
+
+  BVH.intersectRay( *root, r );
+
+  CHECK( r.primID != -1 );
+  
   return 0;
   
 }
