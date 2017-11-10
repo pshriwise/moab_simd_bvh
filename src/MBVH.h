@@ -67,6 +67,10 @@ class BVH {
  public:
   inline BVH(double* xPtr, double* yPtr, double* zPtr, moab::Interface* mesh_ptr, void* primitivePtr, int numPrimitives, int stride, moab::Range tris) : connPointer(primitivePtr), numPrimitives(numPrimitives), vpere(stride), maxLeafSize(7), depth(0), maxDepth(BVH_MAX_DEPTH), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0), MBI(mesh_ptr), num_stored(0), xPointer(xPtr), yPointer(yPtr), zPointer(zPtr)
     {
+      coordPointers[0] = xPtr;
+      coordPointers[1] = yPtr;
+      coordPointers[2] = zPtr;
+      
       storage.resize(numPrimitives);
     }
      
@@ -84,6 +88,8 @@ class BVH {
   std::vector<T> storage;
 
   void* connPointer;
+
+  double* coordPointers[3];
   
   double* xPointer;
   double* yPointer;
@@ -110,7 +116,7 @@ class BVH {
 
       Vec3fa lower, upper;
       
-      triref.get_bounds(lower, upper, MBI);
+      triref.get_bounds(lower, upper, coordPointers);
 	
       PrimRef p(lower, upper, (void*)triref.eh, i);
 
@@ -413,8 +419,8 @@ class BVH {
       BuildBuildSetT<PrimRef> primitives = tempChildren[i].prims;
       
       for(size_t j = 0; j < primitives.size(); j++) {
-	b.update(primitives[i].lower.x, primitives[i].lower.y, primitives[i].lower.z);
-	b.update(primitives[i].upper.x, primitives[i].upper.y, primitives[i].upper.z);
+	b.update(primitives[j].lower.x, primitives[j].lower.y, primitives[j].lower.z);
+	b.update(primitives[j].upper.x, primitives[j].upper.y, primitives[j].upper.z);
       }
       
       x_min[i] = b.lower.x; y_min[i] = b.lower.y; z_min[i] = b.lower.z;
@@ -544,7 +550,7 @@ class BVH {
 	if ( !cur.isEmpty() ) {
 	  for (size_t i = 0; i < numPrims; i++) {
 	    T t = primIDs[i];
-	    t.intersect(ray, MBI);
+	    t.intersect(ray, (void*)coordPointers);
 	  }
 	}
 	

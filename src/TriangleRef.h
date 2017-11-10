@@ -14,7 +14,11 @@ struct TriangleRef : public BuildPrimitive {
   
   //  inline TriangleRef(long unsigned int tri_handle): eh(tri_handle){ set_primID(eh); }
 
-  inline TriangleRef(moab::EntityHandle tri_handle, moab::Interface* mbi): eh(tri_handle) { set_bounds(mbi); set_primID(eh); set_sceneID((size_t)mbi); }
+  inline TriangleRef(moab::EntityHandle tri_handle, moab::Interface* mbi): eh(tri_handle) {
+    set_bounds(mbi);
+    set_primID(eh);
+    set_sceneID((size_t)mbi);
+  }
 
   friend bool operator< (const TriangleRef& a, const TriangleRef& b) { return a.eh < b.eh; }
 
@@ -22,7 +26,7 @@ struct TriangleRef : public BuildPrimitive {
 
   friend bool operator== (const TriangleRef& a, const TriangleRef& b) { return a.eh == b.eh; }
 
-  inline void set_bounds(moab::Interface * mbi) {
+  inline void set_bounds(moab::Interface* mbi) {
     
     std::vector<moab::EntityHandle> conn;
     moab::ErrorCode rval = mbi->get_connectivity(&eh, 1, conn);
@@ -35,7 +39,7 @@ struct TriangleRef : public BuildPrimitive {
     rval = mbi->get_coords(&(conn[0]), 3, coords[0].array() );
     MB_CHK_SET_ERR_RET(rval, "Failed to get triangle vert coords");
 
-
+    
     const float round_down = 1.0f-2.0f*float(ulp); // FIXME: use per instruction rounding for AVX512
     const float round_up   = 1.0f+2.0f*float(ulp);
 
@@ -112,23 +116,39 @@ struct TriangleRef : public BuildPrimitive {
   
 struct MBTriangleRef {
 
-  moab::EntityHandle *surf;
+  size_t i1, i2, i3;
   moab::EntityHandle *eh;
 
   inline MBTriangleRef() {}
   
-  inline MBTriangleRef(moab::EntityHandle* conn_ptr) : eh(conn_ptr) {}
+  inline MBTriangleRef(moab::EntityHandle* conn_ptr) : eh(conn_ptr) {
+    i1 = *(conn_ptr)-1;
+    i2 = *(conn_ptr + 1)-1;
+    i3 = *(conn_ptr + 2)-1;
+  }
 
   inline void get_bounds(Vec3fa& lower, Vec3fa& upper, void* mesh_ptr = NULL) {
 
     if( !mesh_ptr ) MB_CHK_SET_ERR_RET(moab::MB_FAILURE, "No Mesh Pointer");
     
-    moab::Interface* mbi = (moab::Interface*) mesh_ptr;
-   
-    moab::CartVect coords[3];
+    double** coordPointers = (double**) mesh_ptr;
     
-    moab::ErrorCode rval = mbi->get_coords(eh, 3, coords[0].array() );
-    MB_CHK_SET_ERR_RET(rval, "Failed to get triangle vert coords");
+    double *x_ptr = coordPointers[0];
+    double *y_ptr = coordPointers[1];
+    double *z_ptr = coordPointers[2];
+
+    moab::CartVect coords[3];
+
+    coords[0] = moab::CartVect(x_ptr[i1], y_ptr[i1], z_ptr[i1]);
+    coords[1] = moab::CartVect(x_ptr[i2], y_ptr[i2], z_ptr[i2]);
+    coords[2] = moab::CartVect(x_ptr[i3], y_ptr[i3], z_ptr[i3]);
+
+    /* moab::Interface* mbi = (moab::Interface*) mesh_ptr; */
+   
+    /* moab::CartVect coords[3]; */
+    
+    /* moab::ErrorCode rval = mbi->get_coords(eh, 3, coords[0].array() ); */
+    /* MB_CHK_SET_ERR_RET(rval, "Failed to get triangle vert coords"); */
 
 
     const float round_down = 1.0f-2.0f*float(ulp); // FIXME: use per instruction rounding for AVX512
@@ -152,14 +172,29 @@ struct MBTriangleRef {
     	
   }
 
-  inline bool intersect(dRay &ray, moab::Interface* mbi) {
+  inline bool intersect(dRay &ray, void* mesh_ptr = NULL) {
 
-    moab::ErrorCode rval;
+
+    if( !mesh_ptr ) MB_CHK_SET_ERR_CONT(moab::MB_FAILURE, "No Mesh Pointer");
     
+    double** coordPointers = (double**) mesh_ptr;
+    
+    double *x_ptr = coordPointers[0];
+    double *y_ptr = coordPointers[1];
+    double *z_ptr = coordPointers[2];
+
     moab::CartVect coords[3];
+
+    coords[0] = moab::CartVect(x_ptr[i1], y_ptr[i1], z_ptr[i1]);
+    coords[1] = moab::CartVect(x_ptr[i2], y_ptr[i2], z_ptr[i2]);
+    coords[2] = moab::CartVect(x_ptr[i3], y_ptr[i3], z_ptr[i3]);
     
-    rval = mbi->get_coords(eh, 3, coords[0].array() );
-    MB_CHK_SET_ERR_CONT(rval, "Failed to get triangle vert coords");
+    /* moab::ErrorCode rval; */
+    
+    /* moab::CartVect coords[3]; */
+    
+    /* rval = mbi->get_coords(eh, 3, coords[0].array() ); */
+    /* MB_CHK_SET_ERR_CONT(rval, "Failed to get triangle vert coords"); */
     
     moab::CartVect origin, direction;
 
