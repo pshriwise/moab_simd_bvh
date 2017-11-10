@@ -61,10 +61,11 @@ public:
 typedef BuildStateT<PrimRef> MBBuildState;
 typedef TempNode<PrimRef> MBTempNode;
 
-class MBVH {
+template <typename T>
+class BVH {
 
  public:
-  inline MBVH(moab::Interface *mesh_ptr, moab::Range tris) : MBI(mesh_ptr), maxLeafSize(7), depth(0), maxDepth(BVH_MAX_DEPTH), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0)
+  inline BVH(moab::Interface *mesh_ptr, moab::Range tris) : MBI(mesh_ptr), maxLeafSize(7), depth(0), maxDepth(BVH_MAX_DEPTH), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0)
     {
       //set the connectivity pointer
       moab::ErrorCode rval = mesh_ptr->connect_iterate(tris.begin(), tris.end(), connPointer, vpere, numPrimitives);
@@ -77,6 +78,7 @@ class MBVH {
     }
      
  private:
+  
   size_t maxLeafSize;
   size_t depth;
   size_t maxDepth;
@@ -86,9 +88,10 @@ class MBVH {
   int* leaf_storage;
   int num_stored;
 
-  std::vector<MBTriangleRef> storage;
+  std::vector<T> storage;
 
   moab::EntityHandle* connPointer;
+  
   double* xPointer;
   double* yPointer;
   double* zPointer;
@@ -101,8 +104,7 @@ class MBVH {
 
  public:
   
-  
-  inline void* createLeaf(MBTriangleRef* primitives, size_t numPrimitives) {
+  inline void* createLeaf(T* primitives, size_t numPrimitives) {
     return (void*) encodeLeaf((void*)primitives, numPrimitives - 1);
   }
 
@@ -111,7 +113,7 @@ class MBVH {
     MBBuildState bs(0);
     for( size_t i = 0; i < numPrimitives; i++ ) {
       
-      MBTriangleRef triref = MBTriangleRef(connPointer+(i*vpere));
+      T triref = T(connPointer+(i*vpere));
 
       Vec3fa lower, upper;
       
@@ -352,11 +354,11 @@ class MBVH {
       /* 	leaf_storage[num_stored+i] = current.prims[i].primID(); */
       /* } */
 
-      MBTriangleRef* position = &(*(storage.begin()+num_stored));
+      T* position = &(*(storage.begin()+num_stored));
 
       for( size_t i = 0; i < current.size(); i++) {
 	
-	MBTriangleRef t = MBTriangleRef(connPointer+(current.prims[i].primID()*vpere));
+	T t = T(connPointer+(current.prims[i].primID()*vpere));
 	storage[num_stored+i] = t;
 	
       }
@@ -544,11 +546,11 @@ class MBVH {
 
 	// leaf (set distance to nearest/farthest box intersection for now)
 	size_t numPrims;
-	MBTriangleRef* primIDs = (MBTriangleRef*)cur.leaf(numPrims);
+	T* primIDs = (T*)cur.leaf(numPrims);
 	
 	if ( !cur.isEmpty() ) {
 	  for (size_t i = 0; i < numPrims; i++) {
-	    MBTriangleRef t = primIDs[i];
+	    T t = primIDs[i];
 	    t.intersect(ray, MBI);
 	  }
 	}
@@ -567,3 +569,4 @@ class MBVH {
   
 };
 
+typedef BVH<MBTriangleRef> MBVH;
