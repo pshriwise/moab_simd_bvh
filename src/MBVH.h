@@ -65,7 +65,7 @@ template <typename T>
 class BVH {
 
  public:
-  inline BVH(double* xPtr, double* yPtr, double* zPtr, moab::Interface* mesh_ptr, void* primitivePtr, int numPrimitives, int stride, moab::Range tris) : connPointer(primitivePtr), numPrimitives(numPrimitives), vpere(stride), maxLeafSize(7), depth(0), maxDepth(BVH_MAX_DEPTH), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0), MBI(mesh_ptr), num_stored(0), xPointer(xPtr), yPointer(yPtr), zPointer(zPtr)
+  inline BVH(double* xPtr, double* yPtr, double* zPtr, void* primitivePtr, int numPrimitives, int stride, moab::Range tris) : connPointer(primitivePtr), numPrimitives(numPrimitives), vpere(stride), maxLeafSize(7), depth(0), maxDepth(BVH_MAX_DEPTH), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0), num_stored(0)
     {
       coordPointers[0] = xPtr;
       coordPointers[1] = yPtr;
@@ -90,12 +90,7 @@ class BVH {
   void* connPointer;
 
   double* coordPointers[3];
-  
-  double* xPointer;
-  double* yPointer;
-  double* zPointer;
-  moab::Interface* MBI;
-  
+    
   int numPrimitives;
   int vpere;
 
