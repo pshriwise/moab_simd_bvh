@@ -108,14 +108,14 @@ int main(int argc, char** argv) {
 
   ProgOptions po("MOAB Robustness Tests: a program for testing robustness of the MOAB SIMD BVH against MOAB's native ray fire engine.");
 
-  bool obb_fire = false;
+  bool gqt_fire = false;
   bool eh_check = false;
   bool mem_report = false;
   std::string filename;
   
   po.addOpt<std::string>("moab_mesh_file,f", "typically a .h5m file, this file should contain a DAGMC surface mesh", &filename);
   
-  po.addOpt<void>("obb_fire,o", "Fire using MOAB's OBBTree Directly (typically faster than using the GeomQueryTool", &obb_fire);
+  po.addOpt<void>("gqt_fire,o", "Fire using MOAB's OBBTree Directly (typically faster than using the GeomQueryTool", &gqt_fire);
 
   po.addOpt<void>("eh_check,e", "Check that EntityHandles of facets returned from the SIMD BVH match those returned from MOAB when firing at the center of triangles (only works with obb_fire option)", &eh_check);
 
@@ -278,7 +278,7 @@ int main(int argc, char** argv) {
 	double direction[3];
 	this_dir.get(direction);
 
-	if (obb_fire) {
+	if (!gqt_fire) {
 	  // some extra setup for this call
 	  std::vector<double> hits;
 	  std::vector<moab::EntityHandle> sets, facets;
