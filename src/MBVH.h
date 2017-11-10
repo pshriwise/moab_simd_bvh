@@ -71,7 +71,7 @@ class BVH {
       coordPointers[1] = yPtr;
       coordPointers[2] = zPtr;
       
-      storage.resize(numPrimitives);
+      leaf_sequence_storage.resize(numPrimitives);
     }
      
  private:
@@ -82,10 +82,9 @@ class BVH {
   size_t largest_leaf_size, smallest_leaf_size;
   size_t numLeaves;
 
-  int* leaf_storage;
   int num_stored;
 
-  std::vector<T> storage;
+  std::vector<T> leaf_sequence_storage;
 
   void* connPointer;
 
@@ -342,18 +341,12 @@ class BVH {
 
       if(current.size() == 0 ) return new NodeRef();
 
-      /* int* position = &(leaf_storage[num_stored]); */
-            
-      /* for( size_t i = 0; i < current.size(); i++) { */
-      /* 	leaf_storage[num_stored+i] = current.prims[i].primID(); */
-      /* } */
-
-      T* position = &(*(storage.begin()+num_stored));
+      T* position = &(*(leaf_sequence_storage.begin()+num_stored));
 
       for( size_t i = 0; i < current.size(); i++) {
 	
 	T t = T((moab::EntityHandle*)connPointer + (current.prims[i].primID()*vpere) );
-	storage[num_stored+i] = t;
+	leaf_sequence_storage[num_stored+i] = t;
 	
       }
       
@@ -523,7 +516,6 @@ class BVH {
 	      std::cout << "LEAF NODE" << std::endl;
 	    std::cout << std::endl;
 #endif
-	    
 	    // if no intersection, this is a leaf - check primitives
 	    if (!nodeIntersected) {
 	      // temporary setting of ray values
