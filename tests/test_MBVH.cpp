@@ -177,9 +177,18 @@ int main(int argc, char** argv) {
   moab::Range volume_triangles;
   rval = get_triangles_on_volume(mbi, volumes[0], volume_triangles);
   MB_CHK_SET_ERR(rval, "Failed to retrieve triangles for the volume with handle: " << volumes );
-    
+
+  
+  //set the connectivity pointer
+  moab::EntityHandle* connPointer;
+  
+  int vpere, numPrimitives;
+  
+  rval = mbi->connect_iterate(volume_triangles.begin(), volume_triangles.end(), connPointer, vpere, numPrimitives);
+  MB_CHK_SET_ERR_CONT(rval, "Failed to retrieve connectivity pointer");
+  
   // construct the SIMD BVH
-  MBVH* BVH = new MBVH(mbi, volume_triangles);
+  MBVH* BVH = new MBVH(mbi, connPointer, numPrimitives, vpere, volume_triangles);
   std::cout << "Building SIMD BVH..." << std::endl;
   start = std::clock();
   NodeRef* root = BVH->Build();

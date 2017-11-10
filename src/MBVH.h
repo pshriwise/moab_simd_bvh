@@ -65,15 +65,8 @@ template <typename T>
 class BVH {
 
  public:
-  inline BVH(moab::Interface *mesh_ptr, moab::Range tris) : MBI(mesh_ptr), maxLeafSize(7), depth(0), maxDepth(BVH_MAX_DEPTH), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0)
+  inline BVH(moab::Interface* mesh_ptr, void* primitivePtr, int numPrimitives, int stride, moab::Range tris) : connPointer(primitivePtr), numPrimitives(numPrimitives), vpere(stride), maxLeafSize(7), depth(0), maxDepth(BVH_MAX_DEPTH), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0), MBI(mesh_ptr), num_stored(0)
     {
-      //set the connectivity pointer
-      moab::ErrorCode rval = mesh_ptr->connect_iterate(tris.begin(), tris.end(), connPointer, vpere, numPrimitives);
-      MB_CHK_SET_ERR_CONT(rval, "Failed to retrieve connectivity pointer");
-
-      num_stored = 0;
-      //      leaf_storage = (int*) malloc(numPrimitives*sizeof(int));
-
       storage.resize(numPrimitives);
     }
      
@@ -90,7 +83,7 @@ class BVH {
 
   std::vector<T> storage;
 
-  moab::EntityHandle* connPointer;
+  void* connPointer;
   
   double* xPointer;
   double* yPointer;
@@ -113,7 +106,7 @@ class BVH {
     MBBuildState bs(0);
     for( size_t i = 0; i < numPrimitives; i++ ) {
       
-      T triref = T(connPointer+(i*vpere));
+      T triref = T((moab::EntityHandle*)connPointer + (i*vpere));
 
       Vec3fa lower, upper;
       
@@ -358,7 +351,7 @@ class BVH {
 
       for( size_t i = 0; i < current.size(); i++) {
 	
-	T t = T(connPointer+(current.prims[i].primID()*vpere));
+	T t = T((moab::EntityHandle*)connPointer + (current.prims[i].primID()*vpere) );
 	storage[num_stored+i] = t;
 	
       }
@@ -570,3 +563,5 @@ class BVH {
 };
 
 typedef BVH<MBTriangleRef> MBVH;
+typedef BVH<BuildPrimitive> BBVH;
+typedef BVH<TriangleRef> TBVH;
