@@ -7,6 +7,7 @@
 #include "BuildState.h"
 #include "Intersector.h"
 #include "TriangleRef.h"
+#include "MOABDirectAccessManager.h"
 
 typedef BVHBuilder<TriangleRef> TriangleBVH;
 
@@ -58,6 +59,7 @@ public:
   
 };
 
+
 typedef BuildStateT<PrimRef> MBBuildState;
 typedef TempNode<PrimRef> MBTempNode;
 
@@ -65,11 +67,9 @@ template <typename T>
 class BVH {
 
  public:
-  inline BVH(double* xPtr, double* yPtr, double* zPtr, void* primitivePtr, int numPrimitives, int stride, moab::Range tris) : connPointer(primitivePtr), numPrimitives(numPrimitives), vpere(stride), maxLeafSize(7), depth(0), maxDepth(BVH_MAX_DEPTH), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0), num_stored(0)
+  inline BVH(double* xPtr, double* yPtr, double* zPtr, void* primitivePtr, int numPrimitives, int stride, moab::Range tris) : numPrimitives(numPrimitives), vpere(stride), maxLeafSize(7), depth(0), maxDepth(BVH_MAX_DEPTH), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0), num_stored(0)
     {
-      coordPointers[0] = xPtr;
-      coordPointers[1] = yPtr;
-      coordPointers[2] = zPtr;
+      MDAM = new MOABDirectAccessManager(xPtr, yPtr, zPtr, primitivePtr);
       
       leaf_sequence_storage.resize(numPrimitives);
     }
@@ -86,10 +86,8 @@ class BVH {
 
   std::vector<T> leaf_sequence_storage;
 
-  void* connPointer;
-
-  double* coordPointers[3];
-    
+  MOABDirectAccessManager* MDAM;
+  
   int numPrimitives;
   int vpere;
 
@@ -106,11 +104,11 @@ class BVH {
     MBBuildState bs(0);
     for( size_t i = 0; i < numPrimitives; i++ ) {
       
-      T triref = T((moab::EntityHandle*)connPointer + (i*vpere));
+      T triref = T((moab::EntityHandle*)MDAM->conn + (i*vpere));
 
       Vec3fa lower, upper;
       
-      triref.get_bounds(lower, upper, coordPointers);
+      triref.get_bounds(lower, upper, MDAM);
 	
       PrimRef p(lower, upper, (void*)triref.eh, i);
 
@@ -345,7 +343,7 @@ class BVH {
 
       for( size_t i = 0; i < current.size(); i++) {
 	
-	T t = T((moab::EntityHandle*)connPointer + (current.prims[i].primID()*vpere) );
+	T t = T((moab::EntityHandle*)MDAM->conn + (current.prims[i].primID()*vpere) );
 	leaf_sequence_storage[num_stored+i] = t;
 	
       }
@@ -537,7 +535,7 @@ class BVH {
 	if ( !cur.isEmpty() ) {
 	  for (size_t i = 0; i < numPrims; i++) {
 	    T t = primIDs[i];
-	    t.intersect(ray, (void*)coordPointers);
+	    t.intersect(ray, (void*)MDAM);
 	  }
 	}
 	

@@ -7,6 +7,7 @@
 #include "moab/Core.hpp"
 #include "moab/CartVect.hpp"
 #include "moab/GeomUtil.hpp"
+#include "MOABDirectAccessManager.h"
 
 struct TriangleRef : public BuildPrimitive {
   using::BuildPrimitive::lower;
@@ -130,18 +131,14 @@ struct MBTriangleRef {
   inline void get_bounds(Vec3fa& lower, Vec3fa& upper, void* mesh_ptr = NULL) {
 
     if( !mesh_ptr ) MB_CHK_SET_ERR_RET(moab::MB_FAILURE, "No Mesh Pointer");
-    
-    double** coordPointers = (double**) mesh_ptr;
-    
-    double *x_ptr = coordPointers[0];
-    double *y_ptr = coordPointers[1];
-    double *z_ptr = coordPointers[2];
+
+    MOABDirectAccessManager *mdam = (MOABDirectAccessManager*) mesh_ptr;
 
     moab::CartVect coords[3];
 
-    coords[0] = moab::CartVect(x_ptr[i1], y_ptr[i1], z_ptr[i1]);
-    coords[1] = moab::CartVect(x_ptr[i2], y_ptr[i2], z_ptr[i2]);
-    coords[2] = moab::CartVect(x_ptr[i3], y_ptr[i3], z_ptr[i3]);
+    coords[0] = moab::CartVect(mdam->xPtr[i1], mdam->yPtr[i1], mdam->zPtr[i1]);
+    coords[1] = moab::CartVect(mdam->xPtr[i2], mdam->yPtr[i2], mdam->zPtr[i2]);
+    coords[2] = moab::CartVect(mdam->xPtr[i3], mdam->yPtr[i3], mdam->zPtr[i3]);
 
     /* moab::Interface* mbi = (moab::Interface*) mesh_ptr; */
    
@@ -176,18 +173,14 @@ struct MBTriangleRef {
 
 
     if( !mesh_ptr ) MB_CHK_SET_ERR_CONT(moab::MB_FAILURE, "No Mesh Pointer");
-    
-    double** coordPointers = (double**) mesh_ptr;
-    
-    double *x_ptr = coordPointers[0];
-    double *y_ptr = coordPointers[1];
-    double *z_ptr = coordPointers[2];
+
+    MOABDirectAccessManager* mdam = (MOABDirectAccessManager*) mesh_ptr;
 
     moab::CartVect coords[3];
 
-    coords[0] = moab::CartVect(x_ptr[i1], y_ptr[i1], z_ptr[i1]);
-    coords[1] = moab::CartVect(x_ptr[i2], y_ptr[i2], z_ptr[i2]);
-    coords[2] = moab::CartVect(x_ptr[i3], y_ptr[i3], z_ptr[i3]);
+    coords[0] = moab::CartVect(mdam->xPtr[i1], mdam->yPtr[i1], mdam->zPtr[i1]);
+    coords[1] = moab::CartVect(mdam->xPtr[i2], mdam->yPtr[i2], mdam->zPtr[i2]);
+    coords[2] = moab::CartVect(mdam->xPtr[i3], mdam->yPtr[i3], mdam->zPtr[i3]);
     
     /* moab::ErrorCode rval; */
     
