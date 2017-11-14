@@ -104,7 +104,7 @@ class BVH {
     MBBuildState bs(0);
     for( size_t i = 0; i < numPrimitives; i++ ) {
       
-      T triref = T((moab::EntityHandle*)MDAM->conn + (i*vpere));
+      T triref = T((moab::EntityHandle*)MDAM->conn + (i*vpere), MDAM->id);
 
       Vec3fa lower, upper;
       
@@ -343,7 +343,7 @@ class BVH {
 
       for( size_t i = 0; i < current.size(); i++) {
 	
-	T t = T((moab::EntityHandle*)MDAM->conn + (current.prims[i].primID()*vpere) );
+	T t = T((moab::EntityHandle*)MDAM->conn + (current.prims[i].primID()*vpere), MDAM->id);
 	leaf_sequence_storage[num_stored+i] = t;
 	
       }

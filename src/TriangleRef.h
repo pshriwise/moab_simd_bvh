@@ -118,11 +118,11 @@ struct TriangleRef : public BuildPrimitive {
 struct MBTriangleRef {
 
   size_t i1, i2, i3;
-  moab::EntityHandle *eh;
+  moab::EntityHandle eh;
 
   inline MBTriangleRef() {}
   
-  inline MBTriangleRef(moab::EntityHandle* conn_ptr) : eh(conn_ptr) {
+  inline MBTriangleRef(moab::EntityHandle* conn_ptr, moab::EntityHandle id) : eh(id) {
     i1 = *(conn_ptr)-1;
     i2 = *(conn_ptr + 1)-1;
     i3 = *(conn_ptr + 2)-1;
@@ -210,8 +210,8 @@ struct MBTriangleRef {
 #endif
 
     if (hit && dist < ray.tfar) {
-      ray.primID = *eh;
-      ray.eh = *eh;
+      ray.primID = eh;
+      ray.eh = eh;
       ray.tfar = dist;
     }
 
