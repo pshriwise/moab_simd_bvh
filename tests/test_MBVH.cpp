@@ -197,7 +197,7 @@ int main(int argc, char** argv) {
   MB_CHK_SET_ERR(rval, "Failed to retrieve the vertex pointer");
 
   // construct the SIMD BVH
-  MBVH* BVH = new MBVH(x_ptr, y_ptr, z_ptr, connPointer, numPrimitives, vpere);
+  MBVH* BVH = new MBVH(x_ptr, y_ptr, z_ptr, connPointer, numPrimitives, vpere, volumes[0]);
   std::cout << "Building SIMD BVH..." << std::endl;
   start = std::clock();
   NodeRef* root = BVH->Build();
