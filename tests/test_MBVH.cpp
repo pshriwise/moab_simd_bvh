@@ -202,9 +202,12 @@ int main(int argc, char** argv) {
   start = std::clock();
   NodeRef* root = BVH->Build();
   duration = (std::clock() - start);
-  BVH->stats();
   std::cout << "BVH build complete after " << duration / (double)CLOCKS_PER_SEC << " seconds" << std::endl;
   if ( mem_report ) report_memory_usage();
+
+  //print SIMD BVH stats
+  BVHStatTracker *BVHS = new BVHStatTracker();
+  BVHS->gatherStats(*root);
 
   // initialize some ray parameters
   double origin[3] = {0.0 , 0.0, 0.0};
