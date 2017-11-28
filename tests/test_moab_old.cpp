@@ -113,17 +113,6 @@ int main(int argc, char** argv) {
   bool mem_report = false;
   std::string filename;
   
-  po.addOpt<std::string>("moab_mesh_file,f", "typically a .h5m file, this file should contain a DAGMC surface mesh", &filename);
-  
-  po.addOpt<void>("gqt_fire,o", "Fire using MOAB's OBBTree Directly (typically faster than using the GeomQueryTool", &gqt_fire);
-
-  po.addOpt<void>("eh_check,e", "Check that EntityHandles of facets returned from the SIMD BVH match those returned from MOAB when firing at the center of triangles (only works with obb_fire option)", &eh_check);
-
-  po.addOpt<void>("mem_rep,m", "Report memory at critical points throughout the test", &mem_report);
-  
-  po.addOptionHelpHeading("Options for performing robustness test");
-  po.parseCommandLine(argc, argv);
-  
   moab::ErrorCode rval;
 
   // some time-tracking values
