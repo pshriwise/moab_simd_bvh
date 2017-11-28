@@ -112,16 +112,22 @@ int main(int argc, char** argv) {
   bool gqt_fire = false;
   bool eh_check = false;
   bool mem_report = false;
+  bool stat_report = false;
+  bool build_only = false;
   std::string filename;
   
   po.addOpt<std::string>("moab_mesh_file,f", "typically a .h5m file, this file should contain a DAGMC surface mesh", &filename);
   
-  po.addOpt<void>("gqt_fire,o", "Fire using MOAB's OBBTree Directly (typically faster than using the GeomQueryTool", &gqt_fire);
+  po.addOpt<void>("gqt_fire,-g", "Fire using MOAB's GQT (slower than using the OBBTree directly)", &gqt_fire);
 
   po.addOpt<void>("eh_check,e", "Check that EntityHandles of facets returned from the SIMD BVH match those returned from MOAB when firing at the center of triangles (only works if gqt_fire)", &eh_check);
 
   po.addOpt<void>("mem_rep,m", "Report memory at critical points throughout the test", &mem_report);
-  
+
+  po.addOpt<void>("stats,s", "Report tree structure statistics for both BVH implementations", &stat_report);
+
+  po.addOpt<void>("build_only,b", "Only Build the BVH's and exit", &build_only);
+		 
   po.addOptionHelpHeading("Options for performing robustness test");
   po.parseCommandLine(argc, argv);
   
@@ -151,7 +157,7 @@ int main(int argc, char** argv) {
   moab::GeomQueryTool* GQT = new moab::GeomQueryTool(GTT);
   rval = GTT->construct_obb_trees();
   duration = (std::clock() - start);
-
+  MB_CHK_SET_ERR(rval, "Failed to construct MOAB obb tree");
   // retrieve the volumes and surfaces
   moab::Range volumes;
   rval = get_all_volumes(mbi, volumes);
@@ -165,10 +171,11 @@ int main(int argc, char** argv) {
   rval = GTT->get_root(volumes[0], root_set);
   MB_CHK_SET_ERR(rval, "Failed to retrieve OBB root set for volume");
 
-  rval = GTT->obb_tree()->stats(root_set, std::cout);
-  MB_CHK_SET_ERR(rval, "Unable to print OBBTree stats");
+  if (stat_report) {
+    rval = GTT->obb_tree()->stats(root_set, std::cout);
+    MB_CHK_SET_ERR(rval, "Unable to print OBBTree stats");
+  }
   
-  MB_CHK_SET_ERR(rval, "Failed to construct MOAB obb tree");
   std::cout << "MOAB OBB Tree Build Complete after " << duration / (double)CLOCKS_PER_SEC << " seconds" << std::endl;
   if ( mem_report ) report_memory_usage();
 
@@ -205,10 +212,14 @@ int main(int argc, char** argv) {
   std::cout << "BVH build complete after " << duration / (double)CLOCKS_PER_SEC << " seconds" << std::endl;
   if ( mem_report ) report_memory_usage();
 
-  //print SIMD BVH stats
-  BVHStatTracker *BVHS = new BVHStatTracker();
-  BVHS->gatherStats(*root);
+  if (stat_report ) {
+    //print SIMD BVH stats
+    BVHStatTracker *BVHS = new BVHStatTracker();
+    BVHS->gatherStats(*root);
+  }
 
+  if(build_only) return rval;
+  
   // initialize some ray parameters
   double origin[3] = {0.0 , 0.0, 0.0};
   double ray_len = 1e17;
