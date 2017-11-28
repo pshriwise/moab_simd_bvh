@@ -28,9 +28,6 @@
 // defining 1/3 for convenience here
 #define third (1.0/3.0)
 
-// floating point epsilon check value
-#define EPS 0.0
-
 /// test functions used for convenience ///
 
 // gets all EntitySets in the MOAB instance with a Geometry Dimension Tag and a value of dim
@@ -114,6 +111,7 @@ int main(int argc, char** argv) {
   bool mem_report = false;
   bool stat_report = false;
   bool build_only = false;
+  double EPS = 0.0;
   std::string filename;
   
   po.addOpt<std::string>("moab_mesh_file,f", "typically a .h5m file, this file should contain a DAGMC surface mesh", &filename);
@@ -127,6 +125,8 @@ int main(int argc, char** argv) {
   po.addOpt<void>("stats,s", "Report tree structure statistics for both BVH implementations", &stat_report);
 
   po.addOpt<void>("build_only,b", "Only Build the BVH's and exit", &build_only);
+
+  po.addOpt<double>("tolerance,t", "Tolerance for difference between MOAB and SIMD BVH hit distances (default is 0.0)", &EPS); 
 		 
   po.addOptionHelpHeading("Options for performing robustness test");
   po.parseCommandLine(argc, argv);
