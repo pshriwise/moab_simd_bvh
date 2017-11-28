@@ -18,53 +18,6 @@
   #include <bitset>
 #endif
 
-struct TraversalTracker {
-  
-  std::vector<int> s;
-
-  inline TraversalTracker() { s.push_back(1); }
-
-  inline void count_hits(size_t& mask, int& hits) {
-    assert(mask <= 15 && mask >= 0);
-    
-    if(mask == 0) return;
-    size_t r = __bscf(mask);
-    hits++;
-    count_hits(mask, hits);
-    return;
-  }
-  
-  inline void down(size_t mask) {
-    assert(mask >= 0);
-
-    s.back()--;
-
-    if(mask == 0 ) return;
-    
-    int nodes_hit = 0;
-    count_hits(mask, nodes_hit);
-    s.push_back(nodes_hit);
-    
-    return;
-  }
-  
-  inline void up() {
-
-    if(s.back() == 0) {
-      s.pop_back();
-      up();
-    }
-    else{
-      return;
-    }
-  }
-
-  inline int depth() { return s.size()-1; }
-  
-};
-
-  
-
 template <typename T, typename V, typename P> class BVHIntersectorT {
   
   static const size_t stackSize = 1+(N-1)*BVH_MAX_DEPTH;
@@ -99,14 +52,11 @@ template <typename T, typename V, typename P> class BVHIntersectorT {
     BVHTraverser nodeTraverser;
     new (&nodeTraverser) BVHTraverser();
 
-    TraversalTracker t;
-    
     while (true) pop:
       {
 	if(stackPtr == stack) break;
 	stackPtr--;
 	NodeRef cur = NodeRef(stackPtr->ptr);
-	t.up();
 	
 	// if the ray doesn't reach this node, move to next
 	if(*(float*)&stackPtr->dist > ray.tfar) { continue; }
@@ -139,7 +89,6 @@ template <typename T, typename V, typename P> class BVHIntersectorT {
 	      //	    ray.tfar = std::min(min(tNear),ray.tfar);
 	      break; }
 
-	    t.down(mask);
 	    // if no children were hit, pop next node
 	    if (mask == 0) { goto pop; }
 	    

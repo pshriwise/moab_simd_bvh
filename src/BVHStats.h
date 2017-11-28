@@ -82,8 +82,6 @@ struct BVHStatTracker {
     stack[0].ptr = root;
     stack[0].dist = neg_inf;
 
-    TraversalTracker t;
-
     BVHTraverser nodeTraverser;
     new (&nodeTraverser) BVHTraverser();
 

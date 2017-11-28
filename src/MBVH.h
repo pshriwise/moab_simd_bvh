@@ -479,14 +479,11 @@ class BVH {
     BVHTraverser nodeTraverser;
     new (&nodeTraverser) BVHTraverser();
     
-    TraversalTracker t;
-    
     while (true) pop:
       {
 	if(stackPtr == stack) break;
 	stackPtr--;
 	NodeRef cur = NodeRef(stackPtr->ptr);
-	t.up();
 	
 	// if the ray doesn't reach this node, move to next
 	if(*(float*)&stackPtr->dist > ray.tfar) { continue; }
@@ -518,7 +515,6 @@ class BVH {
 	      //	    ray.tfar = std::min(min(tNear),ray.tfar);
 	      break; }
 	    
-	    t.down(mask);
 	    // if no children were hit, pop next node
 	    if (mask == 0) { goto pop; }
 	    
