@@ -69,7 +69,7 @@ template <typename T>
 class BVH {
 
  public:
-  inline BVH(double* xPtr, double* yPtr, double* zPtr, void* primitivePtr, int numPrimitives, int stride, long unsigned int id) : numPrimitives(numPrimitives), vpere(stride), maxLeafSize(7), depth(0), maxDepth(BVH_MAX_DEPTH), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0), num_stored(0)
+  inline BVH(double* xPtr, double* yPtr, double* zPtr, void* primitivePtr, int numPrimitives, int stride, long unsigned int id) : numPrimitives(numPrimitives), vpere(stride), maxLeafSize(7), depth(0), maxDepth(BVH_MAX_DEPTH), num_stored(0)
     {
       MDAM = new MOABDirectAccessManager(id, xPtr, yPtr, zPtr, primitivePtr);
       
@@ -81,8 +81,6 @@ class BVH {
   size_t maxLeafSize;
   size_t depth;
   size_t maxDepth;
-  size_t largest_leaf_size, smallest_leaf_size;
-  size_t numLeaves;
 
   int num_stored;
 
@@ -334,9 +332,6 @@ class BVH {
     /* } */
 
     if (current.size() <= maxLeafSize) {
-      if (current.size() > largest_leaf_size) largest_leaf_size = current.size();
-      if (current.size() < smallest_leaf_size) smallest_leaf_size = current.size();
-      numLeaves++;
       depth = current.depth > depth ? current.depth : depth;
 
       if(current.size() == 0 ) return new NodeRef();
@@ -545,13 +540,6 @@ class BVH {
     
     return;
   }
-
-  void stats () { std::cout << "Depth: " << depth << std::endl;
-    std::cout << "Largest leaf: " << largest_leaf_size << std::endl;
-    std::cout <<  "Smallest leaf: " << smallest_leaf_size << std::endl;
-    std::cout << "Number of leaves: " << numLeaves << std::endl;  
-  }
-
   
 };
 
