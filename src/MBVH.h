@@ -2,12 +2,14 @@
 
 #include <set>
 #include <vector>
+#include <bitset>
 
 #include "Builder.h"
 #include "BuildState.h"
 #include "Intersector.h"
 #include "TriangleRef.h"
 #include "MOABDirectAccessManager.h"
+#include "BVHStats.h"
 
 typedef BVHBuilder<TriangleRef> TriangleBVH;
 

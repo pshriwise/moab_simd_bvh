@@ -11,6 +11,30 @@
 class BVHTraverser {
  public:
 
+  static inline void traverse(NodeRef& current_node,
+				     size_t mask,
+				     StackItemT<NodeRef>*& stackPtr,
+				     StackItemT<NodeRef>* stackEnd) {
+    assert(mask != 0);
+
+    while(mask != 0)
+      {
+	const Node* node = current_node.bnode();
+    
+	size_t r = __bscf(mask);
+	current_node = node->child(r);
+
+	//put on stack right away and advance to next location (no sort)
+	stackPtr->ptr = current_node;
+	stackPtr->dist = neg_inf;
+	stackPtr++;
+    
+	if(mask == 0) { break; }
+      }
+    
+    return;
+  }
+  
   static inline void traverseClosest(NodeRef& current_node, 
 			             size_t mask,
 				     const vfloat4& tNear,
