@@ -13,12 +13,13 @@ struct BVHStatTracker {
 
   int num_empty;
   int num_leaves;
+  int depth;
   
   static const size_t stackSize = 1+(N-1)*BVH_MAX_DEPTH;
 
-  inline BVHStatTracker() : num_empty(0), num_leaves(0) { s.push_back(1); }
+  inline BVHStatTracker() : num_empty(0), num_leaves(0), depth(0) { s.push_back(1); }
 
-  inline void count_hits(size_t& mask, int& hits) {
+  inline void count_hits(size_t mask, int& hits) {
     assert(mask <= 15 && mask >= 0);
     
     if(mask == 0) return;
@@ -31,13 +32,11 @@ struct BVHStatTracker {
   inline void down(size_t mask) {
     assert(mask >= 0);
 
-    s.back()--;
-
-    if(mask == 0 ) return;
+    if( mask == 0 ) return;
     
     int nodes_hit = 0;
     count_hits(mask, nodes_hit);
-    s.push_back(nodes_hit);
+    s.push_back(nodes_hit-1);
     
     return;
   }
@@ -49,11 +48,12 @@ struct BVHStatTracker {
       up();
     }
     else{
+      s.back()--;
       return;
     }
   }
 
-  inline int depth() { return s.size()-1; }
+  inline int current_depth() { return s.size()-1; }
 
 
   inline void gatherStats(NodeRef root) {
@@ -75,18 +75,24 @@ struct BVHStatTracker {
 	if(stackPtr == stack) break;
 	stackPtr--;
 	NodeRef cur = NodeRef(stackPtr->ptr);
-
+	up();
+	
 	while (true)
 	  {
-	    size_t mask = 8; //always visit all child nodes
+	    size_t mask = 15; //always visit all child nodes
 
-	    if( !cur.isEmpty() ) num_empty++;
+	    if( cur.isEmpty() ) num_empty++;
 
-	    if( !cur.isLeaf() ) {
+	    if( cur.isLeaf() ) {
+	      depth = current_depth() > depth ? current_depth() : depth;
 	      num_leaves++;
 	      break;
 	    }
 
+	    down(mask);
+	    
+	    if (mask == 0) goto pop;
+	    
 	    nodeTraverser.traverse(cur, mask, stackPtr, stackEnd);
 
 	  }
@@ -95,6 +101,10 @@ struct BVHStatTracker {
 	void* prims = cur.leaf(numPrims);
 
       }
+
+    std::cout << "Number of leaves in the tree: " << num_leaves << std::endl;
+    std::cout << "Number of empty nodes in the tree: " << num_empty << std::endl;
+    std::cout << "Tree depth: " << depth << std::endl;
   }
   
 };

@@ -12,24 +12,27 @@ class BVHTraverser {
  public:
 
   static inline void traverse(NodeRef& current_node,
-				     size_t mask,
-				     StackItemT<NodeRef>*& stackPtr,
-				     StackItemT<NodeRef>* stackEnd) {
+			      size_t mask,
+			      StackItemT<NodeRef>*& stackPtr,
+			      StackItemT<NodeRef>* stackEnd) {
     assert(mask != 0);
-
+    const Node* node = current_node.bnode();
+    
+    size_t r;
     while(mask != 0)
       {
-	const Node* node = current_node.bnode();
-    
-	size_t r = __bscf(mask);
-	current_node = node->child(r);
+	r = __bscf(mask);
 
+	if(mask == 0) {
+	  current_node = node->child(r);
+	  break;
+	}
+	
 	//put on stack right away and advance to next location (no sort)
-	stackPtr->ptr = current_node;
+	stackPtr->ptr = node->child(r);
 	stackPtr->dist = neg_inf;
 	stackPtr++;
     
-	if(mask == 0) { break; }
       }
     
     return;
