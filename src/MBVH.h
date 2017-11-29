@@ -71,13 +71,7 @@ class BVH {
  public:
   inline BVH(MOABDirectAccessManager *mdam, long unsigned int id) : MDAM(mdam), maxLeafSize(8), depth(0), maxDepth(BVH_MAX_DEPTH), num_stored(0)
     {
-
-      
-      numPrimitives = MDAM->num_elements;
-
-      vpere = MDAM->element_stride;
-      
-      leaf_sequence_storage.resize(numPrimitives);
+      leaf_sequence_storage.resize(MDAM->num_elements);
     }
      
  private:
@@ -92,9 +86,6 @@ class BVH {
 
   MOABDirectAccessManager* MDAM;
   
-  int numPrimitives;
-  int vpere;
-
   static const size_t stackSize = 1+(N-1)*BVH_MAX_DEPTH;
 
  public:
@@ -103,12 +94,13 @@ class BVH {
     return (void*) encodeLeaf((void*)primitives, numPrimitives - 1);
   }
 
-  inline NodeRef* Build() {
+  inline NodeRef* Build(int id, int start, size_t numPrimitives) {
     // create BuildState of PrimitiveReferences
     MBBuildState bs(0);
-    for( size_t i = 0; i < numPrimitives; i++ ) {
+    int end = start + numPrimitives;
+    for( size_t i = start; i < end; i++ ) {
       
-      T triref = T((moab::EntityHandle*)MDAM->conn + (i*vpere), MDAM->id);
+      T triref = T((moab::EntityHandle*)MDAM->conn + (i*MDAM->element_stride), MDAM->id);
 
       Vec3fa lower, upper;
       
@@ -344,13 +336,15 @@ class BVH {
 
       for( size_t i = 0; i < current.size(); i++) {
 	
-	T t = T((moab::EntityHandle*)MDAM->conn + (current.prims[i].primID()*vpere), MDAM->id);
+	T t = T((moab::EntityHandle*)MDAM->conn + (current.prims[i].primID()*MDAM->element_stride), MDAM->id);
 	leaf_sequence_storage[num_stored+i] = t;
 	
       }
       
       num_stored += (int)current.size();
 
+      if(num_stored > leaf_sequence_storage.size()) { std::cout << "FAILURE: too many primitives have been stored" << std::endl; assert(false); }
+      
       if ((size_t)position & 8 )  std::cout << "Uh-oh" << std::endl;
       
       return current.size() ? (NodeRef*) createLeaf(position, current.size()) : new NodeRef();

@@ -97,7 +97,8 @@ struct MBVHManager {
 
     moab::Range::iterator ri;
     std::vector<moab::Tag> temp_tags;
-    for(ri = geom_sets.begin(); ri != geom_sets.end();) {
+    
+    for(ri = geom_sets.begin(); ri != geom_sets.end(); ri++) {
       
       // make sure this is a geometric entityset by checking for tag
       rval = MBI->tag_get_tags_on_entity(*ri, temp_tags);
@@ -113,9 +114,33 @@ struct MBVHManager {
       rval = MBI->tag_get_data(geom_dim_tag, geom_sets, &dim);
       MB_CHK_SET_ERR(rval, "Failed to get the geom dimension of EntitySet: " << *ri);
 
-      return rval;
+      moab::Range tris;
+      switch (dim) {
+
+	case 2 : // build surface tree
+	  // create a new tree with the MBVH class;
+	  rval = MBI->get_entities_by_type(*ri, moab::MBTRI, tris);
+	  MB_CHK_SET_ERR(rval, "Failed to get triangles for surface: " << *ri);
+
+	  // IN PROGRESS
+	  /*
+	  NodeRef* root = MBVH->build(*ri, tris);
+	  if!(root) { MB_CHK_SET_ERR(moab::MB_FAILURE, "Failed to build BVH for surface: " << *ri);
+	  BVHRoots[*ri - lowest_set] = root;
+	  */
+	  
+	  break;
+	case 3 : //create volume tree from child surface trees
+	  // join trees method here
+	  break;
+	  
+	default:
+	  MB_CHK_SET_ERR(moab::MB_FAILURE, "Entity " << *ri << "is not a surface or volume EntitySet");
+	}
     }
     
-  };
+    return rval;
+  }
   
 };
+  
