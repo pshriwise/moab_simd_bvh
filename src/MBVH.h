@@ -376,6 +376,18 @@ class BVH {
     MBTempNode tempNodes[4];
     splitNode(this_node, primitives, numPrimitives, tempNodes, settings);
 
+    // check for a lot of entities in a single node
+    float total_frac = (float)numPrimitives/(float)total_entities;
+    for(size_t i = 0; i < N; i++) {
+      float frac = (float)tempNodes[i].prims.size()/(float)numPrimitives;
+      // if nearly all of the primitives are in one of the tempNodes,
+      // and there aren't many primitives (relative to the total number) left
+      // then just create a large leaf node
+      if (frac > 0.9 && total_frac < 0.1) {
+	return createLargeLeaf(current);
+      }
+    }
+    
 #ifdef VERBOSE_MODE
     std::cout << "New Node with Bounds: " << std::endl << *aanode << std::endl;
     std::cout << "At depth: " << depth << std::endl;
