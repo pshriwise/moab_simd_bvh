@@ -209,7 +209,7 @@ int main(int argc, char** argv) {
   MBVH* BVH = new MBVH(MDAM, volumes[0]);
   std::cout << "Building SIMD BVH..." << std::endl;
   start = std::clock();
-  NodeRef* root = BVH->Build();
+  NodeRef* root = BVH->Build(volumes[0], 0, volume_triangles.size());
   duration = (std::clock() - start);
   std::cout << "BVH build complete after " << duration / (double)CLOCKS_PER_SEC << " seconds" << std::endl;
   if ( mem_report ) report_memory_usage();
