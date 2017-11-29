@@ -19,6 +19,27 @@ int main(int argc, char** argv) {
 
   assert(MBVHM.BVHRoots.size() > 0);
 
-  return 0;
+  
+  moab::Tag geom_dim_tag;
+  rval = mbi ->tag_get_handle(GEOM_DIMENSION_TAG_NAME, geom_dim_tag);
+  MB_CHK_SET_ERR_CONT(rval, "Failed to get the geom dim tag handle");
+
+  moab::Range surfs, vols;
+  
+  int dim = 2;
+  void *ptr = &dim;
+  rval = mbi ->get_entities_by_type_and_tag(0, moab::MBENTITYSET, &geom_dim_tag, &ptr, 1, surfs);
+  MB_CHK_SET_ERR_CONT(rval, "Failed to retrieve surface entitysets");
+
+  dim = 3;
+  rval = mbi ->get_entities_by_type_and_tag(0, moab::MBENTITYSET, &geom_dim_tag, &ptr, 1, vols);
+  MB_CHK_SET_ERR_CONT(rval, "Failed to retrieve surface entitysets");
+
+  moab::Range all_sets = unite(surfs,vols);
+  
+  rval = MBVHM.build(all_sets);
+  MB_CHK_SET_ERR(rval, "Failed to build BVH's");
+  
+  return rval;
 
 }

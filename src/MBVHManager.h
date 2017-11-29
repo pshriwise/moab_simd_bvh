@@ -64,11 +64,11 @@ struct MBVHManager {
 
     MDAM = new MOABDirectAccessManager(0, x_ptr, y_ptr, z_ptr, connPointer);
 
-    moab::Range surfs, vols;
 
     rval = MBI->tag_get_handle(GEOM_DIMENSION_TAG_NAME, geom_dim_tag);
     MB_CHK_SET_ERR_CONT(rval, "Failed to get the geom dim tag handle");
 
+    moab::Range surfs, vols;
     int dim = 2;
     void *ptr = &dim;
     rval = MBI->get_entities_by_type_and_tag(0, moab::MBENTITYSET, &geom_dim_tag, &ptr, 1, surfs);
@@ -90,4 +90,32 @@ struct MBVHManager {
     }
   };
 
+  moab::ErrorCode build( moab::Range geom_sets) {
+
+    // make sure that we're working only with EntitySets here
+    assert(geom_sets.all_of_type(moab::MBENTITYSET));
+
+    moab::Range::iterator ri;
+    std::vector<moab::Tag> temp_tags;
+    for(ri = geom_sets.begin(); ri != geom_sets.end();) {
+      
+      // make sure this is a geometric entityset by checking for tag
+      rval = MBI->tag_get_tags_on_entity(*ri, temp_tags);
+      MB_CHK_SET_ERR(rval, "Failed to get all tags on EntitySet: " << *ri);
+      assert(std::find(temp_tags.begin(), temp_tags.end(), geom_dim_tag) != temp_tags.end());
+
+      //check for existing tree
+      if(BVHRoots[*ri - lowest_set]) {
+	return moab::MB_SUCCESS;
+      }
+      
+      int dim;
+      rval = MBI->tag_get_data(geom_dim_tag, geom_sets, &dim);
+      MB_CHK_SET_ERR(rval, "Failed to get the geom dimension of EntitySet: " << *ri);
+
+      return rval;
+    }
+    
+  };
+  
 };
