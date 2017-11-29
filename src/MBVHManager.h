@@ -51,9 +51,9 @@ struct MBVHManager {
     }      
 
     // get the facet connectivity direct access pointer
-    int vpere, numPrimitives;
+    int vpere, element_count;
     moab::EntityHandle *connPointer;
-    rval = MBI->connect_iterate(facets.begin(), facets.end(), connPointer, vpere, numPrimitives);
+    rval = MBI->connect_iterate(facets.begin(), facets.end(), connPointer, vpere, element_count);
     MB_CHK_SET_ERR_CONT(rval, "Failed to get the direct access pointer for facets");
 
     // get the vertex coordinate direct access pointer    
@@ -62,7 +62,7 @@ struct MBVHManager {
     rval = MBI->coords_iterate(verts.begin(), verts.end(), x_ptr, y_ptr, z_ptr, vert_count);
     MB_CHK_SET_ERR_CONT(rval, "Failed to retrieve the vertex pointer");
 
-    MDAM = new MOABDirectAccessManager(0, x_ptr, y_ptr, z_ptr, connPointer);
+    MDAM = new MOABDirectAccessManager(x_ptr, y_ptr, z_ptr, vert_count, connPointer, element_count, vpere);
 
 
     rval = MBI->tag_get_handle(GEOM_DIMENSION_TAG_NAME, geom_dim_tag);

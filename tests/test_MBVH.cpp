@@ -203,8 +203,10 @@ int main(int argc, char** argv) {
   rval = mbi->coords_iterate(verts.begin(), verts.end(), x_ptr, y_ptr, z_ptr, vert_count);MB_CHK_SET_ERR(rval, "Error in coords_iterate");
   MB_CHK_SET_ERR(rval, "Failed to retrieve the vertex pointer");
 
+
+  MOABDirectAccessManager* MDAM = new MOABDirectAccessManager(x_ptr, y_ptr, z_ptr, vert_count, connPointer, numPrimitives, vpere);
   // construct the SIMD BVH
-  MBVH* BVH = new MBVH(x_ptr, y_ptr, z_ptr, connPointer, numPrimitives, vpere, volumes[0]);
+  MBVH* BVH = new MBVH(MDAM, volumes[0]);
   std::cout << "Building SIMD BVH..." << std::endl;
   start = std::clock();
   NodeRef* root = BVH->Build();
