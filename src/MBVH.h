@@ -69,7 +69,7 @@ template <typename T>
 class BVH {
 
  public:
-  inline BVH(double* xPtr, double* yPtr, double* zPtr, void* primitivePtr, int numPrimitives, int stride, long unsigned int id) : numPrimitives(numPrimitives), vpere(stride), maxLeafSize(7), depth(0), maxDepth(BVH_MAX_DEPTH), num_stored(0)
+  inline BVH(double* xPtr, double* yPtr, double* zPtr, void* primitivePtr, int numPrimitives, int stride, long unsigned int id) : numPrimitives(numPrimitives), vpere(stride), maxLeafSize(8), depth(0), maxDepth(BVH_MAX_DEPTH), num_stored(0)
     {
       MDAM = new MOABDirectAccessManager(id, xPtr, yPtr, zPtr, primitivePtr);
       
