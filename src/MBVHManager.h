@@ -22,7 +22,8 @@ struct MBVHManager {
   moab::ErrorCode rval;
 
   MOABDirectAccessManager* MDAM;
-
+  MBVH* MOABBVH;
+  
   std::vector<NodeRef*> BVHRoots;
   moab::EntityHandle lowest_set;
 
@@ -62,7 +63,7 @@ struct MBVHManager {
     rval = MBI->coords_iterate(verts.begin(), verts.end(), x_ptr, y_ptr, z_ptr, vert_count);
     MB_CHK_SET_ERR_CONT(rval, "Failed to retrieve the vertex pointer");
 
-    MDAM = new MOABDirectAccessManager(x_ptr, y_ptr, z_ptr, vert_count, connPointer, element_count, vpere);
+    MDAM = new MOABDirectAccessManager(x_ptr, y_ptr, z_ptr, vert_count, facets.front(), connPointer, element_count, vpere);
 
 
     rval = MBI->tag_get_handle(GEOM_DIMENSION_TAG_NAME, geom_dim_tag);
@@ -88,6 +89,9 @@ struct MBVHManager {
     else {
       output_w_border("Geometric EntitySets are not contiguous");
     }
+
+    MOABBVH = new MBVH(MDAM);
+   
   };
 
   moab::ErrorCode build( moab::Range geom_sets) {
@@ -110,11 +114,12 @@ struct MBVHManager {
 	return moab::MB_SUCCESS;
       }
       
-      int dim;
-      rval = MBI->tag_get_data(geom_dim_tag, geom_sets, &dim);
+      int dim = 0;
+      rval = MBI->tag_get_data(geom_dim_tag, &(*ri), 1, &dim);
       MB_CHK_SET_ERR(rval, "Failed to get the geom dimension of EntitySet: " << *ri);
 
       moab::Range tris;
+      NodeRef* root;
       switch (dim) {
 
 	case 2 : // build surface tree
@@ -123,14 +128,13 @@ struct MBVHManager {
 	  MB_CHK_SET_ERR(rval, "Failed to get triangles for surface: " << *ri);
 
 	  // IN PROGRESS
-	  /*
-	  NodeRef* root = MBVH->build(*ri, tris);
-	  if!(root) { MB_CHK_SET_ERR(moab::MB_FAILURE, "Failed to build BVH for surface: " << *ri);
+	  root = MOABBVH->Build(*ri, tris.front() - MDAM->first_element, tris.size());
+	  if(!root) { MB_CHK_SET_ERR(moab::MB_FAILURE, "Failed to build BVH for surface: " << *ri); }
 	  BVHRoots[*ri - lowest_set] = root;
-	  */
-	  
 	  break;
+	  
 	case 3 : //create volume tree from child surface trees
+	  std::cout << "Volume trees aren't supported yet" << std::endl;
 	  // join trees method here
 	  break;
 	  

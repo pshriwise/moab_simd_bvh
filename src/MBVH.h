@@ -69,7 +69,7 @@ template <typename T>
 class BVH {
 
  public:
-  inline BVH(MOABDirectAccessManager *mdam, long unsigned int id) : MDAM(mdam), maxLeafSize(8), depth(0), maxDepth(BVH_MAX_DEPTH), num_stored(0)
+  inline BVH(MOABDirectAccessManager *mdam) : MDAM(mdam), maxLeafSize(8), depth(0), maxDepth(BVH_MAX_DEPTH), num_stored(0)
     {
       leaf_sequence_storage.resize(MDAM->num_elements);
     }
@@ -80,6 +80,8 @@ class BVH {
   size_t depth;
   size_t maxDepth;
 
+  int current_build_id;
+  
   int num_stored;
 
   std::vector<T> leaf_sequence_storage;
@@ -100,7 +102,7 @@ class BVH {
     int end = start + numPrimitives;
     for( size_t i = start; i < end; i++ ) {
       
-      T triref = T((moab::EntityHandle*)MDAM->conn + (i*MDAM->element_stride), MDAM->id);
+      T triref = T((moab::EntityHandle*)MDAM->conn + (i*MDAM->element_stride), id);
 
       Vec3fa lower, upper;
       
@@ -111,6 +113,8 @@ class BVH {
       bs.prims.push_back(p);
     }
 
+    current_build_id = id;
+    
     return Build(bs);
   }
 
@@ -336,7 +340,7 @@ class BVH {
 
       for( size_t i = 0; i < current.size(); i++) {
 	
-	T t = T((moab::EntityHandle*)MDAM->conn + (current.prims[i].primID()*MDAM->element_stride), MDAM->id);
+	T t = T((moab::EntityHandle*)MDAM->conn + (current.prims[i].primID()*MDAM->element_stride), current_build_id);
 	leaf_sequence_storage[num_stored+i] = t;
 	
       }

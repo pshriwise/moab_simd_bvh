@@ -204,9 +204,10 @@ int main(int argc, char** argv) {
   MB_CHK_SET_ERR(rval, "Failed to retrieve the vertex pointer");
 
 
-  MOABDirectAccessManager* MDAM = new MOABDirectAccessManager(x_ptr, y_ptr, z_ptr, vert_count, connPointer, numPrimitives, vpere);
+  MOABDirectAccessManager* MDAM = new MOABDirectAccessManager(x_ptr, y_ptr, z_ptr, vert_count, volume_triangles.front(),
+							      connPointer, numPrimitives, vpere);
   // construct the SIMD BVH
-  MBVH* BVH = new MBVH(MDAM, volumes[0]);
+  MBVH* BVH = new MBVH(MDAM);
   std::cout << "Building SIMD BVH..." << std::endl;
   start = std::clock();
   NodeRef* root = BVH->Build(volumes[0], 0, volume_triangles.size());

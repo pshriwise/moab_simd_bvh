@@ -18,7 +18,6 @@ int main(int argc, char** argv) {
   assert(MBVHM.MDAM);
 
   assert(MBVHM.BVHRoots.size() > 0);
-
   
   moab::Tag geom_dim_tag;
   rval = mbi ->tag_get_handle(GEOM_DIMENSION_TAG_NAME, geom_dim_tag);
