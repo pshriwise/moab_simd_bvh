@@ -16,6 +16,14 @@ struct AABB {
 
   inline AABB() {}
 
+  inline AABB(float val) { lower[0] = val;
+                           lower[1] = val;
+			   lower[2] = val;
+			   upper[0] = val;
+			   upper[1] = val;
+			   upper[2] = val; }
+  
+
   inline AABB ( float x_min, float y_min, float z_min, float x_max, float y_max, float z_max) { lower[0] = x_min;
                                                                                                lower[1] = y_min;
 											       lower[2] = z_min;

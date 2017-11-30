@@ -96,6 +96,19 @@ class BVH {
     return (void*) encodeLeaf((void*)primitives, numPrimitives - 1);
   }
 
+  inline NodeRef* join_trees( std::vector<NodeRef*> roots ) {
+
+    AANode* aanode = new AANode();
+    AABB box(0.0f);
+    
+    // create a new node that contains all nodes
+    for(size_t i = 0; i <= roots.size(); i++) {
+      AANode* this_node = roots[i]->node();
+      box.extend(this_node->bounds());
+    }
+    
+  }
+
   inline NodeRef* Build(int id, int start, size_t numPrimitives) {
     // create BuildState of PrimitiveReferences
     MBBuildState bs(0);
@@ -538,6 +551,8 @@ class BVH {
     
     return;
   }
+
+
   
 };
 
