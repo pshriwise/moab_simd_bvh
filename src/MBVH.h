@@ -96,17 +96,121 @@ class BVH {
     return (void*) encodeLeaf((void*)primitives, numPrimitives - 1);
   }
 
+  inline void split_sets(NodeRef* current_node, size_t split_dim, std::vector<NodeRef*> roots, std::vector<NodeRef*> child_roots[N]) {
+
+    // get the current node's bounds
+    AABB box = current_node->node()->bounds();
+
+    Vec3fa dxdydz = (box.upper - box.lower) / 4.0f;
+
+        //create new child bounds
+    vfloat4 bounds[6];
+  
+    new (&bounds[0]) vfloat4(box.lower[0]); // lower x
+    new (&bounds[1]) vfloat4(box.upper[0]); // upper x
+    new (&bounds[2]) vfloat4(box.lower[1]); // lower y
+    new (&bounds[3]) vfloat4(box.upper[1]); // upper y
+    new (&bounds[4]) vfloat4(box.lower[2]); // lower z
+    new (&bounds[5]) vfloat4(box.upper[2]); // upper z
+
+    float lb = box.lower[split_dim];
+    float delta = dxdydz[split_dim];
+    bounds[2*split_dim] = vfloat4(lb, lb + delta, lb + 2*delta, lb + 3*delta);
+    bounds[2*split_dim+1] = vfloat4(lb + delta, lb + 2*delta, lb + 3*delta, lb + 4*delta);
+
+    AABB boxes[N];
+
+	 
+    new (&boxes[0]) AABB(bounds[0][0],
+		    bounds[2][0],
+		    bounds[4][0],
+		    bounds[1][0],
+		    bounds[3][0],
+		    bounds[5][0]);
+    new (&boxes[1]) AABB(bounds[0][1],
+		    bounds[2][1],
+		    bounds[4][1],
+		    bounds[1][1],
+		    bounds[3][1],
+		    bounds[5][1]);
+    new (&boxes[2]) AABB(bounds[0][2],
+		    bounds[2][2],
+		    bounds[4][2],
+		    bounds[1][2],
+		    bounds[3][2],
+		    bounds[5][2]);
+    new (&boxes[3]) AABB(bounds[0][3],
+		    bounds[2][3],
+		    bounds[4][3],
+		    bounds[1][3],
+		    bounds[3][3],
+		    bounds[5][3]);
+
+    child_roots[0].clear();
+    child_roots[1].clear();
+    child_roots[2].clear();
+    child_roots[3].clear();
+	
+
+    for(size_t i = 0; i < roots.size(); i ++) {
+      AANode* aanode = roots[i]->node();
+      bool placed = false;
+      for(size_t j = 0; j < N; j++){
+	if( inside( boxes[j], aanode->bounds().center() ) ){
+	  placed = true;
+	  child_roots[j].push_back(roots[i]);
+	  break;
+	}
+      }
+      assert(placed);
+    }
+    return;
+  }
+  
+  inline void split_sets(NodeRef* current_node, std::vector<NodeRef*> roots, std::vector<NodeRef*> child_roots[N]) {
+
+    int best_dim;
+    // attempt split along each axis
+    for(size_t i = 0; i < 3; i++) {
+      split_sets(current_node, i, roots, child_roots);
+
+      best_dim = i;
+    }
+
+    split_sets(current_node, best_dim, roots, child_roots);
+
+    return;
+    
+  }
+		    
   inline NodeRef* join_trees( std::vector<NodeRef*> roots ) {
 
     AANode* aanode = new AANode();
     AABB box(0.0f);
-    
-    // create a new node that contains all nodes
-    for(size_t i = 0; i <= roots.size(); i++) {
-      AANode* this_node = roots[i]->node();
-      box.extend(this_node->bounds());
+
+    if (roots.size() == 1) {
+      return roots[0];
     }
     
+    // create a new node that contains all nodes
+    for(size_t i = 0; i < roots.size(); i++) {
+      AANode* temp_node = roots[i]->node();
+      box.extend(temp_node->bounds());
+    }
+
+    NodeRef* this_node = new NodeRef((size_t)aanode);
+    
+    std::vector<NodeRef*> child_lists[N];
+    split_sets(this_node, roots, child_lists);
+
+    // need arbitrary split here
+
+    for(size_t i = 0; i < N; i++) {
+      NodeRef* child_node = join_trees(child_lists[i]);
+      aanode->setRef(i, *child_node);
+    }
+
+    return this_node;
   }
 
   inline NodeRef* Build(int id, int start, size_t numPrimitives) {
