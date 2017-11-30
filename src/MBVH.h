@@ -156,7 +156,23 @@ class BVH {
       AANode* aanode = roots[i]->node();
       bool placed = false;
       for(size_t j = 0; j < N; j++){
-	if( inside( boxes[j], aanode->bounds().center() ) ){
+	AABB root_box;
+	if(!roots[i]->isLeaf()) {
+	  AANode* temp_node = roots[i]->node();
+	  root_box = temp_node->bounds();
+	}
+	else {
+	  // get the primitives
+	  size_t numPrims;
+	  T* primIDs = (T*)roots[i]->leaf(numPrims);
+	  for (size_t k = 0; k < numPrims; k++){
+	    T t = primIDs[k];
+	    Vec3fa lower, upper;
+	    t.get_bounds(lower, upper, MDAM);
+	    root_box = AABB(lower, upper);
+	  }
+	}
+	if( inside( boxes[j], root_box.center() ) ){
 	  placed = true;
 	  child_roots[j].push_back(roots[i]);
 	  break;
@@ -170,11 +186,17 @@ class BVH {
   inline void split_sets(NodeRef* current_node, std::vector<NodeRef*> roots, std::vector<NodeRef*> child_roots[N]) {
 
     int best_dim;
+    float best_cost = 1.0;
+    float cost;
     // attempt split along each axis
     for(size_t i = 0; i < 3; i++) {
       split_sets(current_node, i, roots, child_roots);
-
-      best_dim = i;
+      cost = abs(abs(child_roots[0].size() - child_roots[1].size()) - abs(child_roots[2].size() - child_roots[3].size()));
+      cost /= (float)roots.size();
+      if ( cost <= best_cost ) {
+	best_cost = cost;
+	best_dim = i;
+      }
     }
 
     split_sets(current_node, best_dim, roots, child_roots);
@@ -186,25 +208,60 @@ class BVH {
   inline NodeRef* join_trees( std::vector<NodeRef*> roots ) {
 
     AANode* aanode = new AANode();
-    AABB box(0.0f);
+    AABB box;
+    box.clear();
 
     if (roots.size() == 1) {
       return roots[0];
     }
+
+    if (roots.size() == 0) {
+      return new NodeRef();
+    }
     
     // create a new node that contains all nodes
+    AABB root_box;
     for(size_t i = 0; i < roots.size(); i++) {
-      AANode* temp_node = roots[i]->node();
-      box.extend(temp_node->bounds());
+      if(!roots[i]->isLeaf()){
+	AANode* temp_node = roots[i]->node();
+	root_box = temp_node->bounds();
+      }
+      else {
+	// get the primitives
+	size_t numPrims;
+	T* primIDs = (T*)roots[i]->leaf(numPrims);
+	for (size_t j = 0; j < numPrims; j++){
+	  T t = primIDs[j];
+	  Vec3fa lower, upper;
+	  t.get_bounds(lower, upper, MDAM);
+	  root_box = AABB(lower, upper);
+	}
+      }
+      box.extend(root_box);
     }
 
+    aanode->setBounds(box);
+    
     NodeRef* this_node = new NodeRef((size_t)aanode);
     
     std::vector<NodeRef*> child_lists[N];
     split_sets(this_node, roots, child_lists);
 
-    // need arbitrary split here
-
+    // need arbitrary split check here
+    for(size_t i = 0; i < N; i++) {
+      if (child_lists[i].size() == roots.size()) {
+	//arb split
+	int i = 0;
+	while(roots.size() != 0) {
+	  child_lists[i].push_back(roots.front());
+	  roots.erase(roots.begin(), roots.begin()+1);
+	  i++;
+	  if (i == 4) { i = 0; }
+	}
+	break;
+      }
+    }
+    
     for(size_t i = 0; i < N; i++) {
       NodeRef* child_node = join_trees(child_lists[i]);
       aanode->setRef(i, *child_node);

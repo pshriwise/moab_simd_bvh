@@ -119,6 +119,8 @@ struct MBVHManager {
       MB_CHK_SET_ERR(rval, "Failed to get the geom dimension of EntitySet: " << *ri);
 
       moab::Range tris;
+      moab::Range child_surfs;
+      std::vector<NodeRef*> sets;
       NodeRef* root;
       switch (dim) {
 
@@ -130,12 +132,28 @@ struct MBVHManager {
 	  // IN PROGRESS
 	  root = MOABBVH->Build(*ri, tris.front() - MDAM->first_element, tris.size());
 	  if(!root) { MB_CHK_SET_ERR(moab::MB_FAILURE, "Failed to build BVH for surface: " << *ri); }
-	  BVHRoots[*ri - lowest_set] = root;
+
+	  BVHRoots[*ri - lowest_set] = root;	  	  
+
 	  break;
 	  
 	case 3 : //create volume tree from child surface trees
-	  std::cout << "Volume trees aren't supported yet" << std::endl;
-	  // join trees method here
+	  // get the volume's child surfaces
+	  rval = MBI->get_child_meshsets(*ri, child_surfs);
+	  MB_CHK_SET_ERR(rval, "Failed to get child surfaces of volume" << *ri);
+
+	  for(unsigned int i = 0; i < child_surfs.size(); i++){
+	    // make sure there are trees for all of these surfaces
+	    rval = build( child_surfs );
+	    MB_CHK_SET_ERR(rval, "Failed to build child surface trees of volume " << *ri);
+	    
+	    sets.push_back(BVHRoots[child_surfs[i] - lowest_set]);
+	  }
+
+	  // join the trees here
+	  root = MOABBVH->join_trees( sets );
+	  if(!root) { MB_CHK_SET_ERR(moab::MB_FAILURE, "Failed to build BVH for volume: " << *ri); }
+	  BVHRoots[*ri - lowest_set] = root;	  	  
 	  break;
 	  
 	default:
