@@ -1,5 +1,5 @@
 
-
+#include "testutil.hpp"
 #include "test_files.h"
 
 #include "MBVHManager.h"
@@ -38,6 +38,22 @@ int main(int argc, char** argv) {
   
   rval = MBVHM.build(all_sets);
   MB_CHK_SET_ERR(rval, "Failed to build BVH's");
+
+  Vec3da org(0.0, 0.0, 0.0);
+  Vec3da dir(0.0, 0.0, 1.0);
+  
+  dRay r(org, dir, 0.0, inf);
+  
+  rval = MBVHM.fireRay(surfs[0], r);
+  MB_CHK_SET_ERR(rval, "Failed to fire ray at surface " << surfs[0]);
+
+  r = dRay(org, dir, 0.0, inf);
+  
+  rval = MBVHM.fireRay(vols[0], r);
+  MB_CHK_SET_ERR(rval, "Failed to fire ray at surface " << surfs[0]);
+
+  CHECK(r.tfar != (double)inf);
+  CHECK(r.primID != -1);
   
   return rval;
 
