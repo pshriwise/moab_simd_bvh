@@ -159,32 +159,50 @@ class BVH {
     for(size_t i = 0; i < numNodes; i ++) {
       AANode* aanode = nodesPtr[i]->node();
       bool placed = false;
+      
       for(size_t j = 0; j < N; j++){
-	AABB node_box;
-	if(!nodesPtr[i]->isLeaf()) {
-	  AANode* temp_node = nodesPtr[i]->node();
-	  node_box = temp_node->bounds();
-	}
-	else {
-	  // get the primitives
-	  size_t numPrims;
-	  T* primIDs = (T*)nodesPtr[i]->leaf(numPrims);
-	  for (size_t k = 0; k < numPrims; k++){
-	    T t = primIDs[k];
-	    Vec3fa lower, upper;
-	    t.get_bounds(lower, upper, MDAM);
-	    node_box = AABB(lower, upper);
-	  }
-	}
+	AABB node_box = box_from_node(nodesPtr[i]);
+
 	if( inside( boxes[j], node_box.center() ) ){
 	  placed = true;
 	  child_nodes[j].push_back(nodesPtr[i]);
 	  break;
 	}
+	
       }
       assert(placed);
     }
     return;
+  }
+
+  inline AABB box_from_nodes(NodeRef** nodesPtr, size_t numNodes) {
+    AABB nodes_box;
+    nodes_box.clear();
+    for(size_t i = 0; i < numNodes; i++){
+      nodes_box.extend(box_from_node(nodesPtr[i]));
+    }
+    return nodes_box;
+  }
+  
+  inline AABB box_from_node(NodeRef* node) {
+    // create a new node that contains all nodes
+    AABB node_box;
+    if(!node->isLeaf()){
+      AANode* temp_node = node->node();
+      node_box = temp_node->bounds();
+    }
+    else {
+      // get the primitives
+      size_t numPrims;
+      T* primIDs = (T*)node->leaf(numPrims);
+      for (size_t j = 0; j < numPrims; j++){
+	T t = primIDs[j];
+	Vec3fa lower, upper;
+	t.get_bounds(lower, upper, MDAM);
+	node_box = AABB(lower, upper);
+      }
+    }
+    return node_box;
   }
   
   inline void split_sets(NodeRef* current_node, NodeRef** nodesPtr, size_t numNodes, TempNodeNode child_nodes[N]) {
@@ -215,36 +233,14 @@ class BVH {
   inline NodeRef* join_trees(NodeRef** nodesPtr, size_t numNodes) {
 
     AANode* aanode = new AANode();
-    AABB box;
-    box.clear();
-
+    AABB box = box_from_nodes(nodesPtr, numNodes);
+    
     if (numNodes == 1) {
       return nodesPtr[0];
     }
 
     if (numNodes == 0) {
       return new NodeRef();
-    }
-    
-    // create a new node that contains all nodes
-    AABB node_box;
-    for(size_t i = 0; i < numNodes; i++) {
-      if(!nodesPtr[i]->isLeaf()){
-	AANode* temp_node = nodesPtr[i]->node();
-	node_box = temp_node->bounds();
-      }
-      else {
-	// get the primitives
-	size_t numPrims;
-	T* primIDs = (T*)nodesPtr[i]->leaf(numPrims);
-	for (size_t j = 0; j < numPrims; j++){
-	  T t = primIDs[j];
-	  Vec3fa lower, upper;
-	  t.get_bounds(lower, upper, MDAM);
-	  node_box = AABB(lower, upper);
-	}
-      }
-      box.extend(node_box);
     }
 
     aanode->setBounds(box);
