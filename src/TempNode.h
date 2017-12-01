@@ -37,4 +37,3 @@ struct TempNode {
                   }  
 };
 
-typedef TempNode<BuildPrimitive> TempNodeBP;

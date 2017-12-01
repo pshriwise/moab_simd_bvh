@@ -19,6 +19,10 @@ typedef BVHIntersectorT<TriangleRef, Vec3fa, float> TriIntersector;
 
 typedef BVHIntersectorT<TriangleRef, Vec3da, double> DblTriIntersector;
 
+typedef TempNode<BuildPrimitive> TempNodeBP;
+
+typedef TempNode<NodeRef*> TempNodeNode;
+
 struct PrimRef{
   
   inline PrimRef () {}
@@ -96,7 +100,7 @@ class BVH {
     return (void*) encodeLeaf((void*)primitives, numPrimitives - 1);
   }
 
-  inline void split_sets(NodeRef* current_node, size_t split_dim, std::vector<NodeRef*> roots, std::vector<NodeRef*> child_roots[N]) {
+  inline void split_sets(NodeRef* current_node, size_t split_dim, std::vector<NodeRef*> roots, TempNodeNode child_roots[N]) {
 
     // get the current node's bounds
     AABB box = current_node->node()->bounds();
@@ -183,7 +187,7 @@ class BVH {
     return;
   }
   
-  inline void split_sets(NodeRef* current_node, std::vector<NodeRef*> roots, std::vector<NodeRef*> child_roots[N]) {
+  inline void split_sets(NodeRef* current_node, std::vector<NodeRef*> roots, TempNodeNode child_roots[N]) {
 
     int best_dim;
     float best_cost = 1.0;
@@ -244,7 +248,7 @@ class BVH {
     
     NodeRef* this_node = new NodeRef((size_t)aanode);
     
-    std::vector<NodeRef*> child_lists[N];
+    TempNodeNode child_lists[N];
     split_sets(this_node, roots, child_lists);
 
     // need arbitrary split check here
@@ -263,7 +267,7 @@ class BVH {
     }
     
     for(size_t i = 0; i < N; i++) {
-      NodeRef* child_node = join_trees(child_lists[i]);
+      NodeRef* child_node = join_trees(child_lists[i].prims);
       aanode->setRef(i, *child_node);
     }
 

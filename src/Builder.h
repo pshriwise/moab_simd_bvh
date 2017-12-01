@@ -36,6 +36,8 @@ struct BuildSettings {
 };
 
 
+typedef TempNode<BuildPrimitive> TempNodeBP;
+
 NodeRef* encodeLeaf(void *prim_arr, size_t num) {
   //  assert(numPrimitives < MAX_LEAF_SIZE); needs to be re-added later
   return new NodeRef((size_t)prim_arr | (tyLeaf + num));
