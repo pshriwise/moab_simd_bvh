@@ -160,10 +160,10 @@ class BVH {
       AANode* aanode = nodesPtr[i]->node();
       bool placed = false;
       for(size_t j = 0; j < N; j++){
-	AABB root_box;
+	AABB node_box;
 	if(!nodesPtr[i]->isLeaf()) {
 	  AANode* temp_node = nodesPtr[i]->node();
-	  root_box = temp_node->bounds();
+	  node_box = temp_node->bounds();
 	}
 	else {
 	  // get the primitives
@@ -173,10 +173,10 @@ class BVH {
 	    T t = primIDs[k];
 	    Vec3fa lower, upper;
 	    t.get_bounds(lower, upper, MDAM);
-	    root_box = AABB(lower, upper);
+	    node_box = AABB(lower, upper);
 	  }
 	}
-	if( inside( boxes[j], root_box.center() ) ){
+	if( inside( boxes[j], node_box.center() ) ){
 	  placed = true;
 	  child_nodes[j].push_back(nodesPtr[i]);
 	  break;
@@ -227,11 +227,11 @@ class BVH {
     }
     
     // create a new node that contains all nodes
-    AABB root_box;
+    AABB node_box;
     for(size_t i = 0; i < numNodes; i++) {
       if(!nodesPtr[i]->isLeaf()){
 	AANode* temp_node = nodesPtr[i]->node();
-	root_box = temp_node->bounds();
+	node_box = temp_node->bounds();
       }
       else {
 	// get the primitives
@@ -241,10 +241,10 @@ class BVH {
 	  T t = primIDs[j];
 	  Vec3fa lower, upper;
 	  t.get_bounds(lower, upper, MDAM);
-	  root_box = AABB(lower, upper);
+	  node_box = AABB(lower, upper);
 	}
       }
-      box.extend(root_box);
+      box.extend(node_box);
     }
 
     aanode->setBounds(box);
