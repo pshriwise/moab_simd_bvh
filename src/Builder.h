@@ -6,6 +6,7 @@
 #include <set>
 #include "Primitive.h"
 #include "BuildState.h"
+#include "TempNode.h"
 #include "Node.h"
 
 // #define VERBOSE_MODE
@@ -96,34 +97,6 @@ void sortPrimitives(const int dim, const float coord,
   rightPrimitives = &(right_list[0]);
   numRightPrimitives = (size_t) right_list.size();
 }
-
-
-template <typename T>
-struct TempNode {
-  AABB box;
-  std::vector<T> prims;
-
-  inline TempNode (AABB& b, std::vector<T>& p) : box(b), prims(p) {}
-  
-  inline TempNode() : box(AABB((float)inf,(float)neg_inf)) {}
-
-  void update_box() {
-    for (size_t i = 0; i < prims.size() ; i++) {
-      box.update(prims[i].lower.x,prims[i].lower.y,prims[i].lower.z);
-      box.update(prims[i].upper.x,prims[i].upper.y,prims[i].upper.z);
-    }
-  }
-  
-  float sah_contribution() { return (0 == prims.size()) ? 0.0 : area(box)*(float)prims.size(); }
-
-  void clear() { box.clear(); prims.clear(); }
-};
-
-typedef TempNode<BuildPrimitive> TempNodeBP;
-
-
-
-
 
 
 void* create_leaf(BuildPrimitive* primitives, size_t numPrimitives) {
