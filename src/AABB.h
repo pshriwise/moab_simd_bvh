@@ -51,6 +51,9 @@ struct AABB {
 
   inline AABB ( const AABB& other) { lower = other.lower; upper = other.upper; }
 
+  inline void update (const AABB& other ) { this->update(other.lower.x, other.lower.y, other.lower.z);
+                                            this->update(other.upper.x, other.upper.y, other.upper.z); }
+                                               
   inline void update ( const float& x_val, const float& y_val, const float& z_val ) { lower[0] = lower[0] < x_val ? lower[0] : x_val;
                                                                                       lower[1] = lower[1] < y_val ? lower[1] : y_val;
 										      lower[2] = lower[2] < z_val ? lower[2] : z_val;
