@@ -6,7 +6,7 @@
 #include "vfloat.h"
 #include "Primitive.h"
 
-#define N 4
+
 
 static const size_t emptyNode = 8;
 static const size_t tyLeaf = 8;

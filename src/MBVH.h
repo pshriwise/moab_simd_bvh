@@ -10,6 +10,7 @@
 #include "TriangleRef.h"
 #include "MOABDirectAccessManager.h"
 #include "BVHStats.h"
+#include "BVHSettings.h"
 
 typedef BVHBuilder<TriangleRef> TriangleBVH;
 

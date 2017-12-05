@@ -9,7 +9,7 @@
 
 struct Vec3fa {
   typedef float Scalar;
-  enum { N = 3 };
+  enum { n = 3 };
   float x,y,z;
   int a;
 

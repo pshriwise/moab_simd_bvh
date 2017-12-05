@@ -8,7 +8,7 @@
 
 struct Vec3da {
   typedef double Scalar;
-  enum { N = 3 };
+  enum { n = 3 };
   double x,y,z;
   int a;
 

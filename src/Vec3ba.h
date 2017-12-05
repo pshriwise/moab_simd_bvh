@@ -7,7 +7,7 @@
 
 
 struct Vec3ba {
-  enum { N = 3 };
+  enum { n = 3 };
   bool x,y,z;
   int a;
 

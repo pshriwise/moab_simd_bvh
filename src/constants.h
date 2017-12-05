@@ -3,6 +3,8 @@
 
 #include <limits>
 
+#define N 4
+
 static const float min_rcp_input = std::numeric_limits<float>::min();  // for abs(x) >= min_rcp_input the newton raphson rcp calculation does not fail
 static const int BVH_MAX_DEPTH = 32;
 
