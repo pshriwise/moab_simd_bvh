@@ -12,6 +12,9 @@
 #include "BVHStats.h"
 #include "BVHSettings.h"
 
+
+
+
 typedef BVHBuilder<TriangleRef> TriangleBVH;
 
 typedef BuildStateT<TriangleRef> BuildStateTri;
@@ -69,6 +72,7 @@ public:
 
 typedef BuildStateT<PrimRef> MBBuildState;
 typedef TempNode<PrimRef> MBTempNode;
+typedef BVHSettings<PrimRef> MBBVHSettings;
 
 template <typename T>
 class BVH {
@@ -276,7 +280,7 @@ class BVH {
     return this_node;
   }
 
-  inline NodeRef* Build(int id, int start, size_t numPrimitives) {
+  inline NodeRef* Build(int id, int start, size_t numPrimitives, MBBVHSettings* settings = NULL) {
     // create BuildState of PrimitiveReferences
     MBBuildState bs(0);
     int end = start + numPrimitives;
@@ -294,11 +298,14 @@ class BVH {
     }
 
     current_build_id = id;
+
+    // if the settings pointer is null, create a settings struct
+    if(!settings) settings = new MBBVHSettings();
     
-    return Build(bs);
+    return Build(bs, settings);
   }
 
-  inline NodeRef* Build(MBBuildState& current) {
+  inline NodeRef* Build(MBBuildState& current, MBBVHSettings *settings) {
 
     const PrimRef* primitives = current.ptr();
     size_t numPrimitives = current.size();
@@ -324,7 +331,7 @@ class BVH {
     aanode->setBounds(box);
     NodeRef* this_node = new NodeRef((size_t)aanode);
     MBTempNode tempNodes[4];
-    splitNode(this_node, primitives, numPrimitives, tempNodes);
+    splitNode(this_node, primitives, numPrimitives, tempNodes, settings);
 
 #ifdef VERBOSE_MODE
     std::cout << "New Node with Bounds: " << std::endl << *aanode << std::endl;
@@ -333,7 +340,7 @@ class BVH {
 
     for(size_t i = 0; i < N ; i++){
       MBBuildState* br = new MBBuildState(current.depth+1, tempNodes[i].prims);
-      NodeRef* child_node = Build(*br);
+      NodeRef* child_node = Build(*br, settings);
       // link the child node
       aanode->setRef(i, *child_node);
     }
@@ -344,7 +351,7 @@ class BVH {
   } // end build
 
 
-  void splitNode(NodeRef* node, const PrimRef* primitives, const size_t numPrimitives, MBTempNode tempNodes[N]) {
+  void splitNode(NodeRef* node, const PrimRef* primitives, const size_t numPrimitives, MBTempNode tempNodes[N], MBBVHSettings *settings) {
 
     // split node along each axis
     float max_cost = 2.0;
@@ -362,12 +369,7 @@ class BVH {
     for(size_t i = 0; i < 3; i++) {
       splitNode(node, i, primitives, numPrimitives, tempNodes);
       //compute the SAH cost of this node split
-      cost = tempNodes[0].sah_contribution() +
-	tempNodes[1].sah_contribution() +
-	tempNodes[2].sah_contribution() +
-	tempNodes[3].sah_contribution();
-      cost /= area(node_box)*(float)numPrimitives;
-
+      cost = settings->evaluate_cost(tempNodes, node_box, numPrimitives);
       assert(cost >= min_cost && cost <= max_cost);
       // update cost
       if (cost < best_cost) {

@@ -17,26 +17,22 @@ struct BVHSettings {
     evaluate_cost = &surface_area_heuristic;
   }
   		       
-  float (*evaluate_cost)(TempNode<T> tempNodes[N]);
+  float (*evaluate_cost)(TempNode<T> tempNodes[N], const AABB &node_box, const size_t &numPrimitives);
 
 
-  static float entity_ratio_heuristic(TempNode<T> tempNodes[N]) {
+  static float entity_ratio_heuristic(TempNode<T> tempNodes[N], const AABB &node_box, const size_t &numPrimitives) {
     float cost = abs(abs(tempNodes[0].size() - tempNodes[1].size()) - abs(tempNodes[2].size() - tempNodes[3].size()));
     int total = 0;
     for(size_t i = 0; i < N; i++){ total += tempNodes[i].size(); }
     return cost /= (float)total;
   }
 
-  static float surface_area_heuristic(TempNode<T> tempNodes[N]) {
+  static float surface_area_heuristic(TempNode<T> tempNodes[N], const AABB &node_box, const size_t &numPrimitives) {
     float cost = 0;
-    int total = 0;
-    AABB node_box;
     for(size_t i = 0; i < N; i++) {
       cost += tempNodes[i].sah_contribution();
-      total += tempNodes[i].size();
-      node_box.update(tempNodes[i].box);
     }
-    return cost /= ( (float)total * area(node_box) );
+    return cost /= ( (float)numPrimitives * area(node_box) );
   }
 
   void set_heuristic(BVH_HEURISTIC h) {

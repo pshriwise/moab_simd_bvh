@@ -21,10 +21,13 @@ int main(int argc, char** argv) {
   tempNodes[2].prims.resize(25);
   tempNodes[3].prims.resize(25);
 
+  AABB dummy_box;
+  size_t numPrims = 100;
+  
   expected_cost = 0.0;
-  cost = settings.entity_ratio_heuristic(tempNodes);
+  cost = settings.entity_ratio_heuristic(tempNodes, dummy_box, numPrims);
   CHECK_REAL_EQUAL(expected_cost, cost, 0.0);
-  cost = settings.evaluate_cost(tempNodes);
+  cost = settings.evaluate_cost(tempNodes, dummy_box, numPrims);
   CHECK_REAL_EQUAL(expected_cost, cost, 0.0);
 
   // next test
@@ -33,7 +36,7 @@ int main(int argc, char** argv) {
   tempNodes[2].prims.resize(25);
   tempNodes[3].prims.resize(25);
   
-  cost = settings.entity_ratio_heuristic(tempNodes);
+  cost = settings.entity_ratio_heuristic(tempNodes, dummy_box, numPrims);
   expected_cost = 0.1f;
   CHECK_REAL_EQUAL(expected_cost, cost, 0.0);
 
@@ -52,8 +55,14 @@ int main(int argc, char** argv) {
   new (&tempNodes[2].box) AABB(  0.0f,  10.0f);
   new (&tempNodes[3].box) AABB( 10.0f,  20.0f);
 
+  AABB node_box;
+  node_box.extend(tempNodes[0].box);
+  node_box.extend(tempNodes[1].box);
+  node_box.extend(tempNodes[2].box);
+  node_box.extend(tempNodes[3].box);
+
   expected_cost = 0.0625f;
-  cost = settings.evaluate_cost(tempNodes);
+  cost = settings.evaluate_cost(tempNodes, node_box, numPrims);
  
   CHECK_REAL_EQUAL(expected_cost, cost, 0.0);
 
@@ -69,7 +78,7 @@ int main(int argc, char** argv) {
   new (&tempNodes[3].box) AABB( 10.0f,  20.0f);
 
   expected_cost = 0.0625f;
-  cost = settings.evaluate_cost(tempNodes);  
+  cost = settings.evaluate_cost(tempNodes, node_box, numPrims);  
   CHECK_REAL_EQUAL(expected_cost, cost, 0.0);
   
   return 0;
