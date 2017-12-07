@@ -6,17 +6,17 @@
 
 #include "TempNode.h"
 
+enum BVH_HEURISTIC { ENTITY_RATIO_HEURISTIC = 0,
+		     SURFACE_AREA_HEURISTIC };
+
+
 template<typename T>
 struct BVHSettings {
 
   BVHSettings() {
-    evaluate_cost = surface_area_heuristic;
+    evaluate_cost = &surface_area_heuristic;
   }
-  
-  enum BVH_HEURISTIC { ENTITY_RATIO_HEURISTIC = 0,
-		       SURFACE_AREA_HEURISTIC };
-		       
-  
+  		       
   float (*evaluate_cost)(TempNode<T> tempNodes[N]);
 
 
@@ -36,7 +36,6 @@ struct BVHSettings {
       total += tempNodes[i].size();
       node_box.update(tempNodes[i].box);
     }
-
     return cost /= ( (float)total * area(node_box) );
   }
 
@@ -45,12 +44,12 @@ struct BVHSettings {
     switch(h) {
     case ENTITY_RATIO_HEURISTIC:
       {
-	evaluate_cost = entity_ratio_heuristic;
+	evaluate_cost = &entity_ratio_heuristic;
 	break;
       }
     case SURFACE_AREA_HEURISTIC:
       {
-	evaluate_cost = surface_area_heuristic;
+	evaluate_cost = &surface_area_heuristic;
 	break;
       }
     default:

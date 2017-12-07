@@ -14,7 +14,7 @@ struct AABB {
 
   Vec3fa lower, upper;
 
-  inline AABB() {}
+  inline AABB() : lower(inf), upper(neg_inf) { }
 
   inline AABB(float val) { lower[0] = val;
                            lower[1] = val;
