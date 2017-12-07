@@ -12,9 +12,6 @@
 #include "BVHStats.h"
 #include "BVHSettings.h"
 
-
-
-
 typedef BVHBuilder<TriangleRef> TriangleBVH;
 
 typedef BuildStateT<TriangleRef> BuildStateTri;
@@ -26,6 +23,8 @@ typedef BVHIntersectorT<TriangleRef, Vec3da, double> DblTriIntersector;
 typedef TempNode<BuildPrimitive> TempNodeBP;
 
 typedef TempNode<NodeRef*> TempNodeNode;
+
+typedef BVHSettings<NodeRef*> BVHJoinTreeSettings;
 
 struct PrimRef{
   
@@ -210,16 +209,17 @@ class BVH {
     return node_box;
   }
   
-  inline void split_sets(NodeRef* current_node, NodeRef** nodesPtr, size_t numNodes, TempNodeNode child_nodes[N]) {
+  inline void split_sets(NodeRef* current_node, NodeRef** nodesPtr, size_t numNodes, TempNodeNode child_nodes[N], BVHJoinTreeSettings* settings) {
 
     int best_dim;
     float best_cost = 1.0;
     float cost;
+
+    AABB node_box = current_node->node()->bounds();
     // attempt split along each axis
     for(size_t i = 0; i < 3; i++) {
       split_sets(current_node, i, nodesPtr, numNodes, child_nodes);
-      cost = abs(abs(child_nodes[0].size() - child_nodes[1].size()) - abs(child_nodes[2].size() - child_nodes[3].size()));
-      cost /= (float)numNodes;
+      cost = settings->evaluate_cost(child_nodes, node_box, numNodes);      
       if ( cost <= best_cost ) {
 	best_cost = cost;
 	best_dim = i;
@@ -232,10 +232,13 @@ class BVH {
     
   }
 
-  inline NodeRef* join_trees( std::vector<NodeRef*> nodes) {
-    return join_trees( &(nodes[0]), (size_t)nodes.size() );
+  inline NodeRef* join_trees( std::vector<NodeRef*> nodes, BVHJoinTreeSettings* settings = NULL) {
+    if(!settings) settings = new BVHJoinTreeSettings();
+    settings->set_heuristic(ENTITY_RATIO_HEURISTIC);
+    
+    return join_trees( &(nodes[0]), (size_t)nodes.size(), settings );
   }
-  inline NodeRef* join_trees(NodeRef** nodesPtr, size_t numNodes) {
+  inline NodeRef* join_trees(NodeRef** nodesPtr, size_t numNodes, BVHJoinTreeSettings* settings) {
 
     AANode* aanode = new AANode();
     AABB box = box_from_nodes(nodesPtr, numNodes);
@@ -253,7 +256,7 @@ class BVH {
     NodeRef* this_node = new NodeRef((size_t)aanode);
     
     TempNodeNode child_nodes[N];
-    split_sets(this_node, nodesPtr, numNodes, child_nodes);
+    split_sets(this_node, nodesPtr, numNodes, child_nodes, settings);
 
     // need arbitrary split check here
     for(size_t i = 0; i < N; i++) {
@@ -273,7 +276,7 @@ class BVH {
     }
     
     for(size_t i = 0; i < N; i++) {
-      NodeRef* child_node = join_trees(child_nodes[i].prims);
+      NodeRef* child_node = join_trees(child_nodes[i].prims, settings);
       aanode->setRef(i, *child_node);
     }
 
@@ -364,12 +367,13 @@ class BVH {
     AANode* this_node = node->node();
 
     AABB node_box = this_node->bounds();
-  
+
+    size_t np = numPrimitives;
     // split along each axis and get lowest cost
     for(size_t i = 0; i < 3; i++) {
       splitNode(node, i, primitives, numPrimitives, tempNodes);
       //compute the SAH cost of this node split
-      cost = settings->evaluate_cost(tempNodes, node_box, numPrimitives);
+      cost = settings->evaluate_cost(tempNodes, node_box, np);
       assert(cost >= min_cost && cost <= max_cost);
       // update cost
       if (cost < best_cost) {
