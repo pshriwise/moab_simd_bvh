@@ -379,8 +379,8 @@ template <typename T> class BVHBuilder {
       BuildBuildSetT<T> primitives = tempChildren[i].prims;
       
       for(size_t j = 0; j < primitives.size(); j++) {
-	b.update(primitives[i].lower.x, primitives[i].lower.y, primitives[i].lower.z);
-	b.update(primitives[i].upper.x, primitives[i].upper.y, primitives[i].upper.z);
+	b.update(primitives[j].lower.x, primitives[j].lower.y, primitives[j].lower.z);
+	b.update(primitives[j].upper.x, primitives[j].upper.y, primitives[j].upper.z);
       }
       
       x_min[i] = b.lower.x; y_min[i] = b.lower.y; z_min[i] = b.lower.z;
