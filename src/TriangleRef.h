@@ -213,6 +213,7 @@ struct MBTriangleRef {
       ray.primID = eh;
       ray.eh = eh;
       ray.tfar = dist;
+      ray.geomID = tray.setID;
     }
 
     return hit;

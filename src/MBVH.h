@@ -663,7 +663,7 @@ class BVH {
     return true;
   }
 
-  inline void intersectRay (NodeRef root, dRay & ray) {
+  inline void intersectRay (NodeRef root, dRay & ray, TravRay* vray = NULL) {
     /* initialiez stack state */
     StackItemT<NodeRef> stack[stackSize];
     StackItemT<NodeRef>* stackPtr = stack+1;
@@ -674,8 +674,11 @@ class BVH {
     /* verify correct inputs */
     assert(ray.valid());
     assert(ray.tnear >= 0.0f);
+
+    if( !vray ) {
+	vray = new TravRay(ray.org, ray.dir);
+    }
     
-    TravRay vray = TravRay(ray.org, ray.dir);
     vfloat4 ray_near = std::max(ray.tnear, 0.0);
     vfloat4 ray_far = std::max(ray.tfar, 0.0);
     
@@ -694,7 +697,7 @@ class BVH {
 	while (true)
 	  {
 	    size_t mask = 0; vfloat4 tNear(inf);
-	    bool nodeIntersected = intersect(cur, vray, ray_near, ray_far, tNear, mask);
+	    bool nodeIntersected = intersect(cur, *vray, ray_near, ray_far, tNear, mask);
 	    
 #ifdef VERBOSE_MODE
 	    AANode* curaa = cur.node();
@@ -726,10 +729,10 @@ class BVH {
 
 	if (cur.isSetLeaf() ) {
 	  // update the geom id of the travray
-	  vray.setID = cur.snode()->setID;
+	  vray->setID = cur.snode()->setID;
 	  // WILL ALSO SET SENSE HERE AT SOME POINT
 	  NodeRef setNode = cur.setLeaf();
-	  intersectRay(setNode, ray);
+	  intersectRay(setNode, ray, vray);
 
 	  continue;
 	}
@@ -743,7 +746,7 @@ class BVH {
 	  
 	  for (size_t i = 0; i < numPrims; i++) {
 	    T t = primIDs[i];
-	    t.intersect(vray, ray, (void*)MDAM);
+	    t.intersect(*vray, ray, (void*)MDAM);
 	  }
 	}
 	

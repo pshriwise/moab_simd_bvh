@@ -37,15 +37,18 @@ struct NodeRef {
   inline       AANode* node()       { return (AANode*)ptr; }
   inline const AANode* node() const { return (const AANode*)ptr; }
 
-  inline       SetNode* snode()       { return (SetNode*)ptr; }
-  inline const SetNode* snode() const { return (const SetNode*)ptr; }
+  inline       SetNode* snode()       { return (SetNode*)setLeafPtr(); }
+  inline const SetNode* snode() const { return (const SetNode*)setLeafPtr(); }
   
   inline       Node* bnode()       { return (Node*)ptr; }
   inline const Node* bnode() const { return (const Node*)ptr; }
 
   inline const void setPtr(size_t new_ptr) { ptr = new_ptr; }
 
-  inline NodeRef setLeaf() { return NodeRef(ptr & ~(size_t)setLeafAlign); }
+  inline size_t setLeafPtr() { return (ptr & ~(size_t)setLeafAlign); }
+  inline size_t setLeafPtr() const { return (ptr & ~(size_t)setLeafAlign); }
+
+  inline NodeRef setLeaf() { return NodeRef(setLeafPtr()); }
   
   inline void* leaf(size_t& num) const {
     assert(isLeaf());
