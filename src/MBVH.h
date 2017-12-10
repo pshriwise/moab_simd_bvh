@@ -246,8 +246,18 @@ class BVH {
     
     if (numNodes == 1) {
       // replace this normal root node with a set node
-      SetNode* snode = new SetNode(*nodesPtr[0]->node(), 10);
-      NodeRef node = NodeRef((size_t)(snode) | setLeaf);
+      AANode aanode = *(nodesPtr[0]->node());
+      SetNode* snode = new SetNode(aanode, 10);
+      if( nodesPtr[0]->isLeaf() ) {
+	snode->setRef(0,*nodesPtr[0]);
+	snode->setRef(1,NodeRef());
+	snode->setRef(2,NodeRef());
+	snode->setRef(3,NodeRef());
+      }
+      else {
+        delete nodesPtr[0]->node();
+      }
+      nodesPtr[0]->setPtr((size_t)snode);
       return nodesPtr[0];
       
     }

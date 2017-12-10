@@ -45,6 +45,8 @@ struct NodeRef {
   inline       Node* bnode()       { return (Node*)ptr; }
   inline const Node* bnode() const { return (const Node*)ptr; }
 
+  inline const void setPtr(size_t new_ptr) { ptr = new_ptr; }
+  
   inline void* leaf(size_t& num) const {
     assert(isLeaf());
     num = 1 + (ptr & (items_mask))-tyLeaf;
@@ -58,7 +60,7 @@ struct NodeRef {
   /* } */
 
   
-private:
+  private:
   size_t ptr;
 		   
 
@@ -159,6 +161,8 @@ struct AANode : public Node
 
 struct SetNode : public AANode {
 
+  using::Node::children;
+  
   using::AANode::lower_x;
   using::AANode::lower_y;
   using::AANode::lower_z;
@@ -166,7 +170,6 @@ struct SetNode : public AANode {
   using::AANode::upper_y;
   using::AANode::upper_z;
 
-  using::Node::children;
   
  SetNode(const AANode &aanode, const unsigned &setid) :
   setID(setid) { lower_x = aanode.lower_x;
