@@ -247,7 +247,9 @@ class BVH {
     if (numNodes == 1) {
       // replace this normal root node with a set node
       SetNode* snode = new SetNode(*nodesPtr[0]->node(), 10);
+      NodeRef node = NodeRef((size_t)(snode) | setLeaf);
       return nodesPtr[0];
+      
     }
 
     if (numNodes == 0) {
