@@ -6,11 +6,9 @@
 #include "vfloat.h"
 #include "Primitive.h"
 
-
-
 static const size_t emptyNode = 8;
 static const size_t tyLeaf = 8;
-static const size_t setLeaf = 3;
+static const size_t setLeafAlign = 3;
 
 static const size_t items_mask = 15;
 static const size_t align_mask = 15;
@@ -32,7 +30,7 @@ struct NodeRef {
   
   inline size_t isLeaf() const { return ptr & tyLeaf; }
 
-  inline size_t isSetLeaf() const { return !(isLeaf()) && (ptr & setLeaf); }
+  inline size_t isSetLeaf() const { return !(isLeaf()) && (ptr & setLeafAlign); }
 
   inline bool isEmpty() const { return ptr == emptyNode; }
 
@@ -46,6 +44,8 @@ struct NodeRef {
   inline const Node* bnode() const { return (const Node*)ptr; }
 
   inline const void setPtr(size_t new_ptr) { ptr = new_ptr; }
+
+  inline NodeRef setLeaf() { return NodeRef(ptr & ~(size_t)setLeafAlign); }
   
   inline void* leaf(size_t& num) const {
     assert(isLeaf());

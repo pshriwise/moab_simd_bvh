@@ -257,7 +257,7 @@ class BVH {
       else {
         delete nodesPtr[0]->node();
       }
-      nodesPtr[0]->setPtr((size_t)snode);
+      nodesPtr[0]->setPtr((size_t)snode | setLeafAlign);
       return nodesPtr[0];
       
     }
@@ -658,7 +658,7 @@ class BVH {
 
 
   static inline bool intersect(NodeRef& node, const TravRay& ray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& dist, size_t& mask) {
-    if(node.isLeaf()) return false;
+    if(node.isLeaf() || node.isSetLeaf() ) return false;
     mask = intersectBox(*node.node(),ray,tnear,tfar,dist);
     return true;
   }
@@ -724,11 +724,23 @@ class BVH {
 	    nodeTraverser.traverseClosest(cur, mask, tNear, stackPtr, stackEnd);
 	  }
 
+	if (cur.isSetLeaf() ) {
+	  // update the geom id of the travray
+	  vray.setID = cur.snode()->setID;
+	  // WILL ALSO SET SENSE HERE AT SOME POINT
+	  NodeRef setNode = cur.setLeaf();
+	  intersectRay(setNode, ray);
+
+	  continue;
+	}
+
 	// leaf (set distance to nearest/farthest box intersection for now)
 	size_t numPrims;
 	T* primIDs = (T*)cur.leaf(numPrims);
 	
 	if ( !cur.isEmpty() ) {
+
+	  
 	  for (size_t i = 0; i < numPrims; i++) {
 	    T t = primIDs[i];
 	    t.intersect(vray, ray, (void*)MDAM);
