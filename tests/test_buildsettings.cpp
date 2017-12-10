@@ -26,9 +26,9 @@ int main(int argc, char** argv) {
   
   expected_cost = 0.0;
   cost = settings.entity_ratio_heuristic(tempNodes, dummy_box, numPrims);
-  CHECK_REAL_EQUAL(expected_cost, cost, 0.0);
+  CHECK_REAL_EQUAL(expected_cost, cost, 0.0f);
   cost = settings.evaluate_cost(tempNodes, dummy_box, numPrims);
-  CHECK_REAL_EQUAL(expected_cost, cost, 0.0);
+  CHECK_REAL_EQUAL(expected_cost, cost, 0.0f);
 
   // next test
   tempNodes[0].prims.resize(30);
@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
   
   cost = settings.entity_ratio_heuristic(tempNodes, dummy_box, numPrims);
   expected_cost = 0.1f;
-  CHECK_REAL_EQUAL(expected_cost, cost, 0.0);
+  CHECK_REAL_EQUAL(expected_cost, cost, 0.0f);
 
   //change to Surface Area Heuristic
   settings.set_heuristic(SURFACE_AREA_HEURISTIC);
@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
   expected_cost = 0.0625f;
   cost = settings.evaluate_cost(tempNodes, node_box, numPrims);
  
-  CHECK_REAL_EQUAL(expected_cost, cost, 0.0);
+  CHECK_REAL_EQUAL(expected_cost, cost, 0.0f);
 
   // vary entities
   tempNodes[0].prims.resize(30);
@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
 
   expected_cost = 0.0625f;
   cost = settings.evaluate_cost(tempNodes, node_box, numPrims);  
-  CHECK_REAL_EQUAL(expected_cost, cost, 0.0);
+  CHECK_REAL_EQUAL(expected_cost, cost, 0.0f);
   
   return 0;
 }
