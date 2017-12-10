@@ -238,12 +238,15 @@ class BVH {
     
     return join_trees( &(nodes[0]), (size_t)nodes.size(), settings );
   }
+  
   inline NodeRef* join_trees(NodeRef** nodesPtr, size_t numNodes, BVHJoinTreeSettings* settings) {
 
     AANode* aanode = new AANode();
     AABB box = box_from_nodes(nodesPtr, numNodes);
     
     if (numNodes == 1) {
+      // replace this normal root node with a set node
+      SetNode* snode = new SetNode(*nodesPtr[0]->node(), 10);
       return nodesPtr[0];
     }
 

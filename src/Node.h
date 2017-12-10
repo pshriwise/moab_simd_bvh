@@ -16,6 +16,7 @@ static const size_t items_mask = 15;
 static const size_t align_mask = 15;
 
  // forward declarations
+struct SetNode;
 struct AANode;
 struct Node;
  
@@ -38,6 +39,9 @@ struct NodeRef {
   inline       AANode* node()       { return (AANode*)ptr; }
   inline const AANode* node() const { return (const AANode*)ptr; }
 
+  inline       SetNode* snode()       { return (SetNode*)ptr; }
+  inline const SetNode* snode() const { return (const SetNode*)ptr; }
+  
   inline       Node* bnode()       { return (Node*)ptr; }
   inline const Node* bnode() const { return (const Node*)ptr; }
 
@@ -155,6 +159,27 @@ struct AANode : public Node
 
 struct SetNode : public AANode {
 
+  using::AANode::lower_x;
+  using::AANode::lower_y;
+  using::AANode::lower_z;
+  using::AANode::upper_x;
+  using::AANode::upper_y;
+  using::AANode::upper_z;
+
+  using::Node::children;
+  
+ SetNode(const AANode &aanode, const unsigned &setid) :
+  setID(setid) { lower_x = aanode.lower_x;
+                 lower_y = aanode.lower_y;
+		 lower_z = aanode.lower_z;
+		 upper_x = aanode.upper_x;
+                 upper_y = aanode.upper_y;
+		 upper_z = aanode.upper_z;
+                 children[0] = aanode.children[0];
+                 children[1] = aanode.children[1];
+		 children[2] = aanode.children[2];
+		 children[3] = aanode.children[3]; }
+  
   unsigned setID;
   unsigned fwdID, bwdID;
   
