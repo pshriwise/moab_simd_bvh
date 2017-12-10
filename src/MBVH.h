@@ -716,7 +716,7 @@ class BVH {
 	if ( !cur.isEmpty() ) {
 	  for (size_t i = 0; i < numPrims; i++) {
 	    T t = primIDs[i];
-	    t.intersect(ray, (void*)MDAM);
+	    t.intersect(vray, ray, (void*)MDAM);
 	  }
 	}
 	
