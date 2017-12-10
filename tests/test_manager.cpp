@@ -6,11 +6,40 @@
 #include "moab/Core.hpp"
 
 
+moab::ErrorCode manager_test_cube();
+moab::ErrorCode manager_test_sphere();
+moab::ErrorCode test_manager_for_file(std::string filename);
+
 int main(int argc, char** argv) {
 
+  int rval;
+
+  rval += manager_test_cube();
+  rval += manager_test_sphere();
+
+  return rval;
+
+}
+
+moab::ErrorCode manager_test_cube() {
+
+  return test_manager_for_file(TEST_CUBE);
+
+}
+
+moab::ErrorCode manager_test_sphere() {
+
+  return test_manager_for_file(TEST_SMALL_SPHERE);
+
+}
+
+
+
+moab::ErrorCode test_manager_for_file(std::string filename) {
+  
   moab::Interface* mbi = new moab::Core();
 
-  moab::ErrorCode rval = mbi->load_file(TEST_CUBE);
+  moab::ErrorCode rval = mbi->load_file(filename.c_str());
   MB_CHK_SET_ERR(rval, "Failed to load the test file: " << TEST_CUBE);
   
   MBVHManager MBVHM(mbi);
@@ -56,5 +85,4 @@ int main(int argc, char** argv) {
   CHECK(r.primID != -1);
   
   return rval;
-
 }
