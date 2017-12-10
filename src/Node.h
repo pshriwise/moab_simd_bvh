@@ -10,6 +10,7 @@
 
 static const size_t emptyNode = 8;
 static const size_t tyLeaf = 8;
+static const size_t setLeaf = 3;
 
 static const size_t items_mask = 15;
 static const size_t align_mask = 15;
@@ -29,6 +30,8 @@ struct NodeRef {
   inline size_t pointer () const { return ptr; }
   
   inline size_t isLeaf() const { return ptr & tyLeaf; }
+
+  inline size_t isSetLeaf() const { return !(isLeaf()) && (ptr & setLeaf); }
 
   inline bool isEmpty() const { return ptr == emptyNode; }
 
@@ -146,6 +149,14 @@ struct AANode : public Node
   			       return AABB(lower, upper); }
   
   vfloat4 lower_x, upper_x, lower_y, upper_y, lower_z, upper_z;
+  
+};
+
+
+struct SetNode : public AANode {
+
+  unsigned setID;
+  unsigned fwdID, bwdID;
   
 };
 
