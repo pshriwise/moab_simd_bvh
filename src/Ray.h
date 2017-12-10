@@ -98,10 +98,10 @@ struct TravRay {
       farY  = nearY ^ sizeof(vfloat4);
       farZ  = nearZ ^ sizeof(vfloat4);
     }
-
-
+  
     Vec3fa org_xyz, dir_xyz;
     Vec3fa org, dir, rdir;
     size_t nearX, nearY, nearZ;
     size_t farX, farY, farZ;
+    unsigned setID;
   };
