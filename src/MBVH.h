@@ -99,6 +99,29 @@ class BVH {
   static const size_t stackSize = 1+(N-1)*BVH_MAX_DEPTH;
 
  public:
+
+  inline void makeSetNode(NodeRef* node, unsigned setID, unsigned fwd = 0, unsigned rev = 0) {
+
+    //make sure this isn't already a set node
+    assert(!node->isSetLeaf());
+    
+    // replace this normal root node with a set node
+    AANode aanode = *(node->node());
+    SetNode* snode = new SetNode(aanode, setID);
+        
+    if( node->isLeaf() ) {
+      snode->setRef(0,*node);
+      snode->setRef(1,NodeRef());
+      snode->setRef(2,NodeRef());
+      snode->setRef(3,NodeRef());
+    }
+    else {
+      delete node->node();
+    }
+    
+    node->setPtr((size_t)snode | setLeafAlign);
+    
+  }
   
   inline void* createLeaf(T* primitives, size_t numPrimitives) {
     return (void*) encodeLeaf((void*)primitives, numPrimitives - 1);
@@ -245,19 +268,7 @@ class BVH {
     AABB box = box_from_nodes(nodesPtr, numNodes);
     
     if (numNodes == 1) {
-      // replace this normal root node with a set node
-      AANode aanode = *(nodesPtr[0]->node());
-      SetNode* snode = new SetNode(aanode, 10);
-      if( nodesPtr[0]->isLeaf() ) {
-	snode->setRef(0,*nodesPtr[0]);
-	snode->setRef(1,NodeRef());
-	snode->setRef(2,NodeRef());
-	snode->setRef(3,NodeRef());
-      }
-      else {
-        delete nodesPtr[0]->node();
-      }
-      nodesPtr[0]->setPtr((size_t)snode | setLeafAlign);
+      makeSetNode(nodesPtr[0], 10);
       return nodesPtr[0];
       
     }
