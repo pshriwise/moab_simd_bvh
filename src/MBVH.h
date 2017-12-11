@@ -736,13 +736,11 @@ class BVH {
 
 	  continue;
 	}
-
-	// leaf (set distance to nearest/farthest box intersection for now)
-	size_t numPrims;
-	T* primIDs = (T*)cur.leaf(numPrims);
 	
 	if ( !cur.isEmpty() ) {
-
+	  // leaf (set distance to nearest/farthest box intersection for now)
+	  size_t numPrims;
+	  T* primIDs = (T*)cur.leaf(numPrims);
 	  
 	  for (size_t i = 0; i < numPrims; i++) {
 	    T t = primIDs[i];
