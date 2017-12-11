@@ -727,6 +727,9 @@ class BVH {
 	    nodeTraverser.traverseClosest(cur, mask, tNear, stackPtr, stackEnd);
 	  }
 
+	if ( !cur.isEmpty() ) {
+	  // leaf (set distance to nearest/farthest box intersection for now)
+	
 	if (cur.isSetLeaf() ) {
 	  // update the geom id of the travray
 	  vray->setID = cur.snode()->setID;
@@ -737,8 +740,6 @@ class BVH {
 	  continue;
 	}
 	
-	if ( !cur.isEmpty() ) {
-	  // leaf (set distance to nearest/farthest box intersection for now)
 	  size_t numPrims;
 	  T* primIDs = (T*)cur.leaf(numPrims);
 	  
