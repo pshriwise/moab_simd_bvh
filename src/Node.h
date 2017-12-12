@@ -177,9 +177,9 @@ struct SetNodeT : public AANode {
 
   
  SetNodeT(const AANode &aanode,
-	 const unsigned &setid,
-	 const unsigned &fwdID,
-	 const unsigned &revID) :
+	 const I &setid,
+	 const I &fwdID,
+	 const I &revID) :
   setID(setid),
     fwdID(fwdID),
     revID(revID)

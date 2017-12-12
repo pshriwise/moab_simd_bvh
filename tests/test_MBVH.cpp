@@ -252,7 +252,7 @@ int main(int argc, char** argv) {
 
   
   // create a new ray struct for firing
-  dRay r;
+  MBRay r;
   
   for ( int i = 0; i < volume_triangles.size(); i++ ) {
 
@@ -304,7 +304,7 @@ int main(int argc, char** argv) {
 
 	Vec3da dir = Vec3da(this_dir[0], this_dir[1], this_dir[2]);
 	
-	r = dRay(org, dir, 0.0, inf);
+	r = MBRay(org, dir, 0.0, inf);
        
 	start = std::clock();
 	BVH->intersectRay(*root, r);

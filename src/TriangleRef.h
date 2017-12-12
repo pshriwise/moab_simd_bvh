@@ -113,7 +113,7 @@ struct TriangleRef : public BuildPrimitive {
   
 };
   
-template<typename I>  
+template<typename V, typename P, typename I>  
 struct MBTriangleRefT {
 
   size_t i1, i2, i3;
@@ -168,7 +168,7 @@ struct MBTriangleRefT {
     	
   }
 
-  inline bool intersect(const TravRayT<I>& tray, dRay &ray, void* mesh_ptr = NULL) {
+  inline bool intersect(const TravRayT<I>& tray, RayT<V,P,I> &ray, void* mesh_ptr = NULL) {
 
 
     if( !mesh_ptr ) MB_CHK_SET_ERR_CONT(moab::MB_FAILURE, "No Mesh Pointer");
@@ -223,4 +223,4 @@ struct MBTriangleRefT {
 
 };
 
-typedef MBTriangleRefT<moab::EntityHandle> MBTriangleRef;
+typedef MBTriangleRefT<Vec3da, double, moab::EntityHandle> MBTriangleRef;
