@@ -26,6 +26,8 @@ typedef TempNode<NodeRef*> TempNodeNode;
 
 typedef BVHSettings<NodeRef*> BVHJoinTreeSettings;
 
+typedef TravRayT<moab::EntityHandle> MBTravRay;
+
 struct PrimRef{
   
   inline PrimRef () {}
@@ -676,13 +678,13 @@ class BVH {
   }
 
 
-  static inline bool intersect(NodeRef& node, const TravRay& ray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& dist, size_t& mask) {
+  static inline bool intersect(NodeRef& node, const MBTravRay& ray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& dist, size_t& mask) {
     if(node.isLeaf() || node.isSetLeaf() ) return false;
-    mask = intersectBox(*node.node(),ray,tnear,tfar,dist);
+    mask = intersectBox<moab::EntityHandle>(*node.node(),ray,tnear,tfar,dist);
     return true;
   }
 
-  inline void intersectRay (NodeRef root, dRay & ray, TravRay* vray = NULL) {
+  inline void intersectRay (NodeRef root, dRay & ray, MBTravRay* vray = NULL) {
     /* initialiez stack state */
     StackItemT<NodeRef> stack[stackSize];
     StackItemT<NodeRef>* stackPtr = stack+1;
@@ -695,7 +697,7 @@ class BVH {
     assert(ray.tnear >= 0.0f);
 
     if( !vray ) {
-	vray = new TravRay(ray.org, ray.dir);
+	vray = new MBTravRay(ray.org, ray.dir);
     }
     
     vfloat4 ray_near = std::max(ray.tnear, 0.0);

@@ -210,8 +210,8 @@ inline std::ostream& operator<<(std::ostream& cout, const AANode &n) {
          "Upper Z's: " << n.upper_z << std::endl;
 }
 
-  
-inline size_t intersectBox(const AANode &node, const TravRay &ray, const vfloat4 &tnear, const vfloat4 &tfar, vfloat4 &dist) {
+template<typename I>
+inline size_t intersectBox(const AANode &node, const TravRayT<I> &ray, const vfloat4 &tnear, const vfloat4 &tfar, vfloat4 &dist) {
   const vfloat4 tNearX = (vfloat4::load((void*)((const char*)&node.lower_x + ray.nearX))- ray.org.x) * ray.rdir.x;
   const vfloat4 tNearY = (vfloat4::load((void*)((const char*)&node.lower_x + ray.nearY)) - ray.org.y) * ray.rdir.y;
   const vfloat4 tNearZ = (vfloat4::load((void*)((const char*)&node.lower_x + ray.nearZ)) - ray.org.z) * ray.rdir.z;
