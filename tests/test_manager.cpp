@@ -75,12 +75,15 @@ moab::ErrorCode test_manager_for_file(std::string filename) {
   
   rval = MBVHM.fireRay(surfs[0], r);
   MB_CHK_SET_ERR(rval, "Failed to fire ray at surface " << surfs[0]);
+  CHECK(r.tfar != (double)inf);
+  CHECK(r.primID != -1);
+  
 
+  
   r = dRay(org, dir, 0.0, inf);
   
   rval = MBVHM.fireRay(vols[0], r);
   MB_CHK_SET_ERR(rval, "Failed to fire ray at surface " << surfs[0]);
-
   CHECK(r.tfar != (double)inf);
   CHECK(r.primID != -1);
   
