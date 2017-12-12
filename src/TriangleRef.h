@@ -113,15 +113,15 @@ struct TriangleRef : public BuildPrimitive {
   
 };
   
-  
-struct MBTriangleRef {
+template<typename I>  
+struct MBTriangleRefT {
 
   size_t i1, i2, i3;
-  moab::EntityHandle eh;
+  I eh;
 
-  inline MBTriangleRef() {}
+  inline MBTriangleRefT() {}
   
-  inline MBTriangleRef(moab::EntityHandle* conn_ptr, moab::EntityHandle id) : eh(id) {
+  inline MBTriangleRefT(moab::EntityHandle* conn_ptr, moab::EntityHandle id) : eh(id) {
     i1 = *(conn_ptr)-1;
     i2 = *(conn_ptr + 1)-1;
     i3 = *(conn_ptr + 2)-1;
@@ -222,3 +222,5 @@ struct MBTriangleRef {
   }
 
 };
+
+typedef MBTriangleRefT<moab::EntityHandle> MBTriangleRef;
