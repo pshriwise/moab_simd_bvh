@@ -13,8 +13,7 @@ static const size_t setLeafAlign = 3;
 static const size_t items_mask = 15;
 static const size_t align_mask = 15;
 
- // forward declarations
-struct SetNode;
+// forward declarations
 struct AANode;
 struct Node;
  
@@ -40,8 +39,8 @@ struct NodeRef {
   inline       AANode* safeNode()        { return isSetLeaf() ? (AANode*)setLeafPtr() : node(); }
   inline const AANode* safeNode() const  { return isSetLeaf() ? (AANode*)setLeafPtr() : node(); }
       
-  inline       SetNode* snode()       { return (SetNode*)setLeafPtr(); }
-  inline const SetNode* snode() const { return (const SetNode*)setLeafPtr(); }
+  inline       void* snode()       { return (void*)setLeafPtr(); }
+  inline const void* snode() const { return (const void*)setLeafPtr(); }
   
   inline       Node* bnode()       { return (Node*)ptr; }
   inline const Node* bnode() const { return (const Node*)ptr; }
@@ -164,8 +163,8 @@ struct AANode : public Node
   
 };
 
-
-struct SetNode : public AANode {
+template<typename I>
+struct SetNodeT : public AANode {
 
   using::Node::children;
   
@@ -177,7 +176,7 @@ struct SetNode : public AANode {
   using::AANode::upper_z;
 
   
- SetNode(const AANode &aanode,
+ SetNodeT(const AANode &aanode,
 	 const unsigned &setid,
 	 const unsigned &fwdID,
 	 const unsigned &revID) :
@@ -195,10 +194,12 @@ struct SetNode : public AANode {
 		 children[2] = aanode.children[2];
 		 children[3] = aanode.children[3]; }
   
-  unsigned setID;
-  unsigned fwdID, revID;
+  I setID;
+  I fwdID, revID;
   
 };
+
+typedef SetNodeT<unsigned> SetNode;
 
 inline std::ostream& operator<<(std::ostream& cout, const AANode &n) {
   return cout <<
