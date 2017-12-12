@@ -168,7 +168,7 @@ struct MBTriangleRefT {
     	
   }
 
-  inline bool intersect(const TravRay& tray, dRay &ray, void* mesh_ptr = NULL) {
+  inline bool intersect(const TravRayT<I>& tray, dRay &ray, void* mesh_ptr = NULL) {
 
 
     if( !mesh_ptr ) MB_CHK_SET_ERR_CONT(moab::MB_FAILURE, "No Mesh Pointer");
