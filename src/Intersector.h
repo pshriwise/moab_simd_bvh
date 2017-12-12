@@ -18,7 +18,7 @@
   #include <bitset>
 #endif
 
-template <typename T, typename V, typename P> class BVHIntersectorT {
+template <typename T, typename V, typename P, typename I> class BVHIntersectorT {
   
   static const size_t stackSize = 1+(N-1)*BVH_MAX_DEPTH;
 
@@ -32,7 +32,7 @@ template <typename T, typename V, typename P> class BVHIntersectorT {
   }
 
   
-  inline void intersectRay (NodeRef root, RayT<V,P> & ray) {
+  inline void intersectRay (NodeRef root, RayT<V,P,I> & ray) {
 
     /* initialiez stack state */
     StackItemT<NodeRef> stack[stackSize];
@@ -104,7 +104,7 @@ template <typename T, typename V, typename P> class BVHIntersectorT {
 	if ( !cur.isEmpty() ) {
 	  for (size_t i = 0; i < numPrims; i++) {
 	    T p = prims[i];
-	    p.template intersect< RayT<V,P> >(ray);
+	    p.template intersect< RayT<V,P,I> >(ray);
 	  }
 	}
 
@@ -114,4 +114,4 @@ template <typename T, typename V, typename P> class BVHIntersectorT {
 
 };
 
-typedef BVHIntersectorT<BuildPrimitive, Vec3fa, float> BuildPrimitiveIntersector;
+typedef BVHIntersectorT<BuildPrimitive, Vec3fa, float, int> BuildPrimitiveIntersector;

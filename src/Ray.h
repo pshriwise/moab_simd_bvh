@@ -7,7 +7,7 @@
 #include "constants.h"
 #include "vfloat.h"
 
-template<typename V, typename P>
+template<typename V, typename P, typename I>
 struct RayT {
 
   /* Empty Constructor */
@@ -41,15 +41,14 @@ struct RayT {
   V Ng; // tri normal
   P u; // barycentric coordinate of hit
   P v; // barycentric coordinate of hit
-  int geomID; // geometry ID (equivalent to surface ID for us)
-  int primID; // triangle ID (equivalent to triangle EntityHandle)
-  int instID; // kernel instance ID (might be able to replace with volume EntityHandle
-  long unsigned int eh;
+  I geomID; // geometry ID (equivalent to surface ID for us)
+  I primID; // triangle ID (equivalent to triangle EntityHandle)
+  I instID; // kernel instance ID (might be able to replace with volume EntityHandle
 
 };
 
-template<typename v, typename p>
- std::ostream& operator <<(std::ostream &os, RayT<v,p> const &r) {
+template<typename v, typename p, typename i>
+  std::ostream& operator <<(std::ostream &os, RayT<v,p,i> const &r) {
   return os << "Origin: " << r.org << std::endl
             << "Direction: " << r.dir << std::endl
             << "tNear: " << r.tnear << std::endl
@@ -64,8 +63,8 @@ template<typename v, typename p>
             << "Geometry ID: " << r.geomID << std::endl;
 }
 
-typedef RayT<Vec3fa, float> Ray;
-typedef RayT<Vec3da, double> dRay;
+typedef RayT<Vec3fa, float, int> Ray;
+typedef RayT<Vec3da, double, int> dRay;
 
 struct TravRay {
 
