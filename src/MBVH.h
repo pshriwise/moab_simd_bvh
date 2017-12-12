@@ -28,6 +28,8 @@ typedef BVHSettings<NodeRef*> BVHJoinTreeSettings;
 
 typedef TravRayT<moab::EntityHandle> MBTravRay;
 
+typedef SetNodeT<moab::EntityHandle> MBSetNode;
+
 struct PrimRef{
   
   inline PrimRef () {}
@@ -111,7 +113,7 @@ class BVH {
     AANode *aanode = new AANode();
     AABB node_box = box_from_node(node);
     aanode->setBounds(node_box);
-    SetNode* snode = new SetNode(*aanode, setID, fwd, rev);
+    MBSetNode* snode = new MBSetNode(*aanode, setID, fwd, rev);
         
     if( node->isLeaf() ) {
       snode->setRef(0,*node);
@@ -753,7 +755,7 @@ class BVH {
 	
 	if (cur.isSetLeaf() ) {
 	  // update the geom id of the travray
-	  SetNode* snode = cur.snode();
+	  MBSetNode* snode = (MBSetNode*)cur.snode();
 	  vray->setID = snode->setID;
 	  if(snode->fwdID == ray.instID) {
 	    vray->sense = 0;
