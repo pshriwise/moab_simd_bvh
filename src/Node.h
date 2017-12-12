@@ -177,8 +177,14 @@ struct SetNode : public AANode {
   using::AANode::upper_z;
 
   
- SetNode(const AANode &aanode, const unsigned &setid) :
-  setID(setid) { lower_x = aanode.lower_x;
+ SetNode(const AANode &aanode,
+	 const unsigned &setid,
+	 const unsigned &fwdID,
+	 const unsigned &revID) :
+  setID(setid),
+    fwdID(fwdID),
+    revID(revID)
+    { lower_x = aanode.lower_x;
                  lower_y = aanode.lower_y;
 		 lower_z = aanode.lower_z;
 		 upper_x = aanode.upper_x;
@@ -190,7 +196,7 @@ struct SetNode : public AANode {
 		 children[3] = aanode.children[3]; }
   
   unsigned setID;
-  unsigned fwdID, bwdID;
+  unsigned fwdID, revID;
   
 };
 

@@ -109,7 +109,7 @@ class BVH {
     AANode *aanode = new AANode();
     AABB node_box = box_from_node(node);
     aanode->setBounds(node_box);
-    SetNode* snode = new SetNode(*aanode, setID);
+    SetNode* snode = new SetNode(*aanode, setID, fwd, rev);
         
     if( node->isLeaf() ) {
       snode->setRef(0,*node);
@@ -751,11 +751,18 @@ class BVH {
 	
 	if (cur.isSetLeaf() ) {
 	  // update the geom id of the travray
-	  vray->setID = cur.snode()->setID;
+	  SetNode* snode = cur.snode();
+	  vray->setID = snode->setID;
+	  if(snode->fwdID == ray.instID) {
+	    vray->sense = 0;
+	  }
+	  else {
+	    assert(snode->revID == ray.instID);
+	    vray->sense = 1;
+	  }
 	  // WILL ALSO SET SENSE HERE AT SOME POINT
 	  NodeRef setNode = cur.setLeaf();
 	  intersectRay(setNode, ray, vray);
-
 	  continue;
 	}
 	

@@ -181,7 +181,7 @@ struct MBTriangleRef {
     coords[0] = moab::CartVect(mdam->xPtr[i1], mdam->yPtr[i1], mdam->zPtr[i1]);
     coords[1] = moab::CartVect(mdam->xPtr[i2], mdam->yPtr[i2], mdam->zPtr[i2]);
     coords[2] = moab::CartVect(mdam->xPtr[i3], mdam->yPtr[i3], mdam->zPtr[i3]);
-    
+
     /* moab::ErrorCode rval; */
     
     /* moab::CartVect coords[3]; */
@@ -209,11 +209,15 @@ struct MBTriangleRef {
     std::cout << std::endl;
 #endif
 
+    moab::CartVect normal = (coords[2]-coords[0]) * (coords[1]-coords[0]);
     if (hit && dist < ray.tfar) {
       ray.primID = eh;
       ray.eh = eh;
       ray.tfar = dist;
       ray.geomID = tray.setID;
+      ray.Ng.x = normal[0];
+      ray.Ng.y = normal[1];
+      ray.Ng.z = normal[2];
     }
 
     return hit;

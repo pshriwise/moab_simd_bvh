@@ -103,5 +103,6 @@ struct TravRay {
     Vec3fa org, dir, rdir;
     size_t nearX, nearY, nearZ;
     size_t farX, farY, farZ;
+    int sense;
     unsigned setID;
   };
