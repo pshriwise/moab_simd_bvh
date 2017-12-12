@@ -210,14 +210,13 @@ struct MBTriangleRef {
 #endif
 
     moab::CartVect normal = (coords[2]-coords[0]) * (coords[1]-coords[0]);
+    
     if (hit && dist < ray.tfar) {
       ray.primID = eh;
       ray.eh = eh;
       ray.tfar = dist;
       ray.geomID = tray.setID;
-      ray.Ng.x = normal[0];
-      ray.Ng.y = normal[1];
-      ray.Ng.z = normal[2];
+      ray.Ng = tray.sense? (normal * -1.0).array() : normal.array();
     }
 
     return hit;
