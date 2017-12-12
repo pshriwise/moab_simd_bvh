@@ -66,12 +66,13 @@ template<typename v, typename p, typename i>
 typedef RayT<Vec3fa, float, int> Ray;
 typedef RayT<Vec3da, double, int> dRay;
 
-struct TravRay {
+template<typename I>
+struct TravRayT {
 
     /* Empty constructor */
-    inline TravRay() {}
+    inline TravRayT() {}
 
-    inline TravRay(const Vec3fa &ray_org, const Vec3fa &ray_dir)
+    inline TravRayT(const Vec3fa &ray_org, const Vec3fa &ray_dir)
       : org_xyz(ray_org), dir_xyz(ray_dir) {
       rdir = rcp_safe(dir_xyz);
       org = ray_org;
@@ -85,7 +86,7 @@ struct TravRay {
     }
 
 
-      inline TravRay(const Vec3da &ray_org, const Vec3da &ray_dir)
+  inline TravRayT(const Vec3da &ray_org, const Vec3da &ray_dir)
       : org_xyz(ray_org), dir_xyz(ray_dir) {
       rdir = rcp_safe(dir_xyz);
       org = ray_org;
@@ -103,5 +104,7 @@ struct TravRay {
     size_t nearX, nearY, nearZ;
     size_t farX, farY, farZ;
     int sense;
-    unsigned setID;
+    I setID;
   };
+
+typedef TravRayT<unsigned> TravRay;
