@@ -208,10 +208,11 @@ struct MBTriangleRef {
     if (hit) std::cout << "Hit found at distance: " << dist << std::endl;
     std::cout << std::endl;
 #endif
-
-    moab::CartVect normal = (coords[2]-coords[0]) * (coords[1]-coords[0]);
     
     if (hit && dist < ray.tfar) {
+
+      moab::CartVect normal = (coords[2]-coords[0]) * (coords[1]-coords[0]);
+
       ray.primID = eh;
       ray.eh = eh;
       ray.tfar = dist;
