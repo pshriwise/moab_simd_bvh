@@ -71,23 +71,23 @@ moab::ErrorCode test_manager_for_file(std::string filename) {
   Vec3da org(0.0, 0.0, 0.0);
   Vec3da dir(0.0, 0.0, 1.0);
   
-  dRay r(org, dir, 0.0, inf);
+  MBRay r(org, dir, 0.0, inf);
   
   rval = MBVHM.fireRay(surfs[0], r);
   MB_CHK_SET_ERR(rval, "Failed to fire ray at surface " << surfs[0]);
   CHECK(r.tfar != (double)inf);
   CHECK(r.primID != -1);
-  CHECK_EQUAL(r.geomID, (int)surfs[0]);
+  CHECK_EQUAL(surfs[0], r.geomID);
     
-  r = dRay(org, dir, 0.0, inf);
-  r.instID = (int)vols[0];
+  r = MBRay(org, dir, 0.0, inf);
+  r.instID = vols[0];
   
   rval = MBVHM.fireRay(vols[0], r);
   MB_CHK_SET_ERR(rval, "Failed to fire ray at surface " << surfs[0]);
   CHECK(r.tfar != (double)inf);
-  CHECK_EQUAL((int)vols[0], r.instID);
+  CHECK_EQUAL(vols[0], r.instID);
   std::cout << r << std::endl;
-  CHECK_EQUAL((int)surfs[0], r.geomID);
+  CHECK_EQUAL(surfs[0], r.geomID);
   
   return rval;
 }

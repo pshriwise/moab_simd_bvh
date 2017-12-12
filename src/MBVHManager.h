@@ -149,7 +149,7 @@ struct MBVHManager {
 	  rval = MBI->tag_get_data(sense_tag, &(*ri), 1, (void*)data);
 	  MB_CHK_SET_ERR(rval, "Failed to get the sense data");
 
-	  MOABBVH->makeSetNode(root, (unsigned)(*ri), (unsigned)data[0], (unsigned)data[1]);
+	  MOABBVH->makeSetNode(root, (*ri), data[0], data[1]);
 
 	  break;
 	  
@@ -181,7 +181,7 @@ struct MBVHManager {
   }
 
 
-  inline moab::ErrorCode fireRay(moab::EntityHandle set, dRay &ray) {
+  inline moab::ErrorCode fireRay(moab::EntityHandle set, MBRay &ray) {
     NodeRef* root = BVHRoots[set - lowest_set];
     if(!root) { MB_CHK_SET_ERR(rval, "Failed to retrieve the root for EntitySet " << set); }
 

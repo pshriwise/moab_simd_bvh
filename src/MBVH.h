@@ -30,6 +30,8 @@ typedef TravRayT<moab::EntityHandle> MBTravRay;
 
 typedef SetNodeT<moab::EntityHandle> MBSetNode;
 
+typedef RayT<Vec3da, double, moab::EntityHandle> MBRay;
+
 struct PrimRef{
   
   inline PrimRef () {}
@@ -104,7 +106,7 @@ class BVH {
 
  public:
 
-  inline void makeSetNode(NodeRef* node, unsigned setID, unsigned fwd = 0, unsigned rev = 0) {
+  inline void makeSetNode(NodeRef* node, moab::EntityHandle setID, moab::EntityHandle fwd = 0, moab::EntityHandle rev = 0) {
 
     //make sure this isn't already a set node
     assert(!node->isSetLeaf());
@@ -686,7 +688,7 @@ class BVH {
     return true;
   }
 
-  inline void intersectRay (NodeRef root, dRay & ray, MBTravRay* vray = NULL) {
+  inline void intersectRay (NodeRef root, MBRay & ray, MBTravRay* vray = NULL) {
     /* initialiez stack state */
     StackItemT<NodeRef> stack[stackSize];
     StackItemT<NodeRef>* stackPtr = stack+1;
@@ -761,7 +763,7 @@ class BVH {
 	    vray->sense = 0;
 	  }
 	  else {
-	    assert(snode->revID == ray.instID);
+	    //	    assert(snode->revID == ray.instID);
 	    vray->sense = 1;
 	  }
 	  // WILL ALSO SET SENSE HERE AT SOME POINT
