@@ -103,7 +103,6 @@ struct TriangleRef : public BuildPrimitive {
 
     if (hit && dist < ray.tfar) {
       ray.primID = eh;
-      ray.eh = eh;
       ray.tfar = dist;
     }
 
@@ -214,7 +213,6 @@ struct MBTriangleRef {
       moab::CartVect normal = (coords[2]-coords[0]) * (coords[1]-coords[0]);
 
       ray.primID = eh;
-      ray.eh = eh;
       ray.tfar = dist;
       ray.geomID = tray.setID;
       ray.Ng = tray.sense? (normal * -1.0).array() : normal.array();

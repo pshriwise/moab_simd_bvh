@@ -347,7 +347,7 @@ int main(int argc, char** argv) {
 	  if (eh_check && 0 == j) {
 
 	    // make sure that the entity handle found by the SIMD BVH is in the list of returned facets from RIS
-	    std::vector<moab::EntityHandle>::iterator eh_it = std::find(facets.begin(), facets.end(), r.eh);
+	    std::vector<moab::EntityHandle>::iterator eh_it = std::find(facets.begin(), facets.end(), r.primID);
 	    CHECK( eh_it != facets.end() );
 
 	    // ensure that facet hit distance matches the minimum distance found by both
