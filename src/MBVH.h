@@ -106,21 +106,29 @@ class BVH {
     assert(!node->isSetLeaf());
     
     // replace this normal root node with a set node
-    AANode aanode = *(node->node());
-    SetNode* snode = new SetNode(aanode, setID);
+    AANode *aanode = new AANode();
+    AABB node_box = box_from_node(node);
+    aanode->setBounds(node_box);
+    SetNode* snode = new SetNode(*aanode, setID);
         
     if( node->isLeaf() ) {
       snode->setRef(0,*node);
       snode->setRef(1,NodeRef());
       snode->setRef(2,NodeRef());
       snode->setRef(3,NodeRef());
+
     }
     else {
+      snode->setRef(0,node->node()->child(0));
+      snode->setRef(1,node->node()->child(1));
+      snode->setRef(2,node->node()->child(2));
+      snode->setRef(3,node->node()->child(3));
       delete node->node();
     }
     
     node->setPtr((size_t)snode | setLeafAlign);
-    
+
+    return;
   }
   
   inline void* createLeaf(T* primitives, size_t numPrimitives) {
@@ -130,7 +138,7 @@ class BVH {
   inline void split_sets(NodeRef* current_node, size_t split_dim, NodeRef** nodesPtr, size_t numNodes, TempNodeNode child_nodes[N]) {
 
     // get the current node's bounds
-    AABB box = current_node->node()->bounds();
+    AABB box = current_node->safeNode()->bounds();
 
     Vec3fa dxdydz = (box.upper - box.lower) / 4.0f;
 
@@ -184,7 +192,7 @@ class BVH {
 	
 
     for(size_t i = 0; i < numNodes; i ++) {
-      AANode* aanode = nodesPtr[i]->node();
+      AANode* aanode = nodesPtr[i]->safeNode();
       bool placed = false;
       
       for(size_t j = 0; j < N; j++){
@@ -215,7 +223,7 @@ class BVH {
     // create a new node that contains all nodes
     AABB node_box;
     if(!node->isLeaf()){
-      AANode* temp_node = node->node();
+      AANode* temp_node = node->safeNode();
       node_box = temp_node->bounds();
     }
     else {
@@ -268,7 +276,7 @@ class BVH {
     AABB box = box_from_nodes(nodesPtr, numNodes);
     
     if (numNodes == 1) {
-      makeSetNode(nodesPtr[0], 10);
+      //makeSetNode(nodesPtr[0], 10);
       return nodesPtr[0];
       
     }

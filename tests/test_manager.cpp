@@ -87,7 +87,7 @@ moab::ErrorCode test_manager_for_file(std::string filename) {
   CHECK(r.tfar != (double)inf);
   CHECK(r.primID != -1);
   std::cout << r << std::endl;
-  CHECK(r.geomID == 10);
+  CHECK(r.geomID != -1);
   
   return rval;
 }

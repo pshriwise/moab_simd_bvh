@@ -122,6 +122,10 @@ struct MBVHManager {
       moab::Range child_surfs;
       std::vector<NodeRef*> sets;
       NodeRef* root;
+
+      moab::Tag sense_tag;
+      moab::EntityHandle data[2];
+      
       switch (dim) {
 
 	case 2 : // build surface tree
@@ -133,7 +137,19 @@ struct MBVHManager {
 	  root = MOABBVH->Build(*ri, tris.front() - MDAM->first_element, tris.size());
 	  if(!root) { MB_CHK_SET_ERR(moab::MB_FAILURE, "Failed to build BVH for surface: " << *ri); }
 
-	  BVHRoots[*ri - lowest_set] = root;	  	  
+	  BVHRoots[*ri - lowest_set] = root;
+
+	  //update the root node to a setLeaf node
+
+	  //first get the sense information
+
+	  rval = MBI->tag_get_handle("GEOM_SENSE_2", sense_tag);
+	  MB_CHK_SET_ERR(rval, "Failed to get the sense tag");
+
+	  rval = MBI->tag_get_data(sense_tag, &(*ri), 1, (void*)data);
+	  MB_CHK_SET_ERR(rval, "Failed to get the sense data");
+
+	  MOABBVH->makeSetNode(root, (unsigned)(*ri), (unsigned)data[0], (unsigned)data[1]);
 
 	  break;
 	  

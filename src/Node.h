@@ -37,6 +37,9 @@ struct NodeRef {
   inline       AANode* node()       { return (AANode*)ptr; }
   inline const AANode* node() const { return (const AANode*)ptr; }
 
+  inline       AANode* safeNode()        { return isSetLeaf() ? (AANode*)setLeafPtr() : node(); }
+  inline const AANode* safeNode() const  { return isSetLeaf() ? (AANode*)setLeafPtr() : node(); }
+      
   inline       SetNode* snode()       { return (SetNode*)setLeafPtr(); }
   inline const SetNode* snode() const { return (const SetNode*)setLeafPtr(); }
   
