@@ -377,7 +377,7 @@ class BVH {
     splitNode(this_node, primitives, numPrimitives, tempNodes, settings);
 
     // check for a lot of entities in a single node
-    float total_frac = (float)numPrimitives/(float)total_entities;
+    float total_frac = (float)numPrimitives/(float)MDAM->num_elements;
     for(size_t i = 0; i < N; i++) {
       float frac = (float)tempNodes[i].prims.size()/(float)numPrimitives;
       // if nearly all of the primitives are in one of the tempNodes,
