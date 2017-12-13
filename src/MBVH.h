@@ -148,7 +148,7 @@ class BVH {
 
     Vec3fa dxdydz = (box.upper - box.lower) / 4.0f;
 
-        //create new child bounds
+    //create new child bounds
     vfloat4 bounds[6];
   
     new (&bounds[0]) vfloat4(box.lower[0]); // lower x
@@ -213,6 +213,7 @@ class BVH {
       }
       assert(placed);
     }
+
     return;
   }
 
@@ -369,7 +370,7 @@ class BVH {
       box.update(primitives[i].lower.x, primitives[i].lower.y, primitives[i].lower.z);
       box.update(primitives[i].upper.x, primitives[i].upper.y, primitives[i].upper.z);
     }
-
+    
     // increment depth and recur here
     aanode->setBounds(box);
     NodeRef* this_node = new NodeRef((size_t)aanode);
@@ -382,8 +383,8 @@ class BVH {
 #endif
 
     for(size_t i = 0; i < N ; i++){
-      MBBuildState* br = new MBBuildState(current.depth+1, tempNodes[i].prims);
-      NodeRef* child_node = Build(*br, settings);
+      MBBuildState br(current.depth+1, tempNodes[i].prims);
+      NodeRef* child_node = Build(br, settings);
       // link the child node
       aanode->setRef(i, *child_node);
     }
