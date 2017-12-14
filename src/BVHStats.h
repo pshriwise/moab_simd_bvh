@@ -13,6 +13,7 @@ struct BVHStatTracker {
 
   
   int num_empty;
+  int num_non_empty;
   int num_leaves;
   int depth;
   int max_leaf;
@@ -26,6 +27,7 @@ struct BVHStatTracker {
   static const size_t stackSize = 1+(N-1)*BVH_MAX_DEPTH;
 
   inline BVHStatTracker() : num_empty(0),
+			    num_non_empty(0),
 			    num_leaves(0),
 			    depth(0),
 			    min_leaf(inf),
@@ -96,14 +98,14 @@ struct BVHStatTracker {
 	  {
 	    size_t mask = 15; //always visit all child nodes
 
-	    if( cur.isEmpty() ) num_empty++;
-
 	    if( cur.isLeaf() ) {
 	      depth = current_depth() > depth ? current_depth() : depth;
 	      num_leaves++;
 	      break;
 	    }
 
+	    if( cur.isEmpty() ) num_empty++;
+	    else num_non_empty++;
 	    down(mask);
 	    
 	    if (mask == 0) goto pop;
@@ -127,6 +129,7 @@ struct BVHStatTracker {
     std::cout << "Tree depth: " << depth << std::endl;
     std::cout << "Total number of entiites in the tree: " << total_entities << std::endl;
     std::cout << "Number of leaves in the tree: " << num_leaves << std::endl;
+    std::cout << "Number of non-empty nodes in the tree: " << num_non_empty << std::endl;    
     std::cout << "Number of empty nodes in the tree: " << num_empty << std::endl;
     std::cout << "Minimum entities in non-empty leaf: " << min_leaf << std::endl;
     std::cout << "Maximum entities in leaf: " << max_leaf << std::endl;
