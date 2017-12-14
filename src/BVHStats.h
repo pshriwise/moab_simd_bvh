@@ -100,13 +100,15 @@ struct BVHStatTracker {
 
 	    if( cur.isEmpty() ) num_empty++;
 	    else num_non_empty++;
-	    down(mask);
+
 	    
 	    if( cur.isLeaf() ) {
 	      depth = current_depth() > depth ? current_depth() : depth;
 	      num_leaves++;
 	      break;
 	    }
+
+	    down(mask);
 	    
 	    if (mask == 0) goto pop;
 	    
