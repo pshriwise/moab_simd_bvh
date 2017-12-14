@@ -121,7 +121,7 @@ struct MBTriangleRefT {
 
   inline MBTriangleRefT() {}
   
-  inline MBTriangleRefT(moab::EntityHandle* conn_ptr, moab::EntityHandle id) : eh(id) {
+  inline MBTriangleRefT(I* conn_ptr, I id) : eh(id) {
     i1 = *(conn_ptr)-1;
     i2 = *(conn_ptr + 1)-1;
     i3 = *(conn_ptr + 2)-1;
