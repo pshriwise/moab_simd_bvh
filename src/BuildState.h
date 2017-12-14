@@ -21,12 +21,12 @@ struct BuildBuildSetT{
   inline BuildBuildSetT(EmptyTy) {}
 
   inline AABB bounds() {
-    AABB *box = new AABB();
+    AABB box;
     for(unsigned int i = 0; i < prims.size(); i++ ) {
-      box->update(prims[i].lower.x,prims[i].lower.y,prims[i].lower.z);
-      box->update(prims[i].upper.x,prims[i].upper.y,prims[i].upper.z);
+      box.update(prims[i].lower.x,prims[i].lower.y,prims[i].lower.z);
+      box.update(prims[i].upper.x,prims[i].upper.y,prims[i].upper.z);
     }
-    return *box;
+    return box;
   }
 
   inline void clear() { prims.clear(); }
