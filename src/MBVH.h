@@ -152,12 +152,12 @@ class BVH {
     //create new child bounds
     vfloat4 bounds[6];
   
-    new (&bounds[0]) vfloat4(box.lower[0]); // lower x
-    new (&bounds[1]) vfloat4(box.upper[0]); // upper x
-    new (&bounds[2]) vfloat4(box.lower[1]); // lower y
-    new (&bounds[3]) vfloat4(box.upper[1]); // upper y
-    new (&bounds[4]) vfloat4(box.lower[2]); // lower z
-    new (&bounds[5]) vfloat4(box.upper[2]); // upper z
+    bounds[0] = vfloat4(box.lower[0]); // lower x
+    bounds[1] = vfloat4(box.upper[0]); // upper x
+    bounds[2] = vfloat4(box.lower[1]); // lower y
+    bounds[3] = vfloat4(box.upper[1]); // upper y
+    bounds[4] = vfloat4(box.lower[2]); // lower z
+    bounds[5] =vfloat4(box.upper[2]); // upper z
 
     float lb = box.lower[split_dim];
     float delta = dxdydz[split_dim];
@@ -167,25 +167,25 @@ class BVH {
     AABB boxes[N];
 
 	 
-    new (&boxes[0]) AABB(bounds[0][0],
+    boxes[0] = AABB(bounds[0][0],
 		    bounds[2][0],
 		    bounds[4][0],
 		    bounds[1][0],
 		    bounds[3][0],
 		    bounds[5][0]);
-    new (&boxes[1]) AABB(bounds[0][1],
+    boxes[1] = AABB(bounds[0][1],
 		    bounds[2][1],
 		    bounds[4][1],
 		    bounds[1][1],
 		    bounds[3][1],
 		    bounds[5][1]);
-    new (&boxes[2]) AABB(bounds[0][2],
+    boxes[2] = AABB(bounds[0][2],
 		    bounds[2][2],
 		    bounds[4][2],
 		    bounds[1][2],
 		    bounds[3][2],
 		    bounds[5][2]);
-    new (&boxes[3]) AABB(bounds[0][3],
+    boxes[3] = AABB(bounds[0][3],
 		    bounds[2][3],
 		    bounds[4][3],
 		    bounds[1][3],
@@ -369,8 +369,7 @@ class BVH {
     
     // created a new node and set the bounds
     AANode* aanode = new AANode();
-    AABB box;
-    new (&box) AABB((float)inf, (float)neg_inf);
+    AABB box = AABB((float)inf, (float)neg_inf);
     for(size_t i = 0; i < numPrimitives; i++) {
       box.update(primitives[i].lower.x, primitives[i].lower.y, primitives[i].lower.z);
       box.update(primitives[i].upper.x, primitives[i].upper.y, primitives[i].upper.z);
@@ -443,30 +442,30 @@ class BVH {
       low_y, upp_y,
       low_z, upp_z;
 
-    new (&low_x) vfloat4(tempNodes[0].box.lower.x,
-			 tempNodes[1].box.lower.x,
-			 tempNodes[2].box.lower.x,
-			 tempNodes[3].box.lower.x);
-    new (&low_y) vfloat4(tempNodes[0].box.lower.y,
-			 tempNodes[1].box.lower.y,
-			 tempNodes[2].box.lower.y,
-			 tempNodes[3].box.lower.y);
-    new (&low_z) vfloat4(tempNodes[0].box.lower.z,
-			 tempNodes[1].box.lower.z,
-			 tempNodes[2].box.lower.z,
-			 tempNodes[3].box.lower.z);
-    new (&upp_x) vfloat4(tempNodes[0].box.upper.x,
-			 tempNodes[1].box.upper.x,
-			 tempNodes[2].box.upper.x,
-			 tempNodes[3].box.upper.x);
-    new (&upp_y) vfloat4(tempNodes[0].box.upper.y,
-			 tempNodes[1].box.upper.y,
-			 tempNodes[2].box.upper.y,
-			 tempNodes[3].box.upper.y);
-    new (&upp_z) vfloat4(tempNodes[0].box.upper.z,
-			 tempNodes[1].box.upper.z,
-			 tempNodes[2].box.upper.z,
-			 tempNodes[3].box.upper.z);
+    low_x = vfloat4(tempNodes[0].box.lower.x,
+		    tempNodes[1].box.lower.x,
+		    tempNodes[2].box.lower.x,
+		    tempNodes[3].box.lower.x);
+    low_y = vfloat4(tempNodes[0].box.lower.y,
+		    tempNodes[1].box.lower.y,
+		    tempNodes[2].box.lower.y,
+		    tempNodes[3].box.lower.y);
+    low_z = vfloat4(tempNodes[0].box.lower.z,
+		    tempNodes[1].box.lower.z,
+		    tempNodes[2].box.lower.z,
+		    tempNodes[3].box.lower.z);
+    upp_x = vfloat4(tempNodes[0].box.upper.x,
+		    tempNodes[1].box.upper.x,
+		    tempNodes[2].box.upper.x,
+		    tempNodes[3].box.upper.x);
+    upp_y = vfloat4(tempNodes[0].box.upper.y,
+		    tempNodes[1].box.upper.y,
+		    tempNodes[2].box.upper.y,
+		    tempNodes[3].box.upper.y);
+    upp_z = vfloat4(tempNodes[0].box.upper.z,
+		    tempNodes[1].box.upper.z,
+		    tempNodes[2].box.upper.z,
+		    tempNodes[3].box.upper.z);
 
     this_node->set(low_x,upp_x,
 		   low_y,upp_y,
@@ -492,12 +491,12 @@ class BVH {
     //create new child bounds
     vfloat4 bounds[6];
   
-    new (&bounds[0]) vfloat4(box.lower[0]); // lower x
-    new (&bounds[1]) vfloat4(box.upper[0]); // upper x
-    new (&bounds[2]) vfloat4(box.lower[1]); // lower y
-    new (&bounds[3]) vfloat4(box.upper[1]); // upper y
-    new (&bounds[4]) vfloat4(box.lower[2]); // lower z
-    new (&bounds[5]) vfloat4(box.upper[2]); // upper z
+    bounds[0] = vfloat4(box.lower[0]); // lower x
+    bounds[1] = vfloat4(box.upper[0]); // upper x
+    bounds[2] = vfloat4(box.lower[1]); // lower y
+    bounds[3] = vfloat4(box.upper[1]); // upper y
+    bounds[4] = vfloat4(box.lower[2]); // lower z
+    bounds[5] = vfloat4(box.upper[2]); // upper z
 
     float lb = box.lower[split_axis];
     float delta = dxdydz[split_axis];
@@ -507,25 +506,25 @@ class BVH {
     AABB boxes[N];
 
 	 
-    new (&boxes[0]) AABB(bounds[0][0],
+    boxes[0] = AABB(bounds[0][0],
 		    bounds[2][0],
 		    bounds[4][0],
 		    bounds[1][0],
 		    bounds[3][0],
 		    bounds[5][0]);
-    new (&boxes[1]) AABB(bounds[0][1],
+    boxes[1] = AABB(bounds[0][1],
 		    bounds[2][1],
 		    bounds[4][1],
 		    bounds[1][1],
 		    bounds[3][1],
 		    bounds[5][1]);
-    new (&boxes[2]) AABB(bounds[0][2],
+    boxes[2] = AABB(bounds[0][2],
 		    bounds[2][2],
 		    bounds[4][2],
 		    bounds[1][2],
 		    bounds[3][2],
 		    bounds[5][2]);
-    new (&boxes[3]) AABB(bounds[0][3],
+    boxes[3] = AABB(bounds[0][3],
 		    bounds[2][3],
 		    bounds[4][3],
 		    bounds[1][3],
@@ -601,7 +600,7 @@ class BVH {
     AABB bounds = current.prims.bounds();
     tempChildren[0] = current;
     for( size_t i = 1; i < numChildren; i++) {
-      new (&tempChildren[i]) MBBuildState(current.depth+1);
+      tempChildren[i] = MBBuildState(current.depth+1);
     }
     
     do {
@@ -723,8 +722,7 @@ class BVH {
     vfloat4 ray_near = std::max(ray.tnear, 0.0);
     vfloat4 ray_far = std::max(ray.tfar, 0.0);
     
-    BVHTraverser nodeTraverser;
-    new (&nodeTraverser) BVHTraverser();
+    BVHTraverser nodeTraverser = BVHTraverser();
     
     while (true) pop:
       {
