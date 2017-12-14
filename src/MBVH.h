@@ -85,7 +85,9 @@ class BVH {
  public:
   inline BVH(MOABDirectAccessManager *mdam) : MDAM(mdam), maxLeafSize(8), depth(0), maxDepth(BVH_MAX_DEPTH), num_stored(0)
     {
-      leaf_sequence_storage.resize(MDAM->num_elements);
+      std::vector<T> storage_vec(MDAM->num_elements);
+      leaf_sequence_storage = storage_vec;
+      //      leaf_sequence_storage.resize(MDAM->num_elements);
     }
      
  private:
@@ -122,7 +124,6 @@ class BVH {
       snode->setRef(1,NodeRef());
       snode->setRef(2,NodeRef());
       snode->setRef(3,NodeRef());
-
     }
     else {
       snode->setRef(0,node->node()->child(0));
@@ -346,7 +347,11 @@ class BVH {
     // if the settings pointer is null, create a settings struct
     if(!settings) settings = new MBBVHSettings();
     
-    return Build(bs, settings);
+    NodeRef *root = Build(bs, settings);
+    
+    delete settings;
+    
+    return root;
   }
 
   inline NodeRef* Build(MBBuildState& current, MBBVHSettings *settings) {
@@ -387,6 +392,7 @@ class BVH {
       NodeRef* child_node = Build(br, settings);
       // link the child node
       aanode->setRef(i, *child_node);
+      delete child_node;
     }
 
     depth = current.depth > depth ? current.depth : depth;
@@ -662,6 +668,7 @@ class BVH {
 #endif
       NodeRef* child_node = createLargeLeaf(tempChildren[i]);
       aanode->setRef(i, *child_node);
+      delete child_node;
     }
 
     depth = current.depth > depth ? current.depth : depth;
@@ -791,7 +798,7 @@ class BVH {
 	}
 	
       }
-    
+
     return;
   }
 
