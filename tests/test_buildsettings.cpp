@@ -11,7 +11,8 @@ int main(int argc, char** argv) {
 
   settings.set_heuristic(ENTITY_RATIO_HEURISTIC);
 
-  TempNode<int> tempNodes[4];
+  std::vector< TempNode<int> > tempNodes;
+  tempNodes.resize(4);
 
   float cost;
   float expected_cost;

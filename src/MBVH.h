@@ -141,7 +141,7 @@ class BVH {
     return (void*) encodeLeaf((void*)primitives, numPrimitives - 1);
   }
 
-  inline void split_sets(NodeRef* current_node, size_t split_dim, NodeRef** nodesPtr, size_t numNodes, TempNodeNode child_nodes[N]) {
+  inline void split_sets(NodeRef* current_node, size_t split_dim, NodeRef** nodesPtr, size_t numNodes, std::vector<TempNodeNode> &child_nodes) {
 
     // get the current node's bounds
     AABB box = current_node->safeNode()->bounds();
@@ -247,7 +247,7 @@ class BVH {
     return node_box;
   }
   
-  inline void split_sets(NodeRef* current_node, NodeRef** nodesPtr, size_t numNodes, TempNodeNode child_nodes[N], BVHJoinTreeSettings* settings) {
+  inline void split_sets(NodeRef* current_node, NodeRef** nodesPtr, size_t numNodes, std::vector<TempNodeNode> &child_nodes, BVHJoinTreeSettings* settings) {
 
     int best_dim;
     float best_cost = 1.0;
@@ -296,7 +296,9 @@ class BVH {
     
     NodeRef* this_node = new NodeRef((size_t)aanode);
     
-    TempNodeNode child_nodes[N];
+    std::vector<TempNodeNode> child_nodes;
+    child_nodes.resize(N);
+    
     split_sets(this_node, nodesPtr, numNodes, child_nodes, settings);
 
     // need arbitrary split check here
@@ -374,7 +376,9 @@ class BVH {
     // increment depth and recur here
     aanode->setBounds(box);
     NodeRef* this_node = new NodeRef((size_t)aanode);
-    MBTempNode tempNodes[4];
+    std::vector<MBTempNode> tempNodes;
+    tempNodes.resize(N);
+    
     splitNode(this_node, primitives, numPrimitives, tempNodes, settings);
 
 #ifdef VERBOSE_MODE
@@ -390,12 +394,14 @@ class BVH {
     }
 
     depth = current.depth > depth ? current.depth : depth;
+
+    tempNodes.clear();
     
     return this_node;
   } // end build
 
 
-  void splitNode(NodeRef* node, const PrimRef* primitives, const size_t numPrimitives, MBTempNode tempNodes[N], MBBVHSettings *settings) {
+  void splitNode(NodeRef* node, const PrimRef* primitives, const size_t numPrimitives, std::vector<MBTempNode> &tempNodes, MBBVHSettings *settings) {
 
     // split node along each axis
     float max_cost = 2.0;
@@ -463,7 +469,7 @@ class BVH {
   
   }
 
-  void splitNode(NodeRef* node, size_t split_axis, const PrimRef* primitives, const size_t numPrimitives, MBTempNode tn[N]) {
+  void splitNode(NodeRef* node, size_t split_axis, const PrimRef* primitives, const size_t numPrimitives, std::vector<MBTempNode> &tn) {
 
     assert(split_axis >= 0 && split_axis <= 2);
 
