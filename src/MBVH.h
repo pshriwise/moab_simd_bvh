@@ -390,6 +390,12 @@ class BVH {
     }
 
     depth = current.depth > depth ? current.depth : depth;
+
+    tempNodes[0].clear(); tempNodes[0].prims.shrink_to_fit();
+    tempNodes[1].clear(); tempNodes[1].prims.shrink_to_fit();
+    tempNodes[2].clear(); tempNodes[2].prims.shrink_to_fit();
+    tempNodes[3].clear(); tempNodes[3].prims.shrink_to_fit();
+
     
     return this_node;
   } // end build
@@ -459,6 +465,7 @@ class BVH {
     this_node->set(low_x,upp_x,
 		   low_y,upp_y,
 		   low_z,upp_z);
+    
     return;
   
   }
@@ -519,10 +526,10 @@ class BVH {
 		    bounds[3][3],
 		    bounds[5][3]);
 
-    tn[0].clear();
-    tn[1].clear();
-    tn[2].clear();
-    tn[3].clear();
+    tn[0].clear(); tn[0].prims.shrink_to_fit();
+    tn[1].clear(); tn[1].prims.shrink_to_fit();
+    tn[2].clear(); tn[2].prims.shrink_to_fit();
+    tn[3].clear(); tn[3].prims.shrink_to_fit();
 
     /* new (&tn[0]) TempNode<T>(); */
     /* new (&tn[1]) TempNode<T>(); */
@@ -546,6 +553,7 @@ class BVH {
       assert(placed);
     }
 
+    return;
   }
 
   NodeRef* createLargeLeaf(MBBuildState& current) {
