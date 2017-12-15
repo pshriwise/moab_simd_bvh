@@ -180,6 +180,27 @@ struct MBVHManager {
     return rval;
   }
 
+  inline moab::ErrorCode build_all() {
+    moab::ErrorCode rval;
+
+    moab::Tag geom_dim_tag;
+    rval = MBI ->tag_get_handle(GEOM_DIMENSION_TAG_NAME, geom_dim_tag);
+    MB_CHK_SET_ERR_CONT(rval, "Failed to get the geom dim tag handle");
+    
+    moab::Range all_vols;
+    
+    int dim = 3;
+    void *ptr = &dim;
+    rval = MBI ->get_entities_by_type_and_tag(0, moab::MBENTITYSET, &geom_dim_tag, &ptr, 1, all_vols);
+    MB_CHK_SET_ERR_CONT(rval, "Failed to retrieve surface entitysets");
+
+    rval = build(all_vols);
+    MB_CHK_SET_ERR(rval, "Failed to build trees for all volumes");
+
+    return rval;
+  }
+
+
 
   inline moab::ErrorCode fireRay(moab::EntityHandle set, MBRay &ray) {
     NodeRef* root = BVHRoots[set - lowest_set];
