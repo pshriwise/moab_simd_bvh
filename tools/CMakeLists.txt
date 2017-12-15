@@ -1,0 +1,6 @@
+
+
+
+ADD_EXECUTABLE(ray_fire ray_fire.cpp ${SRC_FILES})
+
+TARGET_LINK_LIBRARIES(ray_fire ${MOAB_LIBRARIES})
