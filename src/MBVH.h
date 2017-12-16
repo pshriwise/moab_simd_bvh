@@ -396,7 +396,7 @@ class BVH {
       NodeRef* child_node = Build(br, settings);
       // link the child node
       aanode->setRef(i, *child_node);
-      //delete child_node;
+      delete child_node;
     }
 
     depth = current.depth > depth ? current.depth : depth;
@@ -672,7 +672,7 @@ class BVH {
 #endif
       NodeRef* child_node = createLargeLeaf(tempChildren[i]);
       aanode->setRef(i, *child_node);
-      //delete child_node;
+      delete child_node;
     }
 
     depth = current.depth > depth ? current.depth : depth;
