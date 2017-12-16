@@ -111,7 +111,7 @@ struct MBVHManager {
 
       //check for existing tree
       if(BVHRoots[*ri - lowest_set]) {
-	return moab::MB_SUCCESS;
+	continue;
       }
       
       int dim = 0;
