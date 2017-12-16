@@ -279,20 +279,17 @@ class BVH {
   }
   
   inline NodeRef* join_trees(NodeRef** nodesPtr, size_t numNodes, BVHJoinTreeSettings* settings) {
-
-    AANode* aanode = new AANode();
-    AABB box = box_from_nodes(nodesPtr, numNodes);
     
     if (numNodes == 1) {
-      //makeSetNode(nodesPtr[0], 10);
       return nodesPtr[0];
-      
     }
 
     if (numNodes == 0) {
       return new NodeRef();
     }
 
+    AANode* aanode = new AANode();
+    AABB box = box_from_nodes(nodesPtr, numNodes);
     aanode->setBounds(box);
     
     NodeRef* this_node = new NodeRef((size_t)aanode);
