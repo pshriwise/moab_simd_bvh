@@ -208,9 +208,9 @@ class BVH {
 	if( inside( boxes[j], node_box.center() ) ){
 	  placed = true;
 	  child_nodes[j].push_back(nodesPtr[i]);
+	  child_nodes[j].box.update(node_box);
 	  break;
 	}
-	
       }
       assert(placed);
     }
@@ -303,12 +303,17 @@ class BVH {
     // need arbitrary split check here
     for(size_t i = 0; i < N; i++) {
       if (child_nodes[i].size() == numNodes) {
+	child_nodes[0].clear();
+	child_nodes[1].clear();
+	child_nodes[2].clear();
+	child_nodes[3].clear();
 	//arb split
 	int i = 0;
-	NodeRef* it = nodesPtr[0];
-	NodeRef* end = nodesPtr[numNodes-1];
+	NodeRef** it = nodesPtr;
+	NodeRef** end = nodesPtr+(numNodes
+				  );
 	while(it != end) {
-	  child_nodes[i].push_back(it);
+	  child_nodes[i].push_back(*it);
 	  i++;
 	  it++;
 	  if (i == N) { i = 0; }
@@ -391,7 +396,7 @@ class BVH {
       NodeRef* child_node = Build(br, settings);
       // link the child node
       aanode->setRef(i, *child_node);
-      delete child_node;
+      //delete child_node;
     }
 
     depth = current.depth > depth ? current.depth : depth;
@@ -667,7 +672,7 @@ class BVH {
 #endif
       NodeRef* child_node = createLargeLeaf(tempChildren[i]);
       aanode->setRef(i, *child_node);
-      delete child_node;
+      //delete child_node;
     }
 
     depth = current.depth > depth ? current.depth : depth;
