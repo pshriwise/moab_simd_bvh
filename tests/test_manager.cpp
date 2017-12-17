@@ -8,7 +8,8 @@
 
 moab::ErrorCode manager_test_cube();
 moab::ErrorCode manager_test_sphere();
-moab::ErrorCode test_manager_for_file(std::string filename);
+moab::ErrorCode manager_test_cube_cylinder();
+moab::ErrorCode test_manager_for_file(std::string filename, int vol_idx = 0, int surf_idx = 0);
 
 int main(int argc, char** argv) {
 
@@ -16,6 +17,7 @@ int main(int argc, char** argv) {
 
   rval += manager_test_cube();
   rval += manager_test_sphere();
+  rval += manager_test_cube_cylinder();
 
   return rval;
 
@@ -33,9 +35,15 @@ moab::ErrorCode manager_test_sphere() {
 
 }
 
+moab::ErrorCode manager_test_cube_cylinder() {
+
+  return test_manager_for_file(TEST_CUBE_CYLINDER, 0, 6);
+
+}
 
 
-moab::ErrorCode test_manager_for_file(std::string filename) {
+
+moab::ErrorCode test_manager_for_file(std::string filename, int vol_idx, int surf_idx ) {
   
   moab::Interface* mbi = new moab::Core();
 
@@ -65,7 +73,7 @@ moab::ErrorCode test_manager_for_file(std::string filename) {
 
   moab::Range all_sets = unite(surfs,vols);
   
-  rval = MBVHM.build(all_sets);
+  rval = MBVHM.build_all();
   MB_CHK_SET_ERR(rval, "Failed to build BVH's");
 
   Vec3da org(0.0, 0.0, 0.0);
@@ -73,21 +81,21 @@ moab::ErrorCode test_manager_for_file(std::string filename) {
   
   MBRay r(org, dir, 0.0, inf);
   
-  rval = MBVHM.fireRay(surfs[0], r);
+  rval = MBVHM.fireRay(surfs[surf_idx], r);
   MB_CHK_SET_ERR(rval, "Failed to fire ray at surface " << surfs[0]);
   CHECK(r.tfar != (double)inf);
   CHECK(r.primID != -1);
-  CHECK_EQUAL(surfs[0], r.geomID);
+  CHECK_EQUAL(surfs[surf_idx], r.geomID);
     
   r = MBRay(org, dir, 0.0, inf);
-  r.instID = vols[0];
+  r.instID = vols[vol_idx];
   
-  rval = MBVHM.fireRay(vols[0], r);
+  rval = MBVHM.fireRay(vols[vol_idx], r);
   MB_CHK_SET_ERR(rval, "Failed to fire ray at surface " << surfs[0]);
   CHECK(r.tfar != (double)inf);
-  CHECK_EQUAL(vols[0], r.instID);
+  CHECK_EQUAL(vols[vol_idx], r.instID);
   std::cout << r << std::endl;
-  CHECK_EQUAL(surfs[0], r.geomID);
+  CHECK_EQUAL(surfs[surf_idx], r.geomID);
   
   return rval;
 }
