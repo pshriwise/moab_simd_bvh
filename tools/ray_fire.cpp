@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
   double rand_ray_center[3] = {0.0, 0.0, 0.0};
   double ray_center[3];
   double ray_dir[3];
-  double rand_ray_radius;
+  double rand_ray_radius = 0.0;
 
 
   std::string filename;
@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
   po.addOpt<double>("y",   "Specify the y-value of random ray generation (default is zero)", rand_ray_center+1);
   po.addOpt<double>("z",   "Specify the z-value of random ray generation (default is zero)", rand_ray_center+2);
 
-  po.addOpt<double>("r",   "Random ray radius. Random rays will begin at a distance r from the center of the random ray origin");
+  po.addOpt<double>("r",   "Random ray radius. Random rays will begin at a distance r from the center of the random ray origin", &rand_ray_radius);
 
   po.addOpt<double>("cx",  "Specify the x-value of single ray generation");
   po.addOpt<double>("cy",  "Specify the y-value of single ray generation");
@@ -143,24 +143,23 @@ int main(int argc, char** argv) {
 	      << " random rays at volume " << vol_gid << "..." << std::flush;
   }
   
-    MBRay ray;
+    MBRay *ray;
     moab::CartVect org, dir;
     int random_rays_missed = 0;
     org = moab::CartVect(rand_ray_center);
     for(int i = 0; i < num_rand_rays; i++){
       RNDVEC(dir);
 
-      if( po.getOpt("r", &rand_ray_radius) ) {
+      if( rand_ray_radius >= 0.0) {
 	org = dir * rand_ray_radius + moab::CartVect(rand_ray_center);
       }
       
-      ray = MBRay(org.array(), dir.array());
+      ray = new MBRay(org.array(), dir.array());
       start = std::clock();
-      BVHManager->fireRay(volume, ray);
+      BVHManager->fireRay(volume, *ray);
       duration += std::clock() - start;
-      
-      if(ray.geomID == -1) { random_rays_missed++; }
-    
+      if(ray->geomID == -1) { random_rays_missed++; }
+      delete ray;
     }
 
     /// REPORTING ///
