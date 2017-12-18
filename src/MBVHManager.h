@@ -93,7 +93,20 @@ struct MBVHManager {
     MOABBVH = new MBVH(MDAM);
    
   };
+  
+  NodeRef* get_root(moab::EntityHandle ent) {
+    assert(ent - lowest_set > 0 && ent - lowest_set < BVHRoots.size());
+    NodeRef* root = BVHRoots[ent - lowest_set];
+    return root;
+  }
 
+  void tree_stats(moab::EntityHandle ent) {
+    BVHStatTracker *BVHS = new BVHStatTracker();
+    NodeRef* root = get_root(ent);
+    BVHS->gatherStats(*root);
+  }
+
+  
   moab::ErrorCode build( moab::Range geom_sets) {
 
     // make sure that we're working only with EntitySets here

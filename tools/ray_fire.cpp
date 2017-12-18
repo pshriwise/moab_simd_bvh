@@ -171,6 +171,10 @@ int main(int argc, char** argv) {
       std::cout << "Warning: " << random_rays_missed << " random rays did not hit the target volume" << std::endl;
     }
 
+    if(build_stats) {
+      BVHManager->tree_stats(volume);
+    }
+    
     // report on random rays if any were fired
     if (num_rand_rays > 0 ) {
       std::cout << "Total time per ray fire: " << duration / (double)CLOCKS_PER_SEC / num_rand_rays << " sec" << std::endl;

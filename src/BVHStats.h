@@ -19,7 +19,7 @@ struct BVHStatTracker {
   int max_leaf;
   int min_leaf;
   int total_entities;
-
+  int num_set_leaves;
   int min_leaf_depth;
   int max_leaf_depth;
   int leaf_depth_agg;
@@ -29,6 +29,7 @@ struct BVHStatTracker {
   inline BVHStatTracker() : num_empty(0),
 			    num_non_empty(0),
 			    num_leaves(0),
+			    num_set_leaves(0),
 			    depth(0),
 			    min_leaf(inf),
 			    max_leaf(0),
@@ -108,6 +109,12 @@ struct BVHStatTracker {
 	      break;
 	    }
 
+	    // if this is a set leaf, reduce to a normal node and continue
+	    if( cur.isSetLeaf() ) {
+	      cur = cur.setLeaf();
+	      num_set_leaves++;
+	    }
+
 	    down(mask);
 	    
 	    if (mask == 0) goto pop;
@@ -130,6 +137,7 @@ struct BVHStatTracker {
 
     std::cout << "Tree depth: " << depth << std::endl;
     std::cout << "Total number of entiites in the tree: " << total_entities << std::endl;
+    std::cout << "Number of set leaves in the tree: " << num_set_leaves << std::endl;
     std::cout << "Number of leaves in the tree: " << num_leaves << std::endl;
     std::cout << "Number of non-empty nodes in the tree: " << num_non_empty << std::endl;    
     std::cout << "Number of empty nodes in the tree: " << num_empty << std::endl;
