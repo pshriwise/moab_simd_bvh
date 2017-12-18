@@ -163,6 +163,9 @@ int main(int argc, char** argv) {
     
     }
 
+    /// REPORTING ///
+    std::cout << std::endl;
+    
     // repotr missed rays
     if(random_rays_missed) {
       std::cout << "Warning: " << random_rays_missed << " random rays did not hit the target volume" << std::endl;
@@ -174,7 +177,7 @@ int main(int argc, char** argv) {
 
       report_memory_usage();
     }
-      //      std::cout << "Program memory used: " <<  
-      
+
+    
   return rval;
 }
