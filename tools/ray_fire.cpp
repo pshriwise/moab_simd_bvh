@@ -1,4 +1,6 @@
 #include<string>
+#include<math.h>
+
 
 #include "moab/ProgOptions.hpp"
 
@@ -6,6 +8,20 @@
 #include "moab/CartVect.hpp"
 
 #include "MBVHManager.h"
+
+static const double PI = acos(-1.0);
+static const double denom = 1.0 / ((double) RAND_MAX);
+static const double denomPI = PI * denom;
+
+inline void RNDVEC(moab::CartVect& uvw, const double& az = 0.0) {
+  // denom normalizes rand values (see global defines)
+  double theta = az * denom * rand(); // randomly samples from 0 to az. (Default az is 2PI)
+  double u = 2 * denom * rand() - 1; // randomly samples from -1 to 1.
+  uvw[0] = sqrt(1 - u * u) * cos(theta);
+  uvw[1] = sqrt(1 - u * u) * sin(theta);
+  uvw[2] = u;
+
+}
 
 
 moab::ErrorCode set_volume(moab::Interface* MBI, int vol_id, moab::EntityHandle &volume) {
@@ -69,7 +85,7 @@ int main(int argc, char** argv) {
   po.addOpt<double>("y",   "Specify the y-value of random ray generation (default is zero)", rand_ray_center+1);
   po.addOpt<double>("z",   "Specify the z-value of random ray generation (default is zero)", rand_ray_center+2);
 
-  po.addOpt<double>("r",   "Random ray radius. Random rays will begin at a distance r from the center of the random ray origin", &rand_ray_radius);
+  po.addOpt<double>("r",   "Random ray radius. Random rays will begin at a distance r from the center of the random ray origin");
 
   po.addOpt<double>("cx",  "Specify the x-value of single ray generation");
   po.addOpt<double>("cy",  "Specify the y-value of single ray generation");
@@ -112,10 +128,32 @@ int main(int argc, char** argv) {
 
     rval = BVHManager->fireRay(volume, r);
     MB_CHK_SET_ERR(rval, "Failed to fire user-specified ray");
-
     
   }
+
+  /* Fire and time random rays */
+  if(num_rand_rays > 0) {
+    std::cout << "Firing " << num_rand_rays
+	      << " random rays at volume " << vol_gid << "..." << std::flush;
+  }
+    MBRay ray;
+    moab::CartVect org, dir;
+    int random_rays_missed = 0;
+    org = moab::CartVect(rand_ray_center);
+    for(int i = 0; i < num_rand_rays; i++){
+      RNDVEC(dir);
+
+      if( po.getOpt("r", &rand_ray_radius) ) {
+	org = dir * rand_ray_radius + moab::CartVect(rand_ray_center);
+      }
       
+      ray = MBRay(org.array(), dir.array());
+    
+      BVHManager->fireRay(volume, ray);
+      
+      if(ray.geomID == -1) { random_rays_missed++; }
+    
+    }
     
   return rval;
 }
