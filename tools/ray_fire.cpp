@@ -1,6 +1,6 @@
 #include<string>
 #include<math.h>
-
+#include<ctime>
 
 #include "moab/ProgOptions.hpp"
 
@@ -8,6 +8,8 @@
 #include "moab/CartVect.hpp"
 
 #include "MBVHManager.h"
+
+#include "program_stats.hpp"
 
 static const double PI = acos(-1.0);
 static const double denom = 1.0 / ((double) RAND_MAX);
@@ -131,11 +133,16 @@ int main(int argc, char** argv) {
     
   }
 
+
+  std::clock_t start;
+  double duration = 0.0;
+  
   /* Fire and time random rays */
   if(num_rand_rays > 0) {
     std::cout << "Firing " << num_rand_rays
 	      << " random rays at volume " << vol_gid << "..." << std::flush;
   }
+  
     MBRay ray;
     moab::CartVect org, dir;
     int random_rays_missed = 0;
@@ -148,12 +155,26 @@ int main(int argc, char** argv) {
       }
       
       ray = MBRay(org.array(), dir.array());
-    
+      start = std::clock();
       BVHManager->fireRay(volume, ray);
+      duration += std::clock() - start;
       
       if(ray.geomID == -1) { random_rays_missed++; }
     
     }
-    
+
+    // repotr missed rays
+    if(random_rays_missed) {
+      std::cout << "Warning: " << random_rays_missed << " random rays did not hit the target volume" << std::endl;
+    }
+
+    // report on random rays if any were fired
+    if (num_rand_rays > 0 ) {
+      std::cout << "Total time per ray fire: " << duration / (double)CLOCKS_PER_SEC / num_rand_rays << " sec" << std::endl;
+
+      report_memory_usage();
+    }
+      //      std::cout << "Program memory used: " <<  
+      
   return rval;
 }
