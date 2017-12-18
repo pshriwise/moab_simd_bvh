@@ -705,7 +705,13 @@ class BVH {
     return true;
   }
 
-  inline void intersectRay (NodeRef root, MBRay & ray, MBTravRay* vray = NULL) {
+  inline void intersectRay(NodeRef root, MBRay &ray) {
+    MBTravRay vray(ray.org, ray.dir);
+    intersectRay(root, ray, vray);
+    return;
+  }
+  
+  inline void intersectRay (NodeRef root, MBRay &ray, MBTravRay vray) {
     /* initialiez stack state */
     StackItemT<NodeRef> stack[stackSize];
     StackItemT<NodeRef>* stackPtr = stack+1;
@@ -715,11 +721,7 @@ class BVH {
     
     /* verify correct inputs */
     assert(ray.valid());
-    assert(ray.tnear >= 0.0f);
-
-    if( !vray ) {
-	vray = new MBTravRay(ray.org, ray.dir);
-    }
+    assert(ray.tnear >= 0.0f);    
     
     vfloat4 ray_near = std::max(ray.tnear, 0.0);
     vfloat4 ray_far = std::max(ray.tfar, 0.0);
@@ -738,7 +740,7 @@ class BVH {
 	while (true)
 	  {
 	    size_t mask = 0; vfloat4 tNear(inf);
-	    bool nodeIntersected = intersect(cur, *vray, ray_near, ray_far, tNear, mask);
+	    bool nodeIntersected = intersect(cur, vray, ray_near, ray_far, tNear, mask);
 	    
 #ifdef VERBOSE_MODE
 	    AANode* curaa = cur.node();
@@ -774,13 +776,13 @@ class BVH {
 	if (cur.isSetLeaf() ) {
 	  // update the geom id of the travray
 	  MBSetNode* snode = (MBSetNode*)cur.snode();
-	  vray->setID = snode->setID;
+	  vray.setID = snode->setID;
 	  if(snode->fwdID == ray.instID) {
-	    vray->sense = 0;
+	    vray.sense = 0;
 	  }
 	  else {
 	    //	    assert(snode->revID == ray.instID);
-	    vray->sense = 1;
+	    vray.sense = 1;
 	  }
 	  // WILL ALSO SET SENSE HERE AT SOME POINT
 	  NodeRef setNode = cur.setLeaf();
@@ -793,7 +795,7 @@ class BVH {
 	  
 	  for (size_t i = 0; i < numPrims; i++) {
 	    T t = primIDs[i];
-	    t.intersect(*vray, ray, (void*)MDAM);
+	    t.intersect(vray, ray, (void*)MDAM);
 	  }
 	}
 	
