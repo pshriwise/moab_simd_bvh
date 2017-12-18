@@ -7,6 +7,36 @@
 
 #include "MBVHManager.h"
 
+
+moab::ErrorCode set_volume(moab::Interface* MBI, int vol_id, moab::EntityHandle &volume) {
+
+  moab::ErrorCode rval;
+  
+  // obtain the specified volume
+  moab::Tag gid_tag;
+  rval = MBI->tag_get_handle(GLOBAL_ID_TAG_NAME, gid_tag);
+  MB_CHK_SET_ERR(rval, "Failed to retrieve the global id tag");
+  moab::Tag cat_tag;
+  rval = MBI->tag_get_handle(CATEGORY_TAG_NAME, cat_tag);
+  MB_CHK_SET_ERR(rval, "Failed to retrieve the category tag");
+  char vol_name[CATEGORY_TAG_SIZE] = "Volume";
+  const void* ptr[2] = { &vol_id, &(vol_name[0])};
+  moab::Tag tags[2] = {gid_tag, cat_tag};
+  moab::Range vols;
+  rval = MBI->get_entities_by_type_and_tag(0, moab::MBENTITYSET, tags, ptr, 2, vols);
+  MB_CHK_SET_ERR(rval, "Failed to retrieve the specified volume set");
+  // there should be only one volume with this id
+  if( 1 != vols.size() ) {
+    MB_CHK_SET_ERR(moab::MB_FAILURE, "Incorrect number of volumes found for global id = "
+		   << vol_id << std::endl << "Number found: " << vols.size() );
+  }
+
+  // set the volume
+  volume = vols[0];
+
+  return rval;
+}  
+
 int main(int argc, char** argv) {
 
   moab::ErrorCode rval;
@@ -65,26 +95,9 @@ int main(int argc, char** argv) {
   rval = BVHManager->build_all();
   MB_CHK_SET_ERR(rval, "Failed to build trees");
 
-  // obtain the specified volume
-  moab::Tag gid_tag;
-  rval = MBI->tag_get_handle(GLOBAL_ID_TAG_NAME, gid_tag);
-  MB_CHK_SET_ERR(rval, "Failed to retrieve the global id tag");
-  moab::Tag cat_tag;
-  rval = MBI->tag_get_handle(CATEGORY_TAG_NAME, cat_tag);
-  MB_CHK_SET_ERR(rval, "Failed to retrieve the category tag");
-  char vol_name[CATEGORY_TAG_SIZE] = "Volume";
-  const void* ptr[2] = { &vol_gid, &(vol_name[0])};
-  moab::Tag tags[2] = {gid_tag, cat_tag};
-  moab::Range vols;
-  rval = MBI->get_entities_by_type_and_tag(0, moab::MBENTITYSET, tags, ptr, 2, vols);
-  MB_CHK_SET_ERR(rval, "Failed to retrieve the specified volume set" << rval);
-  // there should be only one volume with this id
-  if( 1 != vols.size() ) {
-    MB_CHK_SET_ERR(moab::MB_FAILURE, "Incorrect number of volumes found for global id = " << vol_gid << std::endl << "Number found: " << vols.size());
-  }
-
-  // set the volume
-  moab::EntityHandle volume = vols[0];
+  moab::EntityHandle volume;
+  rval = set_volume(MBI, vol_gid, volume);
+  MB_CHK_SET_ERR(rval, "Failed to get and set the volume");
 
   // fire specified ray, if any
   if( po.getOpt("cx", ray_center)   &&
