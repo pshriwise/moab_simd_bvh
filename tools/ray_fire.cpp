@@ -150,7 +150,7 @@ int main(int argc, char** argv) {
     for(int i = 0; i < num_rand_rays; i++){
       RNDVEC(dir);
 
-      if( rand_ray_radius >= 0.0) {
+      if( rand_ray_radius > 0.0) {
 	org = dir * rand_ray_radius + moab::CartVect(rand_ray_center);
       }
       
