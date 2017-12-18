@@ -143,7 +143,7 @@ int main(int argc, char** argv) {
 	      << " random rays at volume " << vol_gid << "..." << std::flush;
   }
   
-    MBRay *ray;
+    MBRay ray;
     moab::CartVect org, dir;
     int random_rays_missed = 0;
     org = moab::CartVect(rand_ray_center);
@@ -154,12 +154,11 @@ int main(int argc, char** argv) {
 	org = dir * rand_ray_radius + moab::CartVect(rand_ray_center);
       }
       
-      ray = new MBRay(org.array(), dir.array());
+      ray = MBRay(org.array(), dir.array());
       start = std::clock();
-      BVHManager->fireRay(volume, *ray);
+      BVHManager->fireRay(volume, ray);
       duration += std::clock() - start;
-      if(ray->geomID == -1) { random_rays_missed++; }
-      delete ray;
+      if(ray.geomID == -1) { random_rays_missed++; }
     }
 
     /// REPORTING ///
