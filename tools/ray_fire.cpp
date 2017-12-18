@@ -41,12 +41,12 @@ int main(int argc, char** argv) {
 
   po.addOpt<double>("r",   "Random ray radius. Random rays will begin at a distance r from the center of the random ray origin", &rand_ray_radius);
 
-  po.addOpt<double>("cx",  "Specify the x-value of single ray generation", ray_center);
-  po.addOpt<double>("cy",  "Specify the y-value of single ray generation", ray_center+1);
-  po.addOpt<double>("cz",  "Specify the z-value of single ray generation", ray_center+2);
-  po.addOpt<double>("cu",  "Specify the x-direction of single ray generation", ray_center);
-  po.addOpt<double>("cv",  "Specify the y-direction of single ray generation", ray_center+1);
-  po.addOpt<double>("cw",  "Specify the z-direction of single ray generation", ray_center+2);
+  po.addOpt<double>("cx",  "Specify the x-value of single ray generation");
+  po.addOpt<double>("cy",  "Specify the y-value of single ray generation");
+  po.addOpt<double>("cz",  "Specify the z-value of single ray generation");
+  po.addOpt<double>("cu",  "Specify the x-direction of single ray generation");
+  po.addOpt<double>("cv",  "Specify the y-direction of single ray generation");
+  po.addOpt<double>("cw",  "Specify the z-direction of single ray generation");
   
   std::string python_dict;
   po.addOpt<std::string>("p", "if present, save parameters and results to a python dictionary file", &python_dict);
@@ -55,16 +55,54 @@ int main(int argc, char** argv) {
 
   po.parseCommandLine(argc, argv);
 
+  // create the MOAB instance and load the file
   moab::Interface* MBI = new moab::Core();
-
   rval = MBI->load_file(filename.c_str());
   MB_CHK_SET_ERR(rval, "Failed to load file: " << filename << std::endl);
 
+  // initiate a BVH manager and build all trees for geometric entity sets
   MBVHManager* BVHManager = new MBVHManager(MBI);
   rval = BVHManager->build_all();
   MB_CHK_SET_ERR(rval, "Failed to build trees");
-  
-  
-  
+
+  // obtain the specified volume
+  moab::Tag gid_tag;
+  rval = MBI->tag_get_handle(GLOBAL_ID_TAG_NAME, gid_tag);
+  MB_CHK_SET_ERR(rval, "Failed to retrieve the global id tag");
+  moab::Tag cat_tag;
+  rval = MBI->tag_get_handle(CATEGORY_TAG_NAME, cat_tag);
+  MB_CHK_SET_ERR(rval, "Failed to retrieve the category tag");
+  char vol_name[CATEGORY_TAG_SIZE] = "Volume";
+  const void* ptr[2] = { &vol_gid, &(vol_name[0])};
+  moab::Tag tags[2] = {gid_tag, cat_tag};
+  moab::Range vols;
+  rval = MBI->get_entities_by_type_and_tag(0, moab::MBENTITYSET, tags, ptr, 2, vols);
+  MB_CHK_SET_ERR(rval, "Failed to retrieve the specified volume set" << rval);
+  // there should be only one volume with this id
+  if( 1 != vols.size() ) {
+    MB_CHK_SET_ERR(moab::MB_FAILURE, "Incorrect number of volumes found for global id = " << vol_gid << std::endl << "Number found: " << vols.size());
+  }
+
+  // set the volume
+  moab::EntityHandle volume = vols[0];
+
+  // fire specified ray, if any
+  if( po.getOpt("cx", ray_center)   &&
+      po.getOpt("cy", ray_center+1) &&
+      po.getOpt("cz", ray_center+2) &&
+      po.getOpt("cu", ray_dir)      &&
+      po.getOpt("cv", ray_dir+1)    &&
+      po.getOpt("cw", ray_dir+2) ) {
+
+    MBRay r(ray_center, ray_dir);
+    r.instID = volume;
+
+    rval = BVHManager->fireRay(volume, r);
+    MB_CHK_SET_ERR(rval, "Failed to fire user-specified ray");
+
+    
+  }
+      
+    
   return rval;
 }
