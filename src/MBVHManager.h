@@ -63,7 +63,7 @@ struct MBVHManager {
     rval = MBI->coords_iterate(verts.begin(), verts.end(), x_ptr, y_ptr, z_ptr, vert_count);
     MB_CHK_SET_ERR_CONT(rval, "Failed to retrieve the vertex pointer");
 
-    MDAM = new MOABDirectAccessManager(x_ptr, y_ptr, z_ptr, vert_count, facets.front(), connPointer, element_count, vpere);
+    MDAM = new MOABDirectAccessManager(MBI, x_ptr, y_ptr, z_ptr, vert_count, facets.front(), connPointer, element_count, vpere);
 
 
     rval = MBI->tag_get_handle(GEOM_DIMENSION_TAG_NAME, geom_dim_tag);

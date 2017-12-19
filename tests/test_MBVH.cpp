@@ -154,7 +154,7 @@ int main(int argc, char** argv) {
   MB_CHK_SET_ERR(rval, "Failed to retrieve the vertex pointer");
 
 
-  MOABDirectAccessManager* MDAM = new MOABDirectAccessManager(x_ptr, y_ptr, z_ptr, vert_count, volume_triangles.front(),
+  MOABDirectAccessManager* MDAM = new MOABDirectAccessManager(mbi, x_ptr, y_ptr, z_ptr, vert_count, volume_triangles.front(),
 							      connPointer, numPrimitives, vpere);
   // construct the SIMD BVH
   MBVH* BVH = new MBVH(MDAM);

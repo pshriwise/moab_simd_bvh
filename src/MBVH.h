@@ -79,11 +79,13 @@ typedef BuildStateT<PrimRef> MBBuildState;
 typedef TempNode<PrimRef> MBTempNode;
 typedef BVHSettings<PrimRef> MBBVHSettings;
 
+void no_filter(MBRay &ray, void* mesh_ptr) { return; };
+
 template <typename T>
 class BVH {
 
  public:
-  inline BVH(MOABDirectAccessManager *mdam) : MDAM(mdam), maxLeafSize(8), depth(0), maxDepth(BVH_MAX_DEPTH), num_stored(0)
+  inline BVH(MOABDirectAccessManager *mdam) : MDAM(mdam), maxLeafSize(8), depth(0), maxDepth(BVH_MAX_DEPTH), num_stored(0), filter_func(&no_filter)
     {
       std::vector<T> storage_vec(MDAM->num_elements);
       leaf_sequence_storage = storage_vec;
@@ -105,6 +107,8 @@ class BVH {
   MOABDirectAccessManager* MDAM;
   
   static const size_t stackSize = 1+(N-1)*BVH_MAX_DEPTH;
+
+  void (*filter_func)(MBRay &ray, void* mesh_ptr);
 
  public:
 
@@ -795,7 +799,9 @@ class BVH {
 	  
 	  for (size_t i = 0; i < numPrims; i++) {
 	    T t = primIDs[i];
-	    t.intersect(vray, ray, (void*)MDAM);
+	    if( t.intersect(vray, ray, (void*)MDAM) ) {
+	      filter_func(ray, (void*)MDAM->MOAB_instance);
+	    }
 	  }
 	}
 	
