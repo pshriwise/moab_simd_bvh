@@ -8,6 +8,7 @@
 #include "BuildState.h"
 #include "Intersector.h"
 #include "TriangleRef.h"
+#include "FilterFunc.h"
 #include "MOABDirectAccessManager.h"
 #include "BVHStats.h"
 #include "BVHSettings.h"
@@ -71,20 +72,21 @@ struct PrimRef{
 public:
   Vec3fa lower, upper;
   void* primitivePtr;
-  
 };
 
 
 typedef BuildStateT<PrimRef> MBBuildState;
 typedef TempNode<PrimRef> MBTempNode;
 typedef BVHSettings<PrimRef> MBBVHSettings;
-typedef void(*FilterFunc)(MBRay &ray, void* mesh_ptr);
+
 
 void no_filter(MBRay &ray, void* mesh_ptr) { return; };
 
 template <typename T>
 class BVH {
 
+  typedef Filter<Vec3da,double,moab::EntityHandle>::FilterFunc MBFilterFunc;
+  
  public:
   inline BVH(MOABDirectAccessManager *mdam) : MDAM(mdam), maxLeafSize(8), depth(0), maxDepth(BVH_MAX_DEPTH), num_stored(0), filter_func(&no_filter)
     {
@@ -109,13 +111,13 @@ class BVH {
   
   static const size_t stackSize = 1+(N-1)*BVH_MAX_DEPTH;
 
-  FilterFunc filter_func;
+  MBFilterFunc filter_func;
 
  public:
 
-  inline void set_filter_func(FilterFunc ff) { filter_func = ff; }
+  inline void set_filter_func(MBFilterFunc ff) { filter_func = ff; }
 
-  inline void unset_filter_func(FilterFunc ff) { filter_func = no_filter; }
+  inline void unset_filter_func(MBFilterFunc ff) { filter_func = no_filter; }
 
   inline void makeSetNode(NodeRef* node, moab::EntityHandle setID, moab::EntityHandle fwd = 0, moab::EntityHandle rev = 0) {
 
