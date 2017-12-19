@@ -78,6 +78,7 @@ public:
 typedef BuildStateT<PrimRef> MBBuildState;
 typedef TempNode<PrimRef> MBTempNode;
 typedef BVHSettings<PrimRef> MBBVHSettings;
+typedef void(*FilterFunc)(MBRay &ray, void* mesh_ptr);
 
 void no_filter(MBRay &ray, void* mesh_ptr) { return; };
 
@@ -108,9 +109,13 @@ class BVH {
   
   static const size_t stackSize = 1+(N-1)*BVH_MAX_DEPTH;
 
-  void (*filter_func)(MBRay &ray, void* mesh_ptr);
+  FilterFunc filter_func;
 
  public:
+
+  inline void set_filter_func(FilterFunc ff) { filter_func = ff; }
+
+  inline void unset_filter_func(FilterFunc ff) { filter_func = no_filter; }
 
   inline void makeSetNode(NodeRef* node, moab::EntityHandle setID, moab::EntityHandle fwd = 0, moab::EntityHandle rev = 0) {
 
