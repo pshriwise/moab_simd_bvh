@@ -804,9 +804,7 @@ class BVH {
 	  
 	  for (size_t i = 0; i < numPrims; i++) {
 	    T t = primIDs[i];
-	    if( t.intersect(vray, ray, (void*)MDAM) ) {
-	      filter_func(ray, (void*)MDAM->MOAB_instance);
-	    }
+	    t.intersect(vray, ray, filter_func, (void*)MDAM);
 	  }
 	}
 	

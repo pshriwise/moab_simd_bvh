@@ -168,7 +168,7 @@ struct MBTriangleRefT {
     	
   }
 
-  inline bool intersect(const TravRayT<I>& tray, RayT<V,P,I> &ray, void* mesh_ptr = NULL) {
+  inline bool intersect(const TravRayT<I>& tray, RayT<V,P,I> &ray, void(*ff)(RayT<V,P,I>&, void*), void* mesh_ptr = NULL) {
 
 
     if( !mesh_ptr ) MB_CHK_SET_ERR_CONT(moab::MB_FAILURE, "No Mesh Pointer");
@@ -210,12 +210,25 @@ struct MBTriangleRefT {
     
     if (hit && dist < ray.tfar) {
 
-      moab::CartVect normal = (coords[2]-coords[0]) * (coords[1]-coords[0]);
+      moab::CartVect normal = (coords[1]-coords[0]) * (coords[2]-coords[0]);
 
+      I pID = ray.primID, gID = ray.geomID;
+      P d = ray.tfar;
+      
+      
       ray.primID = eh;
       ray.tfar = dist;
       ray.geomID = tray.setID;
       ray.Ng = tray.sense? (normal * -1.0).array() : normal.array();
+      ray.Ng.normalize();
+      
+      ff(ray, mesh_ptr);
+      
+      if( -1 == ray.geomID ){
+	ray.primID = pID;
+	ray.geomID = gID;
+	ray.tfar = d;
+      }
     }
 
     return hit;
