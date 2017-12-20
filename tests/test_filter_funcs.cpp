@@ -60,6 +60,8 @@ int main(int argc, char** argv) {
   MB_CHK_SET_ERR(rval, "Failed to fire ray");
 
   CHECK_REAL_EQUAL(15.0, ray.tfar, 0.0);
+
+  std::cout << ray << std::endl;
   
   return rval;
 

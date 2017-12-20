@@ -341,16 +341,17 @@ class BVH {
   inline NodeRef* Build(moab::EntityHandle id, int start, size_t numPrimitives, MBBVHSettings* settings = NULL) {
     // create BuildState of PrimitiveReferences
     MBBuildState bs(0);
-    int end = start + numPrimitives;
-    for( size_t i = start; i < end; i++ ) {
+    int end = numPrimitives;
+    for( size_t i = 0; i < end; i++ ) {
+      int index = start+i;
       
-      T triref = T((moab::EntityHandle*)MDAM->conn + (i*MDAM->element_stride), id+i);
-
+      T triref = T((moab::EntityHandle*)MDAM->conn + (index*MDAM->element_stride), id+i);
+      
       Vec3fa lower, upper;
       
       triref.get_bounds(lower, upper, MDAM);
 	
-      PrimRef p(lower, upper, (void*)triref.eh, i);
+      PrimRef p(lower, upper, (void*)triref.eh, index);
 
       bs.prims.push_back(p);
     }
@@ -593,7 +594,7 @@ class BVH {
 
       for( size_t i = 0; i < current.size(); i++) {
 	
-	T t = T((moab::EntityHandle*)MDAM->conn + (current.prims[i].primID()*MDAM->element_stride), current_build_id);
+	T t = T((moab::EntityHandle*)MDAM->conn + (current.prims[i].primID()*MDAM->element_stride), (moab::EntityHandle)current.prims[i].primitivePtr);
 	leaf_sequence_storage[num_stored+i] = t;
 	
       }
