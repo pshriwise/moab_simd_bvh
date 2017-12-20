@@ -147,7 +147,7 @@ struct MBVHManager {
 	  MB_CHK_SET_ERR(rval, "Failed to get triangles for surface: " << *ri);
 
 	  // IN PROGRESS
-	  root = MOABBVH->Build(*ri, tris.front() - MDAM->first_element, tris.size());
+	  root = MOABBVH->Build(tris.front(), tris.front() - MDAM->first_element, tris.size());
 	  if(!root) { MB_CHK_SET_ERR(moab::MB_FAILURE, "Failed to build BVH for surface: " << *ri); }
 
 	  BVHRoots[*ri - lowest_set] = root;

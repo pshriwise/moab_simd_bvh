@@ -338,13 +338,13 @@ class BVH {
     return this_node;
   }
 
-  inline NodeRef* Build(int id, int start, size_t numPrimitives, MBBVHSettings* settings = NULL) {
+  inline NodeRef* Build(moab::EntityHandle id, int start, size_t numPrimitives, MBBVHSettings* settings = NULL) {
     // create BuildState of PrimitiveReferences
     MBBuildState bs(0);
     int end = start + numPrimitives;
     for( size_t i = start; i < end; i++ ) {
       
-      T triref = T((moab::EntityHandle*)MDAM->conn + (i*MDAM->element_stride), id);
+      T triref = T((moab::EntityHandle*)MDAM->conn + (i*MDAM->element_stride), id+i);
 
       Vec3fa lower, upper;
       
