@@ -3,7 +3,7 @@
 #include <unistd.h>
 
 // function for reporting the current memory usage of the test
-void report_memory_usage()
+double report_memory_usage()
 {
   struct rusage r_usage;
   getrusage(RUSAGE_SELF, &r_usage);
@@ -14,7 +14,7 @@ void report_memory_usage()
   int file_len = read(file_ptr, file_str, sizeof(file_str)-1);
   if (file_len == 0) {
     close(file_ptr);
-    return;
+    return -1.0;
   }
 
   close(file_ptr);
@@ -49,4 +49,5 @@ void report_memory_usage()
     std::cout << "Could not retrieve memory usage" << std::endl;
   }
 
+  return ((double)vm_size)/(1024.0*1024.0);
 }
