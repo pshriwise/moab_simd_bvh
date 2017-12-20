@@ -3,12 +3,14 @@
 #include "AABB.h"
 #include "testutil.hpp"
 
-
+// test function signatures
 void constructor_tests();
 void point_contain_tests();
 void extend_tests();
 void merge_tests();
 void property_tests();
+
+
 int main( int argc, char** argv) {
 
   // test AABB constructor
@@ -23,15 +25,16 @@ int main( int argc, char** argv) {
   property_tests();
   
   return 0;
-
 }
 
 void constructor_tests() {
+  
   //test-box values
   float x_min = 0.0, y_min = 1.0, z_min = 2.0,
         x_max = 3.0, y_max = 4.0, z_max = 5.0;
 
-  float test_extents[6] = {x_min, y_min, z_min, x_max, y_max, z_max};
+  float test_extents[6] = {x_min, y_min, z_min,
+			   x_max, y_max, z_max};
   float test_lower[3] = {x_min, y_min, z_min};
   float test_upper[3] = {x_max, y_max, z_max};
 
@@ -65,12 +68,27 @@ void constructor_tests() {
   
   // test empty constructor
   AABB empty = AABB();
+  // box should be invalid when created
+  // using an empty constructor
+  CHECK(!empty.isValid());
+
+  // after an update, the box should now be valid
+  empty.update(test_lower);
+  CHECK(empty.isValid());
+
+  // because the "empty" box only contains one point,
+  // it's volume should be zero
+  CHECK_REAL_EQUAL(0.0f, volume(empty), 0.0f);
+
+  return;
 }
 
 void point_contain_tests() {
+  
   // test-box values
   float x_min = 0.0, y_min = 1.0, z_min = 2.0,
         x_max = 3.0, y_max = 4.0, z_max = 5.0;
+  
   // create test box
   AABB box = AABB(x_min, y_min, z_min, x_max, y_max, z_max);
 
@@ -92,6 +110,7 @@ void point_contain_tests() {
   p = Vec3fa(3.0001, 3.0, 3.0);
   CHECK(!inside(box,p));
 
+  return;
 }
 
 void extend_tests() {
@@ -119,12 +138,14 @@ void extend_tests() {
   CHECK_VECREAL_EQUAL(box1.lower, result.lower);
   // the resulting box should have the same
   // values as box2's upper extents
-  CHECK_VECREAL_EQUAL(box2.upper, result.upper);  
+  CHECK_VECREAL_EQUAL(box2.upper, result.upper);
+
+  return;
 }
 
 void merge_tests() {
 
-    // create test boxes
+  // create test boxes
   AABB box1 = AABB(0.0, 0.0, 0.0,  5.0,  5.0,  5.0);
   AABB box2 = AABB(5.0, 5.0, 5.0, 10.0, 10.0, 10.0);
 
@@ -139,25 +160,33 @@ void merge_tests() {
   // values as box2's upper extents
   CHECK_VECREAL_EQUAL(box2.upper, result.upper);
 
-  
+  return;
 }
 
 void property_tests() {
-    // create test boxes
+  
+  // create test boxes
   AABB box = AABB(5.0, -5.0, -3.0, 10.0, 15.0, 4.0);
 
+  // check center
   Vec3fa expected_center(7.5, 5.0, 0.5);
   CHECK_VECREAL_EQUAL(expected_center, box.center());
 
+  // check center2
   Vec3fa expected_center2(15.0, 10.0, 1.0);
   CHECK_VECREAL_EQUAL(expected_center2, box.center2());
 
+  // check size
   Vec3fa expected_size(5.0, 20.0, 7.0);
   CHECK_VECREAL_EQUAL(expected_size, box.size());
 
+  // check halfarea
   float expected_halfArea = 275.0;
   CHECK_REAL_EQUAL(expected_halfArea, halfArea(box), 0.0f);
 
+  // check actual area
   float expected_area = 550.0;
   CHECK_REAL_EQUAL(expected_area, area(box), 0.0f);
+
+  return;
 }
