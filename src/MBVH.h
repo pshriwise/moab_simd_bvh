@@ -219,7 +219,6 @@ class BVH {
 	if( inside( boxes[j], node_box.center() ) ){
 	  placed = true;
 	  child_nodes[j].push_back(nodesPtr[i]);
-	  child_nodes[j].box.update(node_box);
 	  break;
 	}
       }
