@@ -329,6 +329,15 @@ class BVH {
 	break;
       }
     }
+
+    for(size_t i = 0; i < N; i++) {
+      size_t num_child_prims = child_nodes[i].size();
+      AABB box;
+      for(size_t j = 0; j < num_child_prims; j++) {
+	box.update(child_nodes[i].prims[j]->safeNode()->bounds());
+      }
+      aanode->setBound(i, box);
+    }
     
     for(size_t i = 0; i < N; i++) {
       NodeRef* child_node = join_trees(child_nodes[i].prims, settings);

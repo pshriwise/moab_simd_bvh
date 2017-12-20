@@ -150,7 +150,13 @@ struct AANode : public Node
                         }
 
   inline void setRef (size_t i, const NodeRef& ref) { assert(i<N); children[i] = ref; }
-    
+
+  inline void setBound(size_t i, const AABB& bounds) { lower_x[i] = bounds.lower.x;
+                                                       lower_y[i] = bounds.lower.y;
+						       lower_z[i] = bounds.lower.z;
+						       upper_x[i] = bounds.upper.x;
+                                                       upper_y[i] = bounds.upper.y;
+						       upper_z[i] = bounds.upper.z;  }
 
   inline void setBounds(const AABB& bounds) { lower_x = bounds.lower.x; lower_y = bounds.lower.y; lower_z = bounds.lower.z;
                                               upper_x = bounds.upper.x; upper_y = bounds.upper.y; upper_z = bounds.upper.z; }
