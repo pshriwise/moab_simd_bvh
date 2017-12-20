@@ -9,8 +9,6 @@
 #include "TempNode.h"
 #include "Node.h"
 
-// #define VERBOSE_MODE
-
 enum BuildQuality {
   BUILD_QUALITY_LOW = 0,
   BUILD_QUALITY_NORMAL = 1,
@@ -38,8 +36,18 @@ struct BuildSettings {
 
 typedef TempNode<BuildPrimitive> TempNodeBP;
 
+/// leaf encoding ///
+// this function takes in a pointer to
+// the location at which a set of primitive references are
+// stored as part of the tree structure. Because primitives
+// are required to take up 16 bytes, the number of
+// primitives is stored in the THREE LEAST SIGNIFICANT bits of
+// the ptr attribute in the returned node reference.
+// The node is also marked as a leaf using the tyLeaf value
+// which should not interfere with the other encoded bytes,
+// being the FOURTH leas significant bit.
 NodeRef* encodeLeaf(void *prim_arr, size_t num) {
-  //  assert(numPrimitives < MAX_LEAF_SIZE); needs to be re-added later
+  assert(numPrimitives < MAX_LEAF_SIZE);
   return new NodeRef((size_t)prim_arr | (tyLeaf + num));
 }
 
@@ -61,16 +69,7 @@ struct Heuristic {
 
 };
 
-
-
-typedef void* (*createNodeFunc) (size_t numChildren);
-
-typedef void (*linkChildrenFunc) (void* nodePtr, void** children, size_t numChildren);
-
-typedef void (*setNodeBoundsFunc) (void* nodePtr, const BBounds** bounds, size_t numChildren);
-
 typedef void* (*createLeafFunc) (BuildPrimitive* primitives, size_t numPrimitives);
-
 
 void createNode(NodeRef* node) {
   AANode* ptr = new AANode();
