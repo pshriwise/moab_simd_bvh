@@ -8,10 +8,11 @@
 #include "Stack.h"
 
 struct BVHStatTracker {
-  
-  std::vector<int> s;
 
-  
+  // keeps track of the stack while traversing
+  std::vector<int> stack;
+
+  // stat values tracked
   int num_empty;
   int num_non_empty;
   int num_leaves;
@@ -37,7 +38,7 @@ struct BVHStatTracker {
 			    min_leaf_depth(inf),
 			    max_leaf_depth(0),
 			    leaf_depth_agg(0)
-  { s.push_back(1); }
+  { stack.push_back(1); }
 
   inline void count_hits(size_t mask, int& hits) {
     assert(mask <= 15 && mask >= 0);
@@ -56,29 +57,28 @@ struct BVHStatTracker {
     
     int nodes_hit = 0;
     count_hits(mask, nodes_hit);
-    s.push_back(nodes_hit-1);
+    stack.push_back(nodes_hit-1);
     
     return;
   }
   
   inline void up() {
 
-    if(s.back() == 0) {
-      s.pop_back();
+    if(stack.back() == 0) {
+      stack.pop_back();
       up();
     }
     else{
-      s.back()--;
+      stack.back()--;
       return;
     }
   }
 
-  inline int current_depth() { return s.size()-1; }
-
+  inline int current_depth() { return stack.size()-1; }
 
   inline void gatherStats(NodeRef root) {
 
-        /* initialiez stack state */
+    /* initialize stack state */
     StackItemT<NodeRef> stack[stackSize];
     StackItemT<NodeRef>* stackPtr = stack+1;
     StackItemT<NodeRef>* stackEnd = stack+stackSize;
