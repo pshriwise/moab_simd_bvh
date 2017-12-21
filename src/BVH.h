@@ -19,11 +19,11 @@ template <typename V, typename T, typename I, typename P>
 class BVH {
 
   typedef BVHSettingsT<PrimRef> BVHSettings;
-  typedef TempNode<BuildPrimitive> TempNodeBP;
-  typedef TempNode<NodeRef*> TempNodeNode;
+  typedef TempNodeT<BuildPrimitive> TempNodeBP;
+  typedef TempNodeT<NodeRef*> TempNodeNode;
   typedef BVHSettingsT<NodeRef*> BVHJoinTreeSettings;
   typedef BuildStateT<PrimRef> BuildState;
-  typedef TempNode<PrimRef> MBTempNode;
+  typedef TempNodeT<PrimRef> TempNode;
   typedef TravRayT<I> TravRay;
   typedef SetNodeT<I> SetNode;
   typedef RayT<V,T,I> Ray;
@@ -345,7 +345,7 @@ class BVH {
     // increment depth and recur here
     aanode->setBounds(box);
     NodeRef* this_node = new NodeRef((size_t)aanode);
-    MBTempNode tempNodes[4];
+    TempNode tempNodes[4];
     splitNode(this_node, primitives, numPrimitives, tempNodes, settings);
 
 #ifdef VERBOSE_MODE
@@ -373,7 +373,7 @@ class BVH {
   } // end build
 
 
-  void splitNode(NodeRef* node, const PrimRef* primitives, const size_t numPrimitives, MBTempNode tempNodes[N], BVHSettings *settings) {
+  void splitNode(NodeRef* node, const PrimRef* primitives, const size_t numPrimitives, TempNode tempNodes[N], BVHSettings *settings) {
 
     // split node along each axis
     float max_cost = 2.0;
@@ -442,7 +442,7 @@ class BVH {
   
   }
 
-  void splitNode(NodeRef* node, size_t split_axis, const PrimRef* primitives, const size_t numPrimitives, MBTempNode tn[N]) {
+  void splitNode(NodeRef* node, size_t split_axis, const PrimRef* primitives, const size_t numPrimitives, TempNode tn[N]) {
 
     assert(split_axis >= 0 && split_axis <= 2);
 

@@ -4,13 +4,13 @@
 #include "AABB.h"
 
 template <typename T>
-struct TempNode {
+struct TempNodeT {
   AABB box;
   std::vector<T> prims;
 
-  inline TempNode (AABB& b, std::vector<T>& p) : box(b), prims(p) {}
+  inline TempNodeT (AABB& b, std::vector<T>& p) : box(b), prims(p) {}
   
-  inline TempNode() : box(AABB((float)inf,(float)neg_inf)) {}
+  inline TempNodeT() : box(AABB((float)inf,(float)neg_inf)) {}
 
   void update_box() {
     box.clear();

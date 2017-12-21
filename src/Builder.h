@@ -36,7 +36,7 @@ struct BuildSettings {
 };
 
 
-typedef TempNode<BuildPrimitive> TempNodeBP;
+typedef TempNodeT <BuildPrimitive> TempNodeBP;
 
 /// leaf encoding ///
 // this function takes in a pointer to
@@ -127,7 +127,7 @@ template <typename T> class BVHBuilder {
   return (void*) encodeLeaf((void*)primitives, numPrimitives - 1);
   }
 
-  void splitNode(NodeRef* node, size_t split_axis, const T* primitives, const size_t numPrimitives, TempNode<T> tn[N]) {
+  void splitNode(NodeRef* node, size_t split_axis, const T* primitives, const size_t numPrimitives, TempNodeT<T> tn[N]) {
 
     assert(split_axis >= 0 && split_axis <= 2);
 
@@ -188,10 +188,10 @@ template <typename T> class BVHBuilder {
     tn[2].clear();
     tn[3].clear();
 
-    /* new (&tn[0]) TempNode<T>(); */
-    /* new (&tn[1]) TempNode<T>(); */
-    /* new (&tn[2]) TempNode<T>(); */
-    /* new (&tn[3]) TempNode<T>(); */
+    /* new (&tn[0]) TempNodeT<T>(); */
+    /* new (&tn[1]) TempNodeT<T>(); */
+    /* new (&tn[2]) TempNodeT<T>(); */
+    /* new (&tn[3]) TempNodeT<T>(); */
   
     // sort primitives into boxes by their centroid
     for(size_t i = 0; i < numPrimitives; i++) {
@@ -213,7 +213,7 @@ template <typename T> class BVHBuilder {
   }
 
 
-  void splitNode(NodeRef* node, const T* primitives, const size_t numPrimitives, TempNode<T> tempNodes[N]) {
+  void splitNode(NodeRef* node, const T* primitives, const size_t numPrimitives, TempNodeT<T> tempNodes[N]) {
 
     // split node along each axis
     float max_cost = 2.0;
@@ -443,7 +443,7 @@ template <typename T> class BVHBuilder {
     // increment depth and recur here
     aanode->setBounds(box);
     NodeRef* this_node = new NodeRef((size_t)aanode);
-    TempNode<T> tempNodes[4];
+    TempNodeT<T> tempNodes[4];
     splitNode(this_node, primitives, numPrimitives, tempNodes);
 
 #ifdef VERBOSE_MODE

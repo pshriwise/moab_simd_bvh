@@ -9,7 +9,7 @@ int main(int argc, char** argv) {
 
   BVHSettingsT<int> settings;
 
-  TempNode<int> tempNodes[4];
+  TempNodeT<int> tempNodes[4];
 
   float cost;
   float expected_cost;
