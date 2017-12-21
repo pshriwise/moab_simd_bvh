@@ -40,7 +40,7 @@ typedef BVHSettings<PrimRef> MBBVHSettings;
 
 void no_filter(MBRay &ray, void* mesh_ptr) { return; };
 
-template <typename T>
+template <typename V, typename T, typename I, typename P>
 class BVH {
 
   typedef Filter<Vec3da,double,moab::EntityHandle>::FilterFunc MBFilterFunc;
@@ -48,7 +48,7 @@ class BVH {
  public:
   inline BVH(MOABDirectAccessManager *mdam) : MDAM(mdam), maxLeafSize(8), depth(0), maxDepth(BVH_MAX_DEPTH), num_stored(0), filter_func(&no_filter)
     {
-      std::vector<T> storage_vec(MDAM->num_elements);
+      std::vector<P> storage_vec(MDAM->num_elements);
       leaf_sequence_storage = storage_vec;
       //      leaf_sequence_storage.resize(MDAM->num_elements);
     }
@@ -63,7 +63,7 @@ class BVH {
   
   int num_stored;
 
-  std::vector<T> leaf_sequence_storage;
+  std::vector<P> leaf_sequence_storage;
 
   MOABDirectAccessManager* MDAM;
   
@@ -107,7 +107,7 @@ class BVH {
     return;
   }
   
-  inline void* createLeaf(T* primitives, size_t numPrimitives) {
+  inline void* createLeaf(P* primitives, size_t numPrimitives) {
     return (void*) encodeLeaf((void*)primitives, numPrimitives - 1);
   }
 
@@ -205,9 +205,9 @@ class BVH {
     else {
       // get the primitives
       size_t numPrims;
-      T* primIDs = (T*)node->leaf(numPrims);
+      P* primIDs = (P*)node->leaf(numPrims);
       for (size_t j = 0; j < numPrims; j++){
-	T t = primIDs[j];
+	P t = primIDs[j];
 	Vec3fa lower, upper;
 	t.get_bounds(lower, upper, MDAM);
 	node_box = AABB(lower, upper);
@@ -311,7 +311,7 @@ class BVH {
     for( size_t i = 0; i < end; i++ ) {
       int index = start+i;
       
-      T triref = T((moab::EntityHandle*)MDAM->conn + (index*MDAM->element_stride), id+i);
+      P triref = P((moab::EntityHandle*)MDAM->conn + (index*MDAM->element_stride), id+i);
       
       Vec3fa lower, upper;
       
@@ -556,11 +556,11 @@ class BVH {
 
       if(current.size() == 0 ) return new NodeRef();
 
-      T* position = &(*(leaf_sequence_storage.begin()+num_stored));
+      P* position = &(*(leaf_sequence_storage.begin()+num_stored));
 
       for( size_t i = 0; i < current.size(); i++) {
 	
-	T t = T((moab::EntityHandle*)MDAM->conn + (current.prims[i].primID()*MDAM->element_stride), (moab::EntityHandle)current.prims[i].primitivePtr);
+	P t = P((moab::EntityHandle*)MDAM->conn + (current.prims[i].primID()*MDAM->element_stride), (moab::EntityHandle)current.prims[i].primitivePtr);
 	leaf_sequence_storage[num_stored+i] = t;
 	
       }
@@ -769,10 +769,10 @@ class BVH {
 	}
 	
 	  size_t numPrims;
-	  T* primIDs = (T*)cur.leaf(numPrims);
+	  P* primIDs = (P*)cur.leaf(numPrims);
 	  
 	  for (size_t i = 0; i < numPrims; i++) {
-	    T t = primIDs[i];
+	    P t = primIDs[i];
 	    t.intersect(vray, ray, filter_func, (void*)MDAM);
 	  }
 	}
@@ -786,6 +786,6 @@ class BVH {
   
 };
 
-typedef BVH<MBTriangleRef> MBVH;
-typedef BVH<BuildPrimitive> BBVH;
-typedef BVH<TriangleRef> TBVH;
+typedef BVH<Vec3da, double, moab::EntityHandle, MBTriangleRef> MBVH;
+typedef BVH<Vec3da, double, int, BuildPrimitive> BBVH;
+typedef BVH<Vec3da, double, int, TriangleRef> TBVH;
