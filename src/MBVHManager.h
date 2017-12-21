@@ -214,7 +214,7 @@ struct MBVHManager {
   }
 
 
-  inline moab::ErrorCode fireRay(const moab::EntityHandle &set, MBRay &ray) {
+  inline moab::ErrorCode fireRay(const moab::EntityHandle &set, MBVH::MBRay &ray) {
     NodeRef* root = BVHRoots[set - lowest_set];
     if(!root) { MB_CHK_SET_ERR(moab::MB_FAILURE, "Failed to retrieve the root for EntitySet " << set); }
     MOABBVH->intersectRay(*root, ray);
