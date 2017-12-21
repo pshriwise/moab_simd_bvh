@@ -29,7 +29,7 @@ class BVH {
   typedef Filter<V,double,I> MBFilterFunc;
   typename MBFilterFunc::FilterFunc filter_func;
 
-  typedef BuildStateT<PrimRef> MBBuildState;
+  typedef BuildStateT<PrimRef> BuildState;
   typedef TempNode<PrimRef> MBTempNode;
   typedef TravRayT<I> MBTravRay;
 
@@ -299,7 +299,7 @@ class BVH {
 
   inline NodeRef* Build(I id, int start, size_t numPrimitives, MBBVHSettings* settings = NULL) {
     // create BuildState of PrimitiveReferences
-    MBBuildState bs(0);
+    BuildState bs(0);
     int end = numPrimitives;
     for( size_t i = 0; i < end; i++ ) {
       int index = start+i;
@@ -327,7 +327,7 @@ class BVH {
     return root;
   }
 
-  inline NodeRef* Build(MBBuildState& current, MBBVHSettings *settings) {
+  inline NodeRef* Build(BuildState& current, MBBVHSettings *settings) {
 
     const PrimRef* primitives = current.ptr();
     size_t numPrimitives = current.size();
@@ -360,7 +360,7 @@ class BVH {
 #endif
 
     for(size_t i = 0; i < N ; i++){
-      MBBuildState br(current.depth+1, tempNodes[i].prims);
+      BuildState br(current.depth+1, tempNodes[i].prims);
       NodeRef* child_node = Build(br, settings);
       // link the child node
       aanode->setRef(i, *child_node);
@@ -534,7 +534,7 @@ class BVH {
     return;
   }
 
-  NodeRef* createLargeLeaf(MBBuildState& current) {
+  NodeRef* createLargeLeaf(BuildState& current) {
     
     /* if(current.depth > maxDepth) { */
     /*   std::cerr << "Maximum depth reached" << std::endl; */
@@ -568,12 +568,12 @@ class BVH {
     }
 
     
-    MBBuildState tempChildren[N];
+    BuildState tempChildren[N];
     size_t numChildren = 1;
     AABB bounds = current.prims.bounds();
     tempChildren[0] = current;
     for( size_t i = 1; i < numChildren; i++) {
-      tempChildren[i] = MBBuildState(current.depth+1);
+      tempChildren[i] = BuildState(current.depth+1);
     }
     
     do {
@@ -595,8 +595,8 @@ class BVH {
       /* if no child over maxLeafSize, then we're done */
       if(best_child == (size_t)-1) break;
 
-      MBBuildState left(current.depth+1);
-      MBBuildState right(current.depth+1);
+      BuildState left(current.depth+1);
+      BuildState right(current.depth+1);
       /* split the best child into left and right */
       splitFallback(tempChildren[best_child], left, right);
 
@@ -650,7 +650,7 @@ class BVH {
   }
 
 
-  void splitFallback(const MBBuildState& current, MBBuildState& left, MBBuildState& right) {
+  void splitFallback(const BuildState& current, BuildState& left, BuildState& right) {
     const size_t begin_id = current.prims.prims.front().primID();
     const size_t end_id = current.prims.prims.back().primID();
     const size_t center_id = (begin_id + end_id)/2;
