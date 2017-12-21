@@ -43,7 +43,8 @@ void no_filter(MBRay &ray, void* mesh_ptr) { return; };
 template <typename V, typename T, typename I, typename P>
 class BVH {
 
-  typedef Filter<Vec3da,double,moab::EntityHandle>::FilterFunc MBFilterFunc;
+  typedef Filter<Vec3da,double,I> MBFilterFunc;
+  typename MBFilterFunc::FilterFunc filter_func;
   
  public:
   inline BVH(MOABDirectAccessManager *mdam) : MDAM(mdam), maxLeafSize(8), depth(0), maxDepth(BVH_MAX_DEPTH), num_stored(0), filter_func(&no_filter)
@@ -69,15 +70,13 @@ class BVH {
   
   static const size_t stackSize = 1+(N-1)*BVH_MAX_DEPTH;
 
-  MBFilterFunc filter_func;
-
  public:
 
-  inline void set_filter_func(MBFilterFunc ff) { filter_func = ff; }
+  inline void set_filter_func(typename MBFilterFunc::FilterFunc ff) { filter_func = ff; }
 
-  inline void unset_filter_func(MBFilterFunc ff) { filter_func = no_filter; }
+  inline void unset_filter_func(typename MBFilterFunc::FilterFunc ff) { filter_func = no_filter; }
 
-  inline void makeSetNode(NodeRef* node, moab::EntityHandle setID, moab::EntityHandle fwd = 0, moab::EntityHandle rev = 0) {
+  inline void makeSetNode(NodeRef* node, I setID, I fwd = 0, I rev = 0) {
 
     //make sure this isn't already a set node
     assert(!node->isSetLeaf());
@@ -304,14 +303,14 @@ class BVH {
     return this_node;
   }
 
-  inline NodeRef* Build(moab::EntityHandle id, int start, size_t numPrimitives, MBBVHSettings* settings = NULL) {
+  inline NodeRef* Build(I id, int start, size_t numPrimitives, MBBVHSettings* settings = NULL) {
     // create BuildState of PrimitiveReferences
     MBBuildState bs(0);
     int end = numPrimitives;
     for( size_t i = 0; i < end; i++ ) {
       int index = start+i;
       
-      P triref = P((moab::EntityHandle*)MDAM->conn + (index*MDAM->element_stride), id+i);
+      P triref = P((I*)MDAM->conn + (index*MDAM->element_stride), id+i);
       
       Vec3fa lower, upper;
       
@@ -560,7 +559,7 @@ class BVH {
 
       for( size_t i = 0; i < current.size(); i++) {
 	
-	P t = P((moab::EntityHandle*)MDAM->conn + (current.prims[i].primID()*MDAM->element_stride), (moab::EntityHandle)current.prims[i].primitivePtr);
+	P t = P((I*)MDAM->conn + (current.prims[i].primID()*MDAM->element_stride), (I)current.prims[i].primitivePtr);
 	leaf_sequence_storage[num_stored+i] = t;
 	
       }
@@ -679,7 +678,7 @@ class BVH {
 
   static inline bool intersect(NodeRef& node, const MBTravRay& ray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& dist, size_t& mask) {
     if(node.isLeaf() || node.isSetLeaf() ) return false;
-    mask = intersectBox<moab::EntityHandle>(*node.node(),ray,tnear,tfar,dist);
+    mask = intersectBox<I>(*node.node(),ray,tnear,tfar,dist);
     return true;
   }
 
