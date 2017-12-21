@@ -15,30 +15,30 @@
 #include "BVHSettings.h"
 #include "PrimitiveReference.h"
 
-typedef TempNode<BuildPrimitive> TempNodeBP;
-
-typedef TempNode<NodeRef*> TempNodeNode;
-
-typedef BVHSettings<NodeRef*> BVHJoinTreeSettings;
-typedef BVHSettings<PrimRef> MBBVHSettings;
-
-
 template <typename V, typename T, typename I, typename P>
 class BVH {
 
+  typedef BVHSettings<PrimRef> MBBVHSettings;
+
+  typedef TempNode<BuildPrimitive> TempNodeBP;
+ 
+  typedef TempNode<NodeRef*> TempNodeNode;
+  
+  typedef BVHSettings<NodeRef*> BVHJoinTreeSettings;
+  
   typedef Filter<V,double,I> MBFilterFunc;
   typename MBFilterFunc::FilterFunc filter_func;
 
   typedef BuildStateT<PrimRef> BuildState;
   typedef TempNode<PrimRef> MBTempNode;
-  typedef TravRayT<I> MBTravRay;
+  typedef TravRayT<I> TravRay;
 
-  typedef SetNodeT<I> MBSetNode;
+  typedef SetNodeT<I> SetNode;
  public:
-  typedef RayT<V,T,I> MBRay;
+  typedef RayT<V,T,I> Ray;
   
  private:
-  static void no_filter(MBRay &ray, void* mesh_ptr) { return; };
+  static void no_filter(Ray &ray, void* mesh_ptr) { return; };
 
  public:
   inline BVH(MOABDirectAccessManager *mdam) : MDAM(mdam), maxLeafSize(8), depth(0), maxDepth(BVH_MAX_DEPTH), num_stored(0), filter_func(&no_filter)
@@ -79,7 +79,7 @@ class BVH {
     AANode *aanode = new AANode();
     AABB node_box = box_from_node(node);
     aanode->setBounds(node_box);
-    MBSetNode* snode = new MBSetNode(*aanode, setID, fwd, rev);
+    SetNode* snode = new SetNode(*aanode, setID, fwd, rev);
         
     if( node->isLeaf() ) {
       snode->setRef(0,*node);
@@ -670,19 +670,19 @@ class BVH {
   }
 
 
-  static inline bool intersect(NodeRef& node, const MBTravRay& ray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& dist, size_t& mask) {
+  static inline bool intersect(NodeRef& node, const TravRay& ray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& dist, size_t& mask) {
     if(node.isLeaf() || node.isSetLeaf() ) return false;
     mask = intersectBox<I>(*node.node(),ray,tnear,tfar,dist);
     return true;
   }
 
-  inline void intersectRay(NodeRef root, MBRay &ray) {
-    MBTravRay vray(ray.org, ray.dir);
+  inline void intersectRay(NodeRef root, Ray &ray) {
+    TravRay vray(ray.org, ray.dir);
     intersectRay(root, ray, vray);
     return;
   }
   
-  inline void intersectRay (NodeRef root, MBRay &ray, MBTravRay vray) {
+  inline void intersectRay (NodeRef root, Ray &ray, TravRay vray) {
     /* initialiez stack state */
     StackItemT<NodeRef> stack[stackSize];
     StackItemT<NodeRef>* stackPtr = stack+1;
@@ -746,7 +746,7 @@ class BVH {
 	
 	if (cur.isSetLeaf() ) {
 	  // update the geom id of the travray
-	  MBSetNode* snode = (MBSetNode*)cur.snode();
+	  SetNode* snode = (SetNode*)cur.snode();
 	  vray.setID = snode->setID;
 	  if(snode->fwdID == ray.instID) {
 	    vray.sense = 0;
