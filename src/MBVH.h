@@ -1,5 +1,4 @@
 
-
 #include <set>
 #include <vector>
 #include <bitset>
@@ -43,7 +42,7 @@ void no_filter(MBRay &ray, void* mesh_ptr) { return; };
 template <typename V, typename T, typename I, typename P>
 class BVH {
 
-  typedef Filter<Vec3da,double,I> MBFilterFunc;
+  typedef Filter<V,double,I> MBFilterFunc;
   typename MBFilterFunc::FilterFunc filter_func;
   
  public:
