@@ -697,7 +697,7 @@ class BVH {
     return;
   }
   
-  inline void intersectRay (NodeRef root, Ray &ray, TravRay vray) {
+  inline void intersectRay (NodeRef root, Ray &ray, TravRay &vray) {
     /* initialiez stack state */
     StackItemT<NodeRef> stack[stackSize];
     StackItemT<NodeRef>* stackPtr = stack+1;
