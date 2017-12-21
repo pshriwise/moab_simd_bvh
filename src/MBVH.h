@@ -663,7 +663,7 @@ class BVH {
     
     for (size_t i = 0; i < numChildren; i++) {
       AABB b;
-      BuildBuildSetT<PrimRef> primitives = tempChildren[i].prims;
+      BuildSetT<PrimRef> primitives = tempChildren[i].prims;
       
       for(size_t j = 0; j < primitives.size(); j++) {
 	b.update(primitives[j].lower.x, primitives[j].lower.y, primitives[j].lower.z);

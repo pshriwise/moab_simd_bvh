@@ -375,7 +375,7 @@ template <typename T> class BVHBuilder {
     
     for (size_t i = 0; i < numChildren; i++) {
       AABB b;
-      BuildBuildSetT<T> primitives = tempChildren[i].prims;
+      BuildSetT<T> primitives = tempChildren[i].prims;
       
       for(size_t j = 0; j < primitives.size(); j++) {
 	b.update(primitives[j].lower.x, primitives[j].lower.y, primitives[j].lower.z);
