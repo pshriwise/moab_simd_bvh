@@ -5,7 +5,7 @@
 #include <vector>
 #include <bitset>
 
-#include "Builder.h"
+//#include "Builder.h"
 #include "BuildState.h"
 #include "Intersector.h"
 #include "TriangleRef.h"
@@ -14,6 +14,8 @@
 #include "BVHStats.h"
 #include "BVHSettings.h"
 #include "PrimitiveReference.h"
+
+#define MAX_LEAF_SIZE
 
 template <typename V, typename T, typename I, typename P>
 class BVH {
@@ -67,6 +69,22 @@ class BVH {
 
   inline void unset_filter(typename Filter::FilterFunc ff) { filter = no_filter; }
 
+  
+  /// leaf encoding ///
+  // this function takes in a pointer to
+  // the location at which a set of primitive references are
+  // stored as part of the tree structure. Because primitives
+  // are required to take up 16 bytes, the number of
+  // primitives is stored in the THREE LEAST SIGNIFICANT bits of
+  // the ptr attribute in the returned node reference.
+  // The node is also marked as a leaf using the tyLeaf value
+  // which should not interfere with the other encoded bytes,
+  // being the FOURTH leas significant bit.
+  NodeRef* encodeLeaf(void *prim_arr, size_t num) {
+    assert(num < MAX_LEAF_SIZE);
+    return new NodeRef((size_t)prim_arr | (tyLeaf + num));
+  }
+  
   inline void makeSetNode(NodeRef* node, I setID, I fwd = 0, I rev = 0) {
 
     //make sure this isn't already a set node
