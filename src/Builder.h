@@ -9,6 +9,8 @@
 #include "TempNode.h"
 #include "Node.h"
 
+#define MAX_LEAF_SIZE 8
+
 enum BuildQuality {
   BUILD_QUALITY_LOW = 0,
   BUILD_QUALITY_NORMAL = 1,
@@ -47,7 +49,7 @@ typedef TempNode<BuildPrimitive> TempNodeBP;
 // which should not interfere with the other encoded bytes,
 // being the FOURTH leas significant bit.
 NodeRef* encodeLeaf(void *prim_arr, size_t num) {
-  assert(numPrimitives < MAX_LEAF_SIZE);
+  assert(num < MAX_LEAF_SIZE);
   return new NodeRef((size_t)prim_arr | (tyLeaf + num));
 }
 
