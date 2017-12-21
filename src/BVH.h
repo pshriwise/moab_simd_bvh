@@ -18,25 +18,19 @@
 template <typename V, typename T, typename I, typename P>
 class BVH {
 
-  typedef BVHSettings<PrimRef> MBBVHSettings;
-
+  typedef BVHSettingsT<PrimRef> BVHSettings;
   typedef TempNode<BuildPrimitive> TempNodeBP;
- 
   typedef TempNode<NodeRef*> TempNodeNode;
-  
-  typedef BVHSettings<NodeRef*> BVHJoinTreeSettings;
-  
-  typedef Filter<V,double,I> MBFilterFunc;
-  typename MBFilterFunc::FilterFunc filter_func;
-
+  typedef BVHSettingsT<NodeRef*> BVHJoinTreeSettings;
   typedef BuildStateT<PrimRef> BuildState;
   typedef TempNode<PrimRef> MBTempNode;
   typedef TravRayT<I> TravRay;
-
   typedef SetNodeT<I> SetNode;
- public:
   typedef RayT<V,T,I> Ray;
-  
+
+  typedef Filter<V,double,I> MBFilterFunc;
+  typename MBFilterFunc::FilterFunc filter_func;
+
  private:
   static void no_filter(Ray &ray, void* mesh_ptr) { return; };
 
@@ -297,7 +291,7 @@ class BVH {
     return this_node;
   }
 
-  inline NodeRef* Build(I id, int start, size_t numPrimitives, MBBVHSettings* settings = NULL) {
+  inline NodeRef* Build(I id, int start, size_t numPrimitives, BVHSettings* settings = NULL) {
     // create BuildState of PrimitiveReferences
     BuildState bs(0);
     int end = numPrimitives;
@@ -318,7 +312,7 @@ class BVH {
     current_build_id = id;
 
     // if the settings pointer is null, create a settings struct
-    if(!settings) settings = new MBBVHSettings();
+    if(!settings) settings = new BVHSettings();
     
     NodeRef *root = Build(bs, settings);
     
@@ -327,7 +321,7 @@ class BVH {
     return root;
   }
 
-  inline NodeRef* Build(BuildState& current, MBBVHSettings *settings) {
+  inline NodeRef* Build(BuildState& current, BVHSettings *settings) {
 
     const PrimRef* primitives = current.ptr();
     size_t numPrimitives = current.size();
@@ -379,7 +373,7 @@ class BVH {
   } // end build
 
 
-  void splitNode(NodeRef* node, const PrimRef* primitives, const size_t numPrimitives, MBTempNode tempNodes[N], MBBVHSettings *settings) {
+  void splitNode(NodeRef* node, const PrimRef* primitives, const size_t numPrimitives, MBTempNode tempNodes[N], BVHSettings *settings) {
 
     // split node along each axis
     float max_cost = 2.0;

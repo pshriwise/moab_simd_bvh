@@ -11,12 +11,12 @@ enum BVH_HEURISTIC { ENTITY_RATIO_HEURISTIC = 0,
 
 
 template<typename T>
-struct BVHSettings {
+struct BVHSettingsT {
 
   float (*evaluate_cost)(TempNode<T> tempNodes[N], const AABB &node_box, const size_t &numPrimitives);
   
   // constructor
-  BVHSettings() {
+  BVHSettingsT() {
     // set SAH by default
     evaluate_cost = &surface_area_heuristic;
   }

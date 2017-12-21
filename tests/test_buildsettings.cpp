@@ -7,7 +7,7 @@
 
 int main(int argc, char** argv) {
 
-  BVHSettings<int> settings;
+  BVHSettingsT<int> settings;
 
   TempNode<int> tempNodes[4];
 
