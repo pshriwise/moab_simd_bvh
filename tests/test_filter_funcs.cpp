@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
   rval = BVH->build_all();
   MB_CHK_SET_ERR(rval, "Failed to build tree(2) for the model");
 
-  BVH->MOABBVH->set_filter_func(backface_cull);
+  BVH->MOABBVH->set_filter(backface_cull);
   
   moab::Tag geom_dim_tag;
   rval = MBI->tag_get_handle(GEOM_DIMENSION_TAG_NAME, geom_dim_tag);

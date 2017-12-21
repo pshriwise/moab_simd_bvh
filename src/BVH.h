@@ -19,23 +19,26 @@ template <typename V, typename T, typename I, typename P>
 class BVH {
 
   typedef BVHSettingsT<PrimRef> BVHSettings;
-  typedef TempNodeT<BuildPrimitive> TempNodeBP;
-  typedef TempNodeT<NodeRef*> TempNodeNode;
   typedef BVHSettingsT<NodeRef*> BVHJoinTreeSettings;
-  typedef BuildStateT<PrimRef> BuildState;
-  typedef TempNodeT<PrimRef> TempNode;
-  typedef TravRayT<I> TravRay;
+
   typedef SetNodeT<I> SetNode;
+  
+  typedef TempNodeT<PrimRef> TempPrimNode;
+  typedef TempNodeT<NodeRef*> TempSetNode;
+
+  typedef BuildStateT<PrimRef> BuildState;
+  
+  typedef TravRayT<I> TravRay;
   typedef RayT<V,T,I> Ray;
 
-  typedef Filter<V,double,I> MBFilterFunc;
-  typename MBFilterFunc::FilterFunc filter_func;
+  typedef FilterT<V,double,I> Filter;
+  typename Filter::FilterFunc filter;
 
  private:
   static void no_filter(Ray &ray, void* mesh_ptr) { return; };
 
  public:
-  inline BVH(MOABDirectAccessManager *mdam) : MDAM(mdam), maxLeafSize(8), depth(0), maxDepth(BVH_MAX_DEPTH), num_stored(0), filter_func(&no_filter)
+  inline BVH(MOABDirectAccessManager *mdam) : MDAM(mdam), maxLeafSize(8), depth(0), maxDepth(BVH_MAX_DEPTH), num_stored(0), filter(&no_filter)
     {
       std::vector<P> storage_vec(MDAM->num_elements);
       leaf_sequence_storage = storage_vec;
@@ -60,9 +63,9 @@ class BVH {
 
  public:
 
-  inline void set_filter_func(typename MBFilterFunc::FilterFunc ff) { filter_func = ff; }
+  inline void set_filter(typename Filter::FilterFunc ff) { filter = ff; }
 
-  inline void unset_filter_func(typename MBFilterFunc::FilterFunc ff) { filter_func = no_filter; }
+  inline void unset_filter(typename Filter::FilterFunc ff) { filter = no_filter; }
 
   inline void makeSetNode(NodeRef* node, I setID, I fwd = 0, I rev = 0) {
 
@@ -98,7 +101,7 @@ class BVH {
     return (void*) encodeLeaf((void*)primitives, numPrimitives - 1);
   }
 
-  inline void split_sets(NodeRef* current_node, size_t split_dim, NodeRef** nodesPtr, size_t numNodes, TempNodeNode child_nodes[N]) {
+  inline void split_sets(NodeRef* current_node, size_t split_dim, NodeRef** nodesPtr, size_t numNodes, TempSetNode child_nodes[N]) {
 
     // get the current node's bounds
     AABB box = current_node->safeNode()->bounds();
@@ -203,7 +206,7 @@ class BVH {
     return node_box;
   }
   
-  inline void split_sets(NodeRef* current_node, NodeRef** nodesPtr, size_t numNodes, TempNodeNode child_nodes[N], BVHJoinTreeSettings* settings) {
+  inline void split_sets(NodeRef* current_node, NodeRef** nodesPtr, size_t numNodes, TempSetNode child_nodes[N], BVHJoinTreeSettings* settings) {
 
     int best_dim;
     float best_cost = 1.0;
@@ -249,7 +252,7 @@ class BVH {
     
     NodeRef* this_node = new NodeRef((size_t)aanode);
     
-    TempNodeNode child_nodes[N];
+    TempSetNode child_nodes[N];
     split_sets(this_node, nodesPtr, numNodes, child_nodes, settings);
 
     // need arbitrary split check here
@@ -345,7 +348,7 @@ class BVH {
     // increment depth and recur here
     aanode->setBounds(box);
     NodeRef* this_node = new NodeRef((size_t)aanode);
-    TempNode tempNodes[4];
+    TempPrimNode tempNodes[4];
     splitNode(this_node, primitives, numPrimitives, tempNodes, settings);
 
 #ifdef VERBOSE_MODE
@@ -373,7 +376,7 @@ class BVH {
   } // end build
 
 
-  void splitNode(NodeRef* node, const PrimRef* primitives, const size_t numPrimitives, TempNode tempNodes[N], BVHSettings *settings) {
+  void splitNode(NodeRef* node, const PrimRef* primitives, const size_t numPrimitives, TempPrimNode tempNodes[N], BVHSettings *settings) {
 
     // split node along each axis
     float max_cost = 2.0;
@@ -442,7 +445,7 @@ class BVH {
   
   }
 
-  void splitNode(NodeRef* node, size_t split_axis, const PrimRef* primitives, const size_t numPrimitives, TempNode tn[N]) {
+  void splitNode(NodeRef* node, size_t split_axis, const PrimRef* primitives, const size_t numPrimitives, TempPrimNode tn[N]) {
 
     assert(split_axis >= 0 && split_axis <= 2);
 
@@ -760,7 +763,7 @@ class BVH {
 	  
 	  for (size_t i = 0; i < numPrims; i++) {
 	    P t = primIDs[i];
-	    t.intersect(vray, ray, filter_func, (void*)MDAM);
+	    t.intersect(vray, ray, filter, (void*)MDAM);
 	  }
 	}
 	
