@@ -8,7 +8,7 @@
 
 #include "Builder.h"
 #include "Intersector.h"
-#include "MBVH.h"
+#include "TriangleBVH.h"
 
 #define EPS 1e-06f
 

@@ -20,8 +20,7 @@
 #include "moab/ProgOptions.hpp"
 
 // SIMD BVH include
-#include "MBVH.h"
-
+#include "TriangleBVH.h"
 #include "testutil.hpp"
 #include "program_stats.hpp"
 
