@@ -2,3 +2,4 @@
 bld
 build
 /tests/test_files.h
+*.cmake
