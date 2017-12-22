@@ -1,4 +1,4 @@
-
+#pragma once
 
 #include <iostream>
 #include <string>
@@ -9,7 +9,7 @@
 #include "MBVH.h"
 #include "MOABDirectAccessManager.h"
 
-void output_w_border(std::string message) {
+inline void output_w_border(std::string message) {
   std::string border(message.size(), '=');
   std::cout << std::endl << border << std::endl << message << std::endl << border << std::endl;
   return;
