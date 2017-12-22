@@ -69,7 +69,7 @@ class BVH {
 
   inline void set_filter(typename Filter::FilterFunc ff) { filter = ff; }
 
-  inline void unset_filter(typename Filter::FilterFunc ff) { filter = no_filter; }
+  inline void unset_filter() { filter = no_filter; }
 
   
   /// leaf encoding ///
@@ -300,9 +300,15 @@ class BVH {
     for(size_t i = 0; i < N; i++) {
       size_t num_child_prims = child_nodes[i].size();
       AABB box;
-      for(size_t j = 0; j < num_child_prims; j++) {
-	box.update(child_nodes[i].prims[j]->safeNode()->bounds());
+      if(num_child_prims == 0) {
+	box = AABB(0.0f);
       }
+      else {
+	for(size_t j = 0; j < num_child_prims; j++) {
+	  box.update(child_nodes[i].prims[j]->safeNode()->bounds());
+	}
+      }
+      assert(box.isValid());
       aanode->setBound(i, box);
     }
     
