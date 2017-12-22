@@ -15,9 +15,9 @@
 #include "BVHSettings.h"
 #include "PrimitiveReference.h"
 
-#define MAX_LEAF_SIZE
+#define MAX_LEAF_SIZE 8
 
-template <typename V, typename T, typename I, typename P>
+template <typename V, typename T, typename I>
 class BVH {
 
   typedef BVHSettingsT<PrimRef> BVHSettings;
@@ -29,6 +29,8 @@ class BVH {
   typedef TempNodeT<NodeRef*> TempSetNode;
 
   typedef BuildStateT<PrimRef> BuildState;
+
+  typedef MBTriangleRefT<V, T, I> P;
   
   typedef TravRayT<I> TravRay;
   typedef RayT<V,T,I> Ray;
