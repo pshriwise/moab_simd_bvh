@@ -208,7 +208,7 @@ struct MBTriangleRefT {
     std::cout << std::endl;
 #endif
     
-    if (hit && dist < ray.tfar) {
+    if (hit && dist < ray.tfar && dist >= ray.tnear) {
 
       moab::CartVect normal = (coords[1]-coords[0]) * (coords[2]-coords[0]);
 
