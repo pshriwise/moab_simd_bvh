@@ -220,7 +220,7 @@ class BVH {
 	P t = primIDs[j];
 	Vec3fa lower, upper;
 	t.get_bounds(lower, upper, MDAM);
-	node_box = AABB(lower, upper);
+	node_box.update(AABB(lower, upper));
       }
     }
     return node_box;
