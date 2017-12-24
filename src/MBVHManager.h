@@ -31,6 +31,11 @@ struct MBVHManager {
   
   MBVHManager(moab::Interface* moab) : MBI(moab), rval(moab::MB_SUCCESS), MDAM(NULL)
   {
+    initialize();
+  };
+
+
+  void initialize() {
     // get all entities of dim 2 (facet entities)
     moab::Range facets;
     rval = MBI->get_entities_by_dimension(0, 2, facets, true);
@@ -80,18 +85,11 @@ struct MBVHManager {
     MB_CHK_SET_ERR_CONT(rval, "Failed to retrieve surface entitysets");
 
     moab::Range all_sets = unite(surfs,vols);
-    // if all sets are contiguous, then setup offset lookup
-    if(all_sets.psize() == 1) {
-      BVHRoots = std::vector<NodeRef*>(surfs.size() + vols.size());
-      lowest_set = all_sets.front();
-    }
-    // otherwise, panic (for now)
-    else {
-      output_w_border("Geometric EntitySets are not contiguous");
-    }
 
+    BVHRoots = std::vector<NodeRef*>((all_sets.back() - all_sets.front())+1);
+    lowest_set = all_sets.front();
+    
     MOABBVH = new MBVH(MDAM);
-   
   };
   
   NodeRef* get_root(moab::EntityHandle ent) {
@@ -194,6 +192,7 @@ struct MBVHManager {
   }
 
   inline moab::ErrorCode build_all() {
+    
     moab::ErrorCode rval;
 
     moab::Tag geom_dim_tag;
@@ -215,7 +214,7 @@ struct MBVHManager {
 
 
   inline moab::ErrorCode fireRay(const moab::EntityHandle &set, MBRay &ray) {
-    NodeRef* root = BVHRoots[set - lowest_set];
+    NodeRef* root = get_root(set);
     if(!root) { MB_CHK_SET_ERR(moab::MB_FAILURE, "Failed to retrieve the root for EntitySet " << set); }
     MOABBVH->intersectRay(*root, ray);
     return moab::MB_SUCCESS;
