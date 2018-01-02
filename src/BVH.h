@@ -35,6 +35,7 @@ class BVH {
   typedef TravRayT<I> TravRay;
   typedef RayT<V,T,I> Ray;
 
+ public:
   typedef FilterT<V,double,I> Filter;
   typename Filter::FilterFunc filter;
 
