@@ -53,6 +53,7 @@ class BVHTraverser {
     /* check for single child hit, add child to stack */
     size_t r = __bscf(mask);
     current_node = node->child(r);
+    current_node.prefetch();
     // prefetch here
     if(mask == 0) {
       // check for emptyNode here
@@ -64,6 +65,7 @@ class BVHTraverser {
     const unsigned int d0 = ((unsigned int*)&tNear)[r];
     r = __bscf(mask);
     NodeRef c1 = node->child(r);
+    c1.prefetch();
     // prefectch c1 here
     const unsigned int d1 = ((unsigned int*)&tNear)[r];
 #ifdef VERBOSE_MODE
@@ -83,6 +85,8 @@ class BVHTraverser {
     //locate next node hit
     r = __bscf(mask);
     NodeRef c = node->child(r);
+    c.prefetch();
+    
     //prefecth here
     unsigned int d = ((unsigned int*)&tNear)[r];
 #ifdef VERBOSE_MODE
@@ -101,6 +105,7 @@ class BVHTraverser {
     // all four children are hit, push all nodes onto stack, sort, return closest child
     r = __bscf(mask);
     c = node->child(r);
+    c.prefetch();
     d = ((unsigned int*)&tNear)[r];
 #ifdef VERBOSE_MODE
     std::cout << "Four Hits" << std::endl;

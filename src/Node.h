@@ -5,6 +5,7 @@
 #include "constants.h"
 #include "vfloat.h"
 #include "Primitive.h"
+#include "sys.h"
 
 static const size_t emptyNode = 8;
 static const size_t tyLeaf = 8;
@@ -56,6 +57,12 @@ struct NodeRef {
     assert(isLeaf());
     num = 1 + (ptr & (items_mask))-tyLeaf;
     return (void*) (ptr & ~(size_t)align_mask);
+  }
+
+  inline void prefetch() const {
+    prefetchL2(((char*)ptr)+0*64);
+    prefetchL2(((char*)ptr)+1*64);
+    return;
   }
   
   /* inline char* leaf(size_t& num) const { */
