@@ -20,52 +20,52 @@ struct Node;
  
 struct NodeRef {
 
-  inline NodeRef () { ptr = emptyNode;}
+  __forceinline NodeRef () { ptr = emptyNode;}
 
-  inline NodeRef(size_t ptr) : ptr(ptr) {}
+  __forceinline NodeRef(size_t ptr) : ptr(ptr) {}
 
-  inline operator size_t() const { return ptr; }
+  __forceinline operator size_t() const { return ptr; }
 
-  inline size_t pointer () const { return ptr; }
+  __forceinline size_t pointer () const { return ptr; }
   
-  inline size_t isLeaf() const { return ptr & tyLeaf; }
+  __forceinline size_t isLeaf() const { return ptr & tyLeaf; }
 
-  inline size_t isSetLeaf() const { return !(isLeaf()) && (ptr & setLeafAlign); }
+  __forceinline size_t isSetLeaf() const { return !(isLeaf()) && (ptr & setLeafAlign); }
 
-  inline bool isEmpty() const { return ptr == emptyNode; }
+  __forceinline bool isEmpty() const { return ptr == emptyNode; }
 
-  inline       AANode* node()       { return (AANode*)ptr; }
-  inline const AANode* node() const { return (const AANode*)ptr; }
+  __forceinline       AANode* node()       { return (AANode*)ptr; }
+  __forceinline const AANode* node() const { return (const AANode*)ptr; }
 
-  inline       AANode* safeNode()        { return isSetLeaf() ? (AANode*)setLeafPtr() : node(); }
-  inline const AANode* safeNode() const  { return isSetLeaf() ? (AANode*)setLeafPtr() : node(); }
+  __forceinline       AANode* safeNode()        { return isSetLeaf() ? (AANode*)setLeafPtr() : node(); }
+  __forceinline const AANode* safeNode() const  { return isSetLeaf() ? (AANode*)setLeafPtr() : node(); }
       
-  inline       void* snode()       { return (void*)setLeafPtr(); }
-  inline const void* snode() const { return (const void*)setLeafPtr(); }
+  __forceinline       void* snode()       { return (void*)setLeafPtr(); }
+  __forceinline const void* snode() const { return (const void*)setLeafPtr(); }
   
-  inline       Node* bnode()       { return (Node*)ptr; }
-  inline const Node* bnode() const { return (const Node*)ptr; }
+  __forceinline       Node* bnode()       { return (Node*)ptr; }
+  __forceinline const Node* bnode() const { return (const Node*)ptr; }
 
-  inline const void setPtr(size_t new_ptr) { ptr = new_ptr; }
+  __forceinline const void setPtr(size_t new_ptr) { ptr = new_ptr; }
 
-  inline size_t setLeafPtr() { return (ptr & ~(size_t)setLeafAlign); }
-  inline size_t setLeafPtr() const { return (ptr & ~(size_t)setLeafAlign); }
+  __forceinline size_t setLeafPtr() { return (ptr & ~(size_t)setLeafAlign); }
+  __forceinline size_t setLeafPtr() const { return (ptr & ~(size_t)setLeafAlign); }
 
-  inline NodeRef setLeaf() { return NodeRef(setLeafPtr()); }
+  __forceinline NodeRef setLeaf() { return NodeRef(setLeafPtr()); }
   
-  inline void* leaf(size_t& num) const {
+  __forceinline void* leaf(size_t& num) const {
     assert(isLeaf());
     num = 1 + (ptr & (items_mask))-tyLeaf;
     return (void*) (ptr & ~(size_t)align_mask);
   }
 
-  inline void prefetch() const {
+  __forceinline void prefetch() const {
     prefetchL2(((char*)ptr)+0*64);
     prefetchL2(((char*)ptr)+1*64);
     return;
   }
   
-  /* inline char* leaf(size_t& num) const { */
+  /* __forceinline char* leaf(size_t& num) const { */
   /*   assert(isLeaf()); */
   /*   num = (ptr & (size_t)items_mask)-tyLeaf; */
   /*   return (char*)(ptr & ~(size_t)align_mask); */
@@ -79,16 +79,16 @@ struct NodeRef {
 };
 
 
-inline const bool operator ==( const NodeRef& a, const NodeRef& b ) { return a.pointer() == b.pointer(); }
+__forceinline const bool operator ==( const NodeRef& a, const NodeRef& b ) { return a.pointer() == b.pointer(); }
 
 
 
 struct Node {
-  inline Node () {}
+  __forceinline Node () {}
   
-  inline void clear() { for(size_t i=0; i < N; i++) children[i] = emptyNode; }
+  __forceinline void clear() { for(size_t i=0; i < N; i++) children[i] = emptyNode; }
 
-  inline bool verify() {
+  __forceinline bool verify() {
     for (size_t i=0; i < N; i++) {
       if (child(i) == NodeRef(emptyNode) ) {
 	for(; i < N; i++) {
@@ -101,8 +101,8 @@ struct Node {
     return true;
   }
   
-  inline NodeRef& child(size_t i) { assert(i<N); return children[i]; }
-  inline const NodeRef& child(size_t i) const { assert(i<N); return children[i]; }
+  __forceinline NodeRef& child(size_t i) { assert(i<N); return children[i]; }
+  __forceinline const NodeRef& child(size_t i) const { assert(i<N); return children[i]; }
 
   NodeRef children[N];
   
@@ -110,19 +110,19 @@ struct Node {
 
 
 
-struct AANode : public Node
+struct __aligned(16) AANode : public Node
 {
 
   using::Node::children;
 
 
-  // inline AANode& child(size_t i) { assert(i<N); return children[i]; }
-  //  inline const AANode& child(size_t i) const { assert(i<N); return children[i]; }
+  // __forceinline AANode& child(size_t i) { assert(i<N); return children[i]; }
+  //  __forceinline const AANode& child(size_t i) const { assert(i<N); return children[i]; }
 
   // empty constructor
-  inline AANode() {}
+  __forceinline AANode() {}
 
-  inline AANode( const vfloat4& low_x, const vfloat4& up_x,
+  __forceinline AANode( const vfloat4& low_x, const vfloat4& up_x,
 		 const vfloat4& low_y, const vfloat4& up_y,
 		 const vfloat4& low_z, const vfloat4& up_z,
 		 const NodeRef* child_ptr = NULL) : lower_x(low_x), upper_x(up_x),
@@ -136,7 +136,7 @@ struct AANode : public Node
 						    }
                                                    }
 
-  inline void set( const vfloat4& low_x, const vfloat4& up_x,
+  __forceinline void set( const vfloat4& low_x, const vfloat4& up_x,
 		  const vfloat4& low_y, const vfloat4& up_y,
 		  const vfloat4& low_z, const vfloat4& up_z,
 		   const NodeRef* child_ptr = NULL) {
@@ -151,14 +151,14 @@ struct AANode : public Node
 						      }
                                                    }
 
-  inline void clear() { lower_x = lower_y = lower_z = neg_inf;
+  __forceinline void clear() { lower_x = lower_y = lower_z = neg_inf;
                         upper_x = upper_y = upper_z = inf;
 			Node::clear();
                         }
 
-  inline void setRef (size_t i, const NodeRef& ref) { assert(i<N); children[i] = ref; }
+  __forceinline void setRef (size_t i, const NodeRef& ref) { assert(i<N); children[i] = ref; }
 
-  inline void setBound(size_t i, const AABB& bounds) { lower_x[i] = bounds.lower.x;
+  __forceinline void setBound(size_t i, const AABB& bounds) { lower_x[i] = bounds.lower.x;
                                                        lower_y[i] = bounds.lower.y;
 						       lower_z[i] = bounds.lower.z;
 						       upper_x[i] = bounds.upper.x;
@@ -171,10 +171,10 @@ struct AANode : public Node
                                    return AABB( lower_x[i], lower_y[i], lower_z[i],
 						upper_x[i], upper_y[i], upper_z[i]); }
 
-  inline void setBounds(const AABB& bounds) { lower_x = bounds.lower.x; lower_y = bounds.lower.y; lower_z = bounds.lower.z;
+  __forceinline void setBounds(const AABB& bounds) { lower_x = bounds.lower.x; lower_y = bounds.lower.y; lower_z = bounds.lower.z;
                                               upper_x = bounds.upper.x; upper_y = bounds.upper.y; upper_z = bounds.upper.z; }
   
-  inline AABB bounds() const { const Vec3f lower(min(lower_x), min(lower_y),min(lower_z));
+  __forceinline AABB bounds() const { const Vec3f lower(min(lower_x), min(lower_y),min(lower_z));
                                const Vec3f upper(max(upper_x), max(upper_y), max(upper_z));
   			       return AABB(lower, upper); }
   
@@ -220,7 +220,7 @@ struct SetNodeT : public AANode {
 
 typedef SetNodeT<unsigned> SetNode;
 
-inline std::ostream& operator<<(std::ostream& cout, const AANode &n) {
+__forceinline std::ostream& operator<<(std::ostream& cout, const AANode &n) {
   return cout <<
          "Lower X's: " << n.lower_x << std::endl <<
          "Upper X's: " << n.upper_x << std::endl <<
@@ -231,7 +231,7 @@ inline std::ostream& operator<<(std::ostream& cout, const AANode &n) {
 }
 
 template<typename I>
-inline size_t intersectBox(const AANode &node, const TravRayT<I> &ray, const vfloat4 &tnear, const vfloat4 &tfar, vfloat4 &dist) {
+__forceinline size_t intersectBox(const AANode &node, const TravRayT<I> &ray, const vfloat4 &tnear, const vfloat4 &tfar, vfloat4 &dist) {
   const vfloat4 tNearX = (vfloat4::load((void*)((const char*)&node.lower_x + ray.nearX))- ray.org.x) * ray.rdir.x;
   const vfloat4 tNearY = (vfloat4::load((void*)((const char*)&node.lower_x + ray.nearY)) - ray.org.y) * ray.rdir.y;
   const vfloat4 tNearZ = (vfloat4::load((void*)((const char*)&node.lower_x + ray.nearZ)) - ray.org.z) * ray.rdir.z;

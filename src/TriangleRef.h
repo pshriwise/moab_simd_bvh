@@ -8,6 +8,7 @@
 #include "moab/CartVect.hpp"
 #include "moab/GeomUtil.hpp"
 #include "MOABDirectAccessManager.h"
+#include "sys.h"
 
 struct TriangleRef : public BuildPrimitive {
   using::BuildPrimitive::lower;
@@ -15,7 +16,7 @@ struct TriangleRef : public BuildPrimitive {
   
   //  inline TriangleRef(long unsigned int tri_handle): eh(tri_handle){ set_primID(eh); }
 
-  inline TriangleRef(moab::EntityHandle tri_handle, moab::Interface* mbi): eh(tri_handle) {
+  __forceinline TriangleRef(moab::EntityHandle tri_handle, moab::Interface* mbi): eh(tri_handle) {
     set_bounds(mbi);
     set_primID(eh);
     set_sceneID((size_t)mbi);
@@ -27,7 +28,7 @@ struct TriangleRef : public BuildPrimitive {
 
   friend bool operator== (const TriangleRef& a, const TriangleRef& b) { return a.eh == b.eh; }
 
-  inline void set_bounds(moab::Interface* mbi) {
+  __forceinline void set_bounds(moab::Interface* mbi) {
     
     std::vector<moab::EntityHandle> conn;
     moab::ErrorCode rval = mbi->get_connectivity(&eh, 1, conn);
@@ -63,7 +64,7 @@ struct TriangleRef : public BuildPrimitive {
   }
   
   template <typename R>
-  inline bool intersect(R &ray) {
+  __forceinline bool intersect(R &ray) {
 
     moab::ErrorCode rval;
 
@@ -114,20 +115,20 @@ struct TriangleRef : public BuildPrimitive {
 };
   
 template<typename V, typename P, typename I>  
-struct MBTriangleRefT {
+  struct __aligned(16) MBTriangleRefT {
 
   size_t i1, i2, i3;
   I eh;
 
-  inline MBTriangleRefT() {}
+  __forceinline MBTriangleRefT() {}
   
-  inline MBTriangleRefT(I* conn_ptr, I id) : eh(id) {
+  __forceinline MBTriangleRefT(I* conn_ptr, I id) : eh(id) {
     i1 = *(conn_ptr)-1;
     i2 = *(conn_ptr + 1)-1;
     i3 = *(conn_ptr + 2)-1;
   }
 
-  inline void get_bounds(Vec3fa& lower, Vec3fa& upper, void* mesh_ptr = NULL) {
+  __forceinline void get_bounds(Vec3fa& lower, Vec3fa& upper, void* mesh_ptr = NULL) {
 
     if( !mesh_ptr ) MB_CHK_SET_ERR_RET(moab::MB_FAILURE, "No Mesh Pointer");
 
@@ -168,7 +169,7 @@ struct MBTriangleRefT {
     	
   }
 
-  inline bool intersect(const TravRayT<I>& tray, RayT<V,P,I> &ray, void(*ff)(RayT<V,P,I>&, void*), void* mesh_ptr = NULL) {
+  __forceinline bool intersect(const TravRayT<I>& tray, RayT<V,P,I> &ray, void(*ff)(RayT<V,P,I>&, void*), void* mesh_ptr = NULL) {
 
 
     if( !mesh_ptr ) MB_CHK_SET_ERR_CONT(moab::MB_FAILURE, "No Mesh Pointer");

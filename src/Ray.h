@@ -1,27 +1,27 @@
 #pragma once
 
-
 #include "Vec3fa.h"
 #include "Vec3da.h"
 
 #include "constants.h"
 #include "vfloat.h"
+#include "sys.h"
 
 template<typename V, typename P, typename I>
 struct RayT {
 
   /* Empty Constructor */
-  inline RayT() {}
+  __forceinline RayT() {}
   
   /* RayT Constructor */
-  inline RayT(const V& org, const V &dir,
+  __forceinline RayT(const V& org, const V &dir,
 	     const P& tnear = zero, const P& tfar = inf,
 	     const int mask = -1)
     : org(org), dir(dir), tnear(tnear), tfar(tfar), mask(mask), geomID(-1), primID(-1), instID(-1), u(0.0f), v(0.0f) { Ng = V(); }
 
 
   
-  inline bool valid() const {
+  __forceinline bool valid() const {
     bool vx = (fabs(org.x) <= FLT_LARGE) & (fabs(dir.x) <= FLT_LARGE);
     bool vy = (fabs(org.y) <= FLT_LARGE) & (fabs(dir.y) <= FLT_LARGE);
     bool vz = (fabs(org.z) <= FLT_LARGE) & (fabs(dir.z) <= FLT_LARGE);
@@ -70,9 +70,9 @@ template<typename I>
 struct TravRayT {
 
     /* Empty constructor */
-    inline TravRayT() {}
+    __forceinline TravRayT() {}
 
-    inline TravRayT(const Vec3fa &ray_org, const Vec3fa &ray_dir)
+    __forceinline TravRayT(const Vec3fa &ray_org, const Vec3fa &ray_dir)
       : org_xyz(ray_org), dir_xyz(ray_dir) {
       rdir = rcp_safe(dir_xyz);
       org = ray_org;
@@ -86,7 +86,7 @@ struct TravRayT {
     }
 
 
-  inline TravRayT(const Vec3da &ray_org, const Vec3da &ray_dir)
+  __forceinline TravRayT(const Vec3da &ray_org, const Vec3da &ray_dir)
       : org_xyz(ray_org), dir_xyz(ray_dir) {
       rdir = rcp_safe(dir_xyz);
       org = ray_org;
