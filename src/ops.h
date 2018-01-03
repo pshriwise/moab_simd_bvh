@@ -6,7 +6,7 @@
 
 #pragma intrinsic(_BitScanForward)
 
-inline size_t __bsf(size_t v) {
+__forceinline size_t __bsf(size_t v) {
 #if defined(__AVX2__)
   return _tzcnt_u32(v);
 #else
@@ -14,7 +14,7 @@ inline size_t __bsf(size_t v) {
 #endif
 }
 
-inline size_t __bscf(size_t& v) {
+__forceinline size_t __bscf(size_t& v) {
   size_t i = __bsf(v);
   v &= v-1;
   return i;
