@@ -17,7 +17,6 @@ struct vfloat4
   union{ __m128 v; float f[4]; }; // data holder
 
   __forceinline vfloat4 () {}
-
   __forceinline vfloat4( const __m128 a ) : v(a) {}
   __forceinline operator const __m128&( void ) const { return v; }
   __forceinline operator       __m128&( void )       { return v; }
@@ -155,7 +154,6 @@ __forceinline vfloat4 max(const vfloat4& a, const vfloat4&b) { vfloat4 v;
                                                        }
 
 __forceinline vfloat4 max(const vfloat4& a, const vfloat4&b, const vfloat4& c) { return max(max(a,b),c); }
-
 __forceinline vfloat4 max(const vfloat4& a, const vfloat4&b, const vfloat4& c, const vfloat4& d) { return max(max(a,b),c,d); }
 
 
