@@ -28,6 +28,9 @@ INCLUDE_DIRECTORIES(${MOAB_INCLUDE_DIRS})
 ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(common)
 ADD_SUBDIRECTORY(tools)
+
+# A list of all unittests
+# test files are named test_<test_name>
 LIST(APPEND TEST_FILES "vec3f")
 LIST(APPEND TEST_FILES "vec3fa")
 LIST(APPEND TEST_FILES "vec3da")
@@ -43,6 +46,7 @@ LIST(APPEND TEST_FILES "buildset")
 LIST(APPEND TEST_FILES "stack")
 LIST(APPEND TEST_FILES "manager")
 LIST(APPEND TEST_FILES "buildsettings")
+LIST(APPEND TEST_FILES "distant_rays")
 LIST(APPEND TEST_FILES "filter_funcs")
 LIST(APPEND TEST_FILES "moab_mesh")
 LIST(APPEND TEST_FILES "moab_old")
