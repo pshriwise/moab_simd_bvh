@@ -6,6 +6,7 @@
 #include <math.h>
 #include "constants.h"
 
+#include "Vec3fa.h"
 
 template<typename T> struct Vec3 {
 
@@ -16,6 +17,9 @@ template<typename T> struct Vec3 {
   inline Vec3( const Vec3 &other) { x = other.x;
                                     y = other.y;
 				    z = other.z; }
+
+  inline Vec3(const Vec3fa&other) : x(T(other.x)), y(T(other.y)), z(T(other.z)) {}
+  inline Vec3(const Vec3da&other) : x(T(other.x)), y(T(other.y)), z(T(other.z)) {}
   
   /* inline Vec3( const Vec3fa& other) { x = other.x; */
   /*                                     y = other.y; */

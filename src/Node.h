@@ -6,6 +6,7 @@
 #include "vfloat.h"
 #include "Primitive.h"
 #include "sys.h"
+#include <immintrin.h>
 
 static const size_t emptyNode = 8;
 static const size_t tyLeaf = 8;
@@ -232,12 +233,21 @@ __forceinline std::ostream& operator<<(std::ostream& cout, const AANode &n) {
 
 template<typename I>
 __forceinline size_t intersectBox(const AANode &node, const TravRayT<I> &ray, const vfloat4 &tnear, const vfloat4 &tfar, vfloat4 &dist) {
-  const vfloat4 tNearX = (vfloat4::load((void*)((const char*)&node.lower_x + ray.nearX))- ray.org.x) * ray.rdir.x;
+#if defined(__AVX2__)
+  const vfloat4 tNearX = msub((vfloat4::load((void*)((const char*)&node.lower_x + ray.nearX))), ray.rdir.x, ray.org_rdir.x);
+  const vfloat4 tNearY = msub((vfloat4::load((void*)((const char*)&node.lower_x + ray.nearY))), ray.rdir.y, ray.org_rdir.y);
+  const vfloat4 tNearZ = msub((vfloat4::load((void*)((const char*)&node.lower_x + ray.nearZ))), ray.rdir.z, ray.org_rdir.z);
+  const vfloat4 tFarX  = msub((vfloat4::load((void*)((const char*)&node.lower_x + ray.farX))) , ray.rdir.x, ray.org_rdir.x);
+  const vfloat4 tFarY  = msub((vfloat4::load((void*)((const char*)&node.lower_x + ray.farY))) , ray.rdir.y, ray.org_rdir.y);
+  const vfloat4 tFarZ  = msub((vfloat4::load((void*)((const char*)&node.lower_x + ray.farZ))) , ray.rdir.z, ray.org_rdir.z);
+#else
+  const vfloat4 tNearX = (vfloat4::load((void*)((const char*)&node.lower_x + ray.nearX)) - ray.org.x) * ray.rdir.x;
   const vfloat4 tNearY = (vfloat4::load((void*)((const char*)&node.lower_x + ray.nearY)) - ray.org.y) * ray.rdir.y;
   const vfloat4 tNearZ = (vfloat4::load((void*)((const char*)&node.lower_x + ray.nearZ)) - ray.org.z) * ray.rdir.z;
   const vfloat4 tFarX = (vfloat4::load((void*)((const char*)&node.lower_x + ray.farX)) - ray.org.x) * ray.rdir.x;
   const vfloat4 tFarY = (vfloat4::load((void*)((const char*)&node.lower_x + ray.farY)) - ray.org.y) * ray.rdir.y;
   const vfloat4 tFarZ = (vfloat4::load((void*)((const char*)&node.lower_x + ray.farZ)) - ray.org.z) * ray.rdir.z;
+#endif
   
   const float round_down = 1.0f-2.0f*float(ulp); // FIXME: use per instruction rounding for AVX512
   const float round_up   = 1.0f+2.0f*float(ulp);

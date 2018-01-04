@@ -3,7 +3,11 @@
 
 #include <xmmintrin.h>
 
+#ifndef NDEBUG
+#define __forceinline
+#else
 #define __forceinline inline __attribute__((always_inline))
+#endif
 
 #define __aligned(...) __attribute__((aligned(__VA_ARGS__)))
 

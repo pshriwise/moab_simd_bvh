@@ -5,7 +5,11 @@
 
 #include "constants.h"
 #include "vfloat.h"
+#include "vdouble.h"
+
 #include "sys.h"
+
+#include <immintrin.h>
 
 template<typename V, typename P, typename I>
 struct RayT {
@@ -66,6 +70,9 @@ template<typename v, typename p, typename i>
 typedef RayT<Vec3fa, float, int> Ray;
 typedef RayT<Vec3da, double, int> dRay;
 
+typedef Vec3<vfloat4> Vec3vf;
+typedef Vec3<vdouble4> Vec3vd;
+
 template<typename I>
 struct TravRayT {
 
@@ -77,6 +84,9 @@ struct TravRayT {
       rdir = rcp_safe(dir_xyz);
       org = ray_org;
       dir = ray_dir;
+#if defined(__AVX2__)
+      org_rdir = org*rdir;
+#endif      
       nearX = ray_dir.x >= 0.0f ? 0*sizeof(vfloat4) : 1*sizeof(vfloat4);
       nearY = ray_dir.y >= 0.0f ? 2*sizeof(vfloat4) : 3*sizeof(vfloat4);
       nearZ = ray_dir.z >= 0.0f ? 4*sizeof(vfloat4) : 5*sizeof(vfloat4);
@@ -91,6 +101,9 @@ struct TravRayT {
       rdir = rcp_safe(dir_xyz);
       org = ray_org;
       dir = ray_dir;
+#if defined(__AVX2__)
+      org_rdir = org*rdir;
+#endif
       nearX = ray_dir.x >= 0.0f ? 0*sizeof(vfloat4) : 1*sizeof(vfloat4);
       nearY = ray_dir.y >= 0.0f ? 2*sizeof(vfloat4) : 3*sizeof(vfloat4);
       nearZ = ray_dir.z >= 0.0f ? 4*sizeof(vfloat4) : 5*sizeof(vfloat4);
@@ -100,7 +113,10 @@ struct TravRayT {
     }
   
     Vec3fa org_xyz, dir_xyz;
-    Vec3fa org, dir, rdir;
+    Vec3vf org, dir, rdir;
+#if defined(__AVX2__)
+    Vec3vf org_rdir;
+#endif
     size_t nearX, nearY, nearZ;
     size_t farX, farY, farZ;
     int sense;
