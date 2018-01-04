@@ -93,7 +93,7 @@ struct MBVHManager {
   };
   
   NodeRef* get_root(moab::EntityHandle ent) {
-    assert(ent - lowest_set > 0 && ent - lowest_set < BVHRoots.size());
+    assert(ent - lowest_set >= 0 && ent - lowest_set < BVHRoots.size());
     NodeRef* root = BVHRoots[ent - lowest_set];
     return root;
   }
