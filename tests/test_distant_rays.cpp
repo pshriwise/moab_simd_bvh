@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
 
   moab::ErrorCode rval;
 
-  rval = mbi->load_file(TEST_SMALL_SPHERE);
+  rval = mbi->load_file(TEST_CUBE);
   MB_CHK_SET_ERR(rval, "Failed to load the test file");
 
   MBVHManager MBVHM(mbi);
@@ -32,12 +32,12 @@ int main(int argc, char** argv) {
   rval = get_all_volumes(mbi, vols);
   MB_CHK_SET_ERR(rval, "Failed to retrieve volumes from MOAB instance");
 
-  Vec3da origins[6] = { Vec3da(1000.0f, 0.0f, 0.0f),
-			Vec3da(0.0f, 1000.0f, 0.0f),
-			Vec3da(0.0f, 0.0f, 1000.0f),
-			Vec3da(-1000.0f, 0.0f, 0.0f),
-			Vec3da(0.0f, -1000.0f, 0.0f),
-			Vec3da(0.0f, 0.0f, -1000.0f) };
+  Vec3da origins[6] = { Vec3da(1000.0f, 4.0f, 4.0f),
+			Vec3da(0.0f, 1000.0f, 4.0f),
+			Vec3da(0.0f, 4.0f, 1000.0f),
+			Vec3da(-1000.0f, 4.0f, 4.0f),
+			Vec3da(0.0f, -1000.0f, 4.0f),
+			Vec3da(0.0f, 4.0f, -1000.0f) };
   
   Vec3da directions[6] = { Vec3da(-1.0f, 0.0f, 0.0f),
 			   Vec3da(0.0f, -1.0f, 0.0f),
@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
 			   Vec3da(0.0f, 1.0f, 0.0f),
 			   Vec3da(0.0f, 0.0f, 1.0f) };
 
-  double expected_distance = 990.0f;
+  double expected_distance = 995.0f;
   
   for(size_t i = 0; i < 6; i++) {
     MBRay r(origins[i], directions[i]);
