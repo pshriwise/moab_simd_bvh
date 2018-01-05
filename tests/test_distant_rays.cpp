@@ -5,6 +5,9 @@
 
 #include "MBVHManager.h"
 
+// tolerance equal to the faceting tolerance of the test model
+#define EPS 1e-03 
+
 // retrieves all volumes from the MOAB instance
 moab::ErrorCode get_all_volumes(moab::Interface* mbi, moab::Range& volumes);
 
@@ -29,17 +32,38 @@ int main(int argc, char** argv) {
   rval = get_all_volumes(mbi, vols);
   MB_CHK_SET_ERR(rval, "Failed to retrieve volumes from MOAB instance");
 
-  Vec3da org(1000.0, 0.0, 0.0);
-  Vec3da dir(-1.0, 0.0, 0.0);
-  MBRay r(org, dir);
-  r.instID = vols[0];
-
-  rval = MBVHM.fireRay(vols[0], r);
-  MB_CHK_SET_ERR(rval, "Failed to fire ray");
-
-  CHECK(r.tfar != (double)inf);
+  Vec3da origins[6] = { Vec3da(1000.0f, 0.0f, 0.0f),
+			Vec3da(0.0f, 1000.0f, 0.0f),
+			Vec3da(0.0f, 0.0f, 1000.0f),
+			Vec3da(-1000.0f, 0.0f, 0.0f),
+			Vec3da(0.0f, -1000.0f, 0.0f),
+			Vec3da(0.0f, 0.0f, -1000.0f) };
   
-  return 0;
+  Vec3da directions[6] = { Vec3da(-1.0f, 0.0f, 0.0f),
+			   Vec3da(0.0f, -1.0f, 0.0f),
+			   Vec3da(0.0f, 0.0f, -1.0f),
+			   Vec3da(1.0f, 0.0f, 0.0f),
+			   Vec3da(0.0f, 1.0f, 0.0f),
+			   Vec3da(0.0f, 0.0f, 1.0f) };
+
+  double expected_distance = 990.0f;
+  
+  for(size_t i = 0; i < 6; i++) {
+    MBRay r(origins[i], directions[i]);
+    r.instID = vols[0];
+
+    rval = MBVHM.fireRay(vols[0], r);
+    MB_CHK_SET_ERR(rval, "Failed to fire ray");
+
+    CHECK_REAL_EQUAL(expected_distance, r.tfar, EPS);
+    
+    CHECK(r.tfar != (double)inf);
+  }
+
+  // cleanup
+  delete mbi;
+  
+  return rval;
 }
 
 moab::ErrorCode get_all_volumes(moab::Interface* mbi, moab::Range& volumes){
