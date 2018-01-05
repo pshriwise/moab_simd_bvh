@@ -9,9 +9,12 @@ struct vbool4
 {
 
   enum { size = 4 }; // number of elements
-  bool b[4]; // data holder
+  union { __m128i v; bool b[4]; }; // data holder
 
   inline vbool4 () {}
+
+  inline vbool4 (const __m128i &a) : v(a) {}
+
   inline vbool4 (const vbool4& other) { b[0] = other.b[0];
                                         b[1] = other.b[1];
 					b[2] = other.b[2];

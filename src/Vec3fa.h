@@ -78,6 +78,12 @@ __forceinline float reduce_max( const Vec3fa& v ) { return std::max(std::max(v.x
 
 __forceinline float halfArea(Vec3fa v) { return v.x*(v.y+v.z)+(v.y*v.z); }
 
+__forceinline Vec3fa inf_fix( const Vec3fa &a ) {
+  return Vec3fa( fabs(a.x) == float(inf) ? 1/float(min_rcp_input) : a.x,
+		 fabs(a.y) == float(inf) ? 1/float(min_rcp_input) : a.y,
+		 fabs(a.z) == float(inf) ? 1/float(min_rcp_input) : a.z);
+}
+
 __forceinline Vec3fa zero_fix( const Vec3fa& a )
   {
     return Vec3fa(fabs(a.x) < min_rcp_input ? float(min_rcp_input) : a.x,

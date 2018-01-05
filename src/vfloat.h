@@ -5,8 +5,10 @@
 #include "Vec3.h"
 #include "math.h"
 #include "vbool.h"
+#include "vint.h"
 #include "sys.h"
 #include <immintrin.h>
+#include <emmintrin.h>
 
 struct vfloat4
 {
@@ -155,6 +157,42 @@ __forceinline vfloat4 max(const vfloat4& a, const vfloat4&b) { vfloat4 v;
 __forceinline vfloat4 max(const vfloat4& a, const vfloat4&b, const vfloat4& c) { return max(max(a,b),c); }
 
 __forceinline vfloat4 max(const vfloat4& a, const vfloat4&b, const vfloat4& c, const vfloat4& d) { return max(max(a,b),c,d); }
+
+
+
+#if defined(__SSE4_1__)
+    __forceinline vfloat4 mini(const vfloat4& a, const vfloat4& b) {
+      const __m128i ai = _mm_castps_si128(a);
+      const __m128i bi = _mm_castps_si128(b);
+      const __m128i ci = _mm_min_epi32(ai,bi);
+      return _mm_castsi128_ps(ci);
+    }
+    __forceinline vfloat4 maxi(const vfloat4& a, const vfloat4& b) {
+      const __m128i ai = _mm_castps_si128(a);
+      const __m128i bi = _mm_castps_si128(b);
+      const __m128i ci = _mm_max_epi32(ai,bi);
+      return _mm_castsi128_ps(ci);
+    }
+#else
+    __forceinline vfloat4 mini(const vfloat4& a, const vfloat4& b) {
+      return min(a,b);
+    }
+    __forceinline vfloat4 maxi(const vfloat4& a, const vfloat4& b) {
+      return max(a,b);
+    }
+#endif
+
+__forceinline vfloat4 mini(const vfloat4& a, const vfloat4&b, const vfloat4& c) { return mini(mini(a,b),c); }
+
+__forceinline vfloat4 mini(const vfloat4& a, const vfloat4&b, const vfloat4& c, const vfloat4& d) { return mini(mini(a,b),c,d); }
+
+
+
+__forceinline vfloat4 maxi(const vfloat4& a, const vfloat4&b, const vfloat4& c) { return maxi(maxi(a,b),c); }
+
+__forceinline vfloat4 maxi(const vfloat4& a, const vfloat4&b, const vfloat4& c, const vfloat4& d) { return maxi(maxi(a,b),c,d); }
+
+__forceinline const vint4 asInt ( const vfloat4& a ) { return _mm_castps_si128(a); }
 
 __forceinline std::ostream& operator<<(std::ostream& cout, const vfloat4& a) {
    return cout << "<" << a[0] << ", " << a[1] << ", " << a[2] << ", " << a[3] << ">";

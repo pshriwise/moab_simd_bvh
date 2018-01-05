@@ -85,7 +85,8 @@ struct TravRayT {
       org = ray_org;
       dir = ray_dir;
 #if defined(__AVX2__)
-      org_rdir = org*rdir;
+      const Vec3fa ray_org_dir = inf_fix(ray_org*rcp_safe(ray_dir));
+      org_rdir = ray_org_dir;
 #endif      
       nearX = ray_dir.x >= 0.0f ? 0*sizeof(vfloat4) : 1*sizeof(vfloat4);
       nearY = ray_dir.y >= 0.0f ? 2*sizeof(vfloat4) : 3*sizeof(vfloat4);
@@ -102,7 +103,8 @@ struct TravRayT {
       org = ray_org;
       dir = ray_dir;
 #if defined(__AVX2__)
-      org_rdir = org*rdir;
+      const Vec3fa ray_org_dir = inf_fix(ray_org*rcp_safe(ray_dir));
+      org_rdir = ray_org_dir;
 #endif
       nearX = ray_dir.x >= 0.0f ? 0*sizeof(vfloat4) : 1*sizeof(vfloat4);
       nearY = ray_dir.y >= 0.0f ? 2*sizeof(vfloat4) : 3*sizeof(vfloat4);
