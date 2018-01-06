@@ -8,6 +8,7 @@
 #include "moab/CartVect.hpp"
 #include "moab/GeomUtil.hpp"
 #include "MOABDirectAccessManager.h"
+#include "TriangleIntersectors.h"
 #include "sys.h"
 
 struct TriangleRef : public BuildPrimitive {
@@ -176,11 +177,11 @@ template<typename V, typename P, typename I>
 
     MOABDirectAccessManager* mdam = (MOABDirectAccessManager*) mesh_ptr;
 
-    moab::CartVect coords[3];
+    Vec3da coords[3];
 
-    coords[0] = moab::CartVect(mdam->xPtr[i1], mdam->yPtr[i1], mdam->zPtr[i1]);
-    coords[1] = moab::CartVect(mdam->xPtr[i2], mdam->yPtr[i2], mdam->zPtr[i2]);
-    coords[2] = moab::CartVect(mdam->xPtr[i3], mdam->yPtr[i3], mdam->zPtr[i3]);
+    coords[0] = Vec3da(mdam->xPtr[i1], mdam->yPtr[i1], mdam->zPtr[i1]);
+    coords[1] = Vec3da(mdam->xPtr[i2], mdam->yPtr[i2], mdam->zPtr[i2]);
+    coords[2] = Vec3da(mdam->xPtr[i3], mdam->yPtr[i3], mdam->zPtr[i3]);
 
     /* moab::ErrorCode rval; */
     
@@ -188,20 +189,19 @@ template<typename V, typename P, typename I>
     
     /* rval = mbi->get_coords(eh, 3, coords[0].array() ); */
     /* MB_CHK_SET_ERR_CONT(rval, "Failed to get triangle vert coords"); */
-    
-    moab::CartVect origin, direction;
-
-    origin = moab::CartVect(ray.org.x, ray.org.y, ray.org.z);
-    direction = moab::CartVect(ray.dir.x, ray.dir.y, ray.dir.z);
     double dist;
     double huge_val = 1E37;
-    double* nonneg_ray_len = &huge_val;
-
-    bool hit = moab::GeomUtil::plucker_ray_tri_intersect(coords,
-							 origin,
-							 direction,
-							 dist,
-							 nonneg_ray_len);
+    bool hit = plucker_ray_tri_intersect(coords,
+					 ray.org,
+					 ray.dir,
+					 dist,
+					 &huge_val);
+   
+    /* bool hit = moab::GeomUtil::plucker_ray_tri_intersect(coords, */
+    /* 							 origin, */
+    /* 							 direction, */
+    /* 							 dist, */
+    /* 							 nonneg_ray_len); */
 
 #ifdef VERBOSE_MODE
     std::cout << "Triangle Vert Coords: " << coords[0] << coords[1] << coords[2] << std::endl;
@@ -211,7 +211,7 @@ template<typename V, typename P, typename I>
     
     if (hit && dist < ray.tfar && dist >= ray.tnear) {
 
-      moab::CartVect normal = (coords[1]-coords[0]) * (coords[2]-coords[0]);
+      Vec3da normal = cross((coords[1]-coords[0]),(coords[2]-coords[0]));
 
       I pID = ray.primID, gID = ray.geomID;
       P d = ray.tfar;
@@ -220,7 +220,7 @@ template<typename V, typename P, typename I>
       ray.primID = eh;
       ray.tfar = dist;
       ray.geomID = tray.setID;
-      ray.Ng = tray.sense? (normal * -1.0).array() : normal.array();
+      ray.Ng = tray.sense? (normal * -1.0) : normal;
       ray.Ng.normalize();
       
       ff(ray, mesh_ptr);

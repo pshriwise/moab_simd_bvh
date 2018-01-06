@@ -91,8 +91,11 @@ __forceinline Vec3da operator +( const Vec3da &a ) { return Vec3da(+a.x, +a.y, +
 
 __forceinline Vec3da operator -( const Vec3da &a ) { return Vec3da(-a.x, -a.y, -a.z); }
 
-__forceinline double dot( const Vec3da& a, const Vec3da& b ) { return reduce_add(a*b); }
+__forceinline double dot( const Vec3da& a, const Vec3da& b ) { return a[0]*b[0] + a[1]*b[1] + a[2]*b[2]; }
 
+__forceinline Vec3da cross( const Vec3da& a, const Vec3da& b ) { return Vec3da( a[1] * b[2] - a[2] * b[1],
+										a[2] * b[0] - a[0] * b[2],
+										a[0] * b[1] - a[1] * b[0] ); }
 
 
 __forceinline std::ostream& operator <<(std::ostream &os, Vec3da  const& v) {
