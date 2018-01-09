@@ -6,12 +6,12 @@
 #include "constants.h"
 #include "Vec3ba.h"
 #include "sys.h"
+#include <immintrin.h>
 
 struct Vec3da {
   typedef double Scalar;
   enum { n = 3 };
-  double x,y,z;
-  int a;
+  union{ __m256 v; struct{ double x,y,z;  size_t a;}; };
 
   __forceinline Vec3da () {}
 
@@ -54,11 +54,15 @@ __forceinline bool operator ==( const Vec3da& b, const Vec3da& c) { return b.x =
 							            b.y == c.y &&
 							            b.z == c.z;
                                                            }
-
+#if defined(__AVX2__)
 __forceinline const Vec3da min( const Vec3da& b, const Vec3da& c ) { return Vec3da(std::min(b.x,c.x),std::min(b.y,c.y),
 									   std::min(b.z,c.z),std::min(b.a,c.a)); }
 __forceinline const Vec3da max( const Vec3da& b, const Vec3da& c ) { return Vec3da(std::max(b.x,c.x),std::max(b.y,c.y),
 									   std::max(b.z,c.z),std::max(b.a,c.a)); }
+#else
+__forceinline const Vec3da min( const Vec3da& b, const Vec3da& c ) { return _mm_min_ps(a.v, b.v); }
+__forceinline const Vec3da max( const Vec3da& b, const Vec3da& c ) { return _mm_max_ps(a.v, b.v); }
+#endif
 
 __forceinline const Vec3ba ge_mask( const Vec3da& b, const Vec3da& c ) { return Vec3ba(b.x >= c.x,b.y >= c.y,b.z >= c.z,b.a >= c.a); }
 __forceinline const Vec3ba le_mask( const Vec3da& b, const Vec3da& c ) { return Vec3ba(b.x <= c.x,b.y <= c.y,b.z <= c.z,b.a <= c.a); }

@@ -7,12 +7,12 @@
 #include "Vec3ba.h"
 #include "Vec3da.h"
 #include "sys.h"
+#include <immintrin.h>
 
 struct __aligned(16) Vec3fa {
   typedef float Scalar;
   enum { n = 3 };
-  float x,y,z;
-  int a;
+  union{ __m128 v; struct {float x,y,z; int a;}; };
 
   __forceinline Vec3fa () {}
 
