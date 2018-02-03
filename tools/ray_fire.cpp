@@ -114,11 +114,27 @@ int main(int argc, char** argv) {
     MBRay r(ray_center, ray_dir);
     r.instID = volume;
 
+    std::cout << " undo on " << std::endl;
+    std::cout << " create curve ";
+    std::cout << " location " << r.org[0] << " " << r.org[1] << " " << r.org[2];
+    std::cout << " location " << 10*r.dir[0] << " " << 10*r.dir[1] << " " << 10*r.dir[2];
+    std::cout << std::endl;
+    
     rval = BVHManager->fireRay(volume, r);
     MB_CHK_SET_ERR(rval, "Failed to fire user-specified ray");
+
+    std::cout << "Firing single ray" << std::endl;
+
+    if( r.geomID == -1 ) {
+      std::cout << "Ray Missed" << std::endl;
+    }
+    else {
+      std::cout << "Ray struck surface " << r.geomID << " after traveling " << r.tfar << std::endl;
+    }
+
+    return 0;
     
   }
-
 
   std::clock_t start;
   double duration = 0.0;

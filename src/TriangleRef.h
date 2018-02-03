@@ -181,6 +181,13 @@ struct MBTriangleRefT {
     coords[1] = moab::CartVect(mdam->xPtr[i2], mdam->yPtr[i2], mdam->zPtr[i2]);
     coords[2] = moab::CartVect(mdam->xPtr[i3], mdam->yPtr[i3], mdam->zPtr[i3]);
 
+    std::cout << " create surface ";
+    std::cout << " location " << coords[0][0] << " " << coords[0][1] << " " << coords[0][2];
+    std::cout << " location " << coords[1][0] << " " << coords[1][1] << " " << coords[1][2];
+    std::cout << " location " << coords[2][0] << " " << coords[2][1] << " " << coords[2][2];
+    std::cout << std::endl;
+    
+    
     /* moab::ErrorCode rval; */
     
     /* moab::CartVect coords[3]; */
