@@ -14,9 +14,9 @@ typedef BVHCustomTraversalT<Vec3da, double, moab::EntityHandle> BVHCustomTravers
 
 class HexWriter : public BVHOperator {
 
-  virtual bool visit(NodeRef& current_node, size_t& mask, vfloat4& tnear) {
+  virtual bool visit(NodeRef& current_node, TravRay vray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& tNear, size_t& mask)  {
     mask = 15;
-    tnear = 0.0f;
+    tNear = 0.0f;
     if( current_node.isSetLeaf() ) { current_node = current_node.setLeaf(); }
     return !current_node.isLeaf();
   }

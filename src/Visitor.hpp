@@ -5,7 +5,7 @@ class BVHOperator {
 
 public:
   
-  virtual bool visit(NodeRef& current_node, size_t& mask, vfloat4& tnear) = 0;
+  virtual bool visit(NodeRef& current_node, TravRay vray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& tNear, size_t& mask) = 0;
 
   virtual void setLeaf(NodeRef current_node) = 0;
   

@@ -70,7 +70,7 @@ void BVHCustomTraversalT<V,P,I>::traverse(NodeRef root, RayT<V,P,I> & ray, BVHOp
 	while (true)
 	  {
 	    size_t mask = 0; vfloat4 tNear(inf);
-	    bool nodeIntersected = op.visit(cur, mask, tNear);
+	    bool nodeIntersected = op.visit(cur, vray, ray_near, ray_far, tNear, mask);
 
 #ifdef VERBOSE_MODE
 	    AANode* curaa = cur.node();
