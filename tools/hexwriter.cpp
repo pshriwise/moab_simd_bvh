@@ -17,11 +17,16 @@ class HexWriter : public BVHOperator {
 public:
   HexWriter() {
     num_leaves = 0;
+
+    hw_mbi = new moab::Core();
+    
   }
   
 private:
   int num_leaves;
-
+  moab::Interface *hw_mbi;
+  moab::Range leaf_set;
+  
 public:
   
   virtual bool visit(NodeRef& current_node, TravRay vray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& tNear, size_t& mask)  {
@@ -35,11 +40,33 @@ public:
     return;
   }
 
-  virtual void leaf(NodeRef current_node) {
+  virtual void leaf(NodeRef current_node, NodeRef previous_node) {
     num_leaves++;
+    
+    const Node* node = previous_node.bnode();
+    
+    // find what "number" this child is
+    size_t child_number = -1;
+    for(size_t i = 0; i < N; i++){
+      if ( node->child(i) == current_node ) {
+	child_number = i;
+	break;
+      }
+    }
+    assert( child_number >= 0 );
+
+    // retrieve bounding box for this leaf from the parent node
+    AABB box = previous_node.node()->getBound(child_number);
+
+    
+    
     return;
   }
 
+  AABB get_child_box(Node node, size_t child_number) {
+    
+  }
+  
   int get_num_leaves() { return num_leaves; }
   
 };

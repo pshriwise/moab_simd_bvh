@@ -20,6 +20,9 @@ template <typename V, typename P, typename I>
 class BVHCustomTraversalT {
 
   static const size_t stackSize = 1+(N-1)*BVH_MAX_DEPTH;
+
+private:
+  NodeRef previous_node;
   
 public:
   //  void intersectRay(NodeRef root, Ray& ray);
@@ -95,15 +98,18 @@ void BVHCustomTraversalT<V,P,I>::traverse(NodeRef root, RayT<V,P,I> & ray, BVHOp
 	      //	    ray.tfar = std::min(min(tNear),ray.tfar);
 	      break; }
 
+	    previous_node = cur;
+	    
 	    // if no children were hit, pop next node
 	    if (mask == 0) { goto pop; }
-	    
+
 	    nodeTraverser.traverseClosest(cur, mask, tNear, stackPtr, stackEnd);
 	  }
 
 	// leaf (set distance to nearest/farthest box intersection for now)
-	op.leaf(cur);
-
+	op.leaf(cur, previous_node);
+	if( !NodeRef((stackPtr-1)->ptr).isLeaf() ) { previous_node = cur; }
+	
       }
     return;
 }

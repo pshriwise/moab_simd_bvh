@@ -9,7 +9,7 @@ public:
 
   virtual void setLeaf(NodeRef current_node) = 0;
   
-  virtual void leaf(NodeRef current_node) = 0;
+  virtual void leaf(NodeRef current_node, NodeRef previous_node) = 0;
 
 };
 
