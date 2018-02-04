@@ -14,6 +14,16 @@ typedef BVHCustomTraversalT<Vec3da, double, moab::EntityHandle> BVHCustomTravers
 
 class HexWriter : public BVHOperator {
 
+public:
+  HexWriter() {
+    num_leaves = 0;
+  }
+  
+private:
+  int num_leaves;
+
+public:
+  
   virtual bool visit(NodeRef& current_node, TravRay vray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& tNear, size_t& mask)  {
     mask = 15;
     tNear = 0.0f;
@@ -26,8 +36,11 @@ class HexWriter : public BVHOperator {
   }
 
   virtual void leaf(NodeRef current_node) {
+    num_leaves++;
     return;
   }
+
+  int get_num_leaves() { return num_leaves; }
   
 };
 
@@ -123,6 +136,8 @@ int main (int argc, char** argv) {
   MBRay ray;
   HexWriter* op = new HexWriter();
   tool->traverse(root, ray, *op);
+
+  std::cout << "Num leaves found: " << op->get_num_leaves() << std::endl;
   
   return 0;
   
