@@ -2,12 +2,14 @@
 #include "Node.h"
 
 class BVHOperator {
-  
-  virtual void visit(NodeRef current_node, size_t& mask);
 
-  virtual void setLeaf(NodeRef current_node);
+public:
   
-  virtual void leaf(NodeRef current_node);
+  virtual bool visit(NodeRef& current_node, size_t& mask, vfloat4& tnear) = 0;
+
+  virtual void setLeaf(NodeRef current_node) = 0;
+  
+  virtual void leaf(NodeRef current_node) = 0;
 
 };
 

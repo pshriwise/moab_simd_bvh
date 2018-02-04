@@ -7,15 +7,18 @@
 #include "moab/ProgOptions.hpp"
 
 #include "TraversalClass.hpp"
-#include "Visitor.hpp"
 
 #include <string>
 
+typedef BVHCustomTraversalT<Vec3da, double, moab::EntityHandle> BVHCustomTraversal;
+
 class HexWriter : public BVHOperator {
 
-  virtual void visit(NodeRef current_node, size_t& mask) {
+  virtual bool visit(NodeRef& current_node, size_t& mask, vfloat4& tnear) {
     mask = 15;
-    return;
+    tnear = 0.0f;
+    if( current_node.isSetLeaf() ) { current_node = current_node.setLeaf(); }
+    return !current_node.isLeaf();
   }
 
   virtual void setLeaf(NodeRef current_node) {
@@ -110,9 +113,16 @@ int main (int argc, char** argv) {
     return 1;
   }
 
+  // get the tree root
   moab::EntityHandle ent = entities[0];
-  
+  NodeRef root = *(BVHManager->get_root(ent));
   std::cout << "Writing tree for " << cat_name << " with id " << ent_id << " and handle " << entities[0] << std::endl;
+
+  //create the traversal class
+  BVHCustomTraversal*  tool = new BVHCustomTraversal();
+  MBRay ray;
+  HexWriter* op = new HexWriter();
+  tool->traverse(root, ray, *op);
   
   return 0;
   
