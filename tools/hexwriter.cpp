@@ -6,6 +6,7 @@
 #include "moab/Core.hpp"
 #include "moab/ProgOptions.hpp"
 
+#include "TraversalClass.hpp"
 #include "Visitor.hpp"
 
 #include <string>
