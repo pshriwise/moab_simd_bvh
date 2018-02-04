@@ -6,7 +6,26 @@
 #include "moab/Core.hpp"
 #include "moab/ProgOptions.hpp"
 
+#include "Visitor.hpp"
+
 #include <string>
+
+class HexWriter : public BVHOperator {
+
+  virtual void visit(NodeRef current_node, size_t& mask) {
+    mask = 15;
+    return;
+  }
+
+  virtual void setLeaf(NodeRef current_node) {
+    return;
+  }
+
+  virtual void leaf(NodeRef current_node) {
+    return;
+  }
+  
+};
 
 int main (int argc, char** argv) {
 
