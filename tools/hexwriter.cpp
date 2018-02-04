@@ -30,10 +30,28 @@ private:
 public:
   
   virtual bool visit(NodeRef& current_node, TravRay vray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& tNear, size_t& mask)  {
-    mask = 15;
-    tNear = 0.0f;
-    if( current_node.isSetLeaf() ) { current_node = current_node.setLeaf(); }
-    return !current_node.isLeaf();
+    // if this is a leaf, no intersection
+    if(current_node.isLeaf()) {
+      return false;
+    }
+    else {
+
+      // if this is not a leaf, visit all child nodes
+      mask = 15;
+
+      // if this is a set leaf, remove the encoding and continue
+      if( current_node.isSetLeaf() ) { current_node = current_node.setLeaf(); }
+
+      // if there is a mix of leafs and interior nodes, make sure the interior nodes
+      // come last in the traversal by artificially setting distances
+      tNear = 100.0f;
+      for (size_t i = 0; i < N; i++) {
+	if ( current_node.bnode()->child(i).isLeaf() ) tNear[i] = 0.0f;
+      }
+
+    }
+    return true;
+    
   }
 
   virtual void setLeaf(NodeRef current_node) {
@@ -41,6 +59,10 @@ public:
   }
 
   virtual void leaf(NodeRef current_node, NodeRef previous_node) {
+    // if node is empty, do nothing
+    
+    if ( current_node.isEmpty() ) return;
+    
     num_leaves++;
     
     const Node* node = previous_node.bnode();

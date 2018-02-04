@@ -158,7 +158,8 @@ struct AANode : public Node
                                                        upper_y[i] = bounds.upper.y;
 						       upper_z[i] = bounds.upper.z;  }
   
-  inline AABB getBound(size_t i) { std::cout << i << std::endl; assert(i >= 0 && i < 4); // check index value
+  inline AABB getBound(size_t i) { // check index value
+                                   assert(i >= 0 && i < 4); 
                                    // create and return bounding box
                                    return AABB( lower_x[i], lower_y[i], lower_z[i],
 						upper_x[i], upper_y[i], upper_z[i]); }
