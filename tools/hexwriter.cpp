@@ -80,8 +80,36 @@ public:
     // retrieve bounding box for this leaf from the parent node
     AABB box = previous_node.node()->getBound(child_number);
 
-    
-    
+    // create vertex coordinates for hex element
+    std::vector<double> vertex_coords;
+    // lower face in Z
+    vertex_coords.push_back(box.lower[0]); vertex_coords.push_back(box.lower[1]); vertex_coords.push_back(box.lower[2]);
+    vertex_coords.push_back(box.upper[0]); vertex_coords.push_back(box.lower[1]); vertex_coords.push_back(box.lower[2]);
+    vertex_coords.push_back(box.upper[0]); vertex_coords.push_back(box.upper[1]); vertex_coords.push_back(box.lower[2]);
+    vertex_coords.push_back(box.lower[0]); vertex_coords.push_back(box.upper[1]); vertex_coords.push_back(box.lower[2]);
+    // upper face in Z
+    vertex_coords.push_back(box.lower[0]); vertex_coords.push_back(box.lower[1]); vertex_coords.push_back(box.upper[2]);
+    vertex_coords.push_back(box.upper[0]); vertex_coords.push_back(box.lower[1]); vertex_coords.push_back(box.upper[2]);
+    vertex_coords.push_back(box.upper[0]); vertex_coords.push_back(box.upper[1]); vertex_coords.push_back(box.upper[2]);
+    vertex_coords.push_back(box.lower[0]); vertex_coords.push_back(box.upper[1]); vertex_coords.push_back(box.upper[2]);
+
+    // create mesh vertices and hex element for box
+    moab::ErrorCode rval;
+    moab::Range hex_verts;
+    rval = hw_mbi->create_vertices(&(vertex_coords[0]), 8, hex_verts);
+    MB_CHK_ERR_CONT(rval);
+
+    // convet to vector - MOAB has no element constructor using Ranges?
+    std::vector<moab::EntityHandle> hex_vert_vec;
+    for(moab::Range::iterator i = hex_verts.begin(); i != hex_verts.end() ; i++) {
+      hex_vert_vec.push_back(*i);
+    }
+
+    // create hex element
+    moab::EntityHandle hex;
+    rval = hw_mbi->create_element(moab::MBHEX, &(hex_vert_vec[0]), 8, hex);
+    MB_CHK_ERR_CONT(rval);
+        
     return;
   }
 
@@ -90,6 +118,12 @@ public:
   }
   
   int get_num_leaves() { return num_leaves; }
+
+  void write() {
+    moab::ErrorCode rval;
+    rval = hw_mbi->write_file("leaf_boxes.h5m");
+    MB_CHK_ERR_CONT(rval);
+  }
   
 };
 
@@ -182,9 +216,10 @@ int main (int argc, char** argv) {
 
   //create the traversal class
   BVHCustomTraversal*  tool = new BVHCustomTraversal();
-  MBRay ray;
+  MBRay ray; ray.tfar = inf;
   HexWriter* op = new HexWriter();
   tool->traverse(root, ray, *op);
+  op->write();
 
   std::cout << "Num leaves found: " << op->get_num_leaves() << std::endl;
   
