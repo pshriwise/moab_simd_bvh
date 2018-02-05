@@ -106,9 +106,7 @@ void BVHCustomTraversalT<V,P,I>::traverse(NodeRef root, RayT<V,P,I> & ray, BVHOp
 	    nodeTraverser.traverseClosest(cur, mask, tNear, stackPtr, stackEnd);
 	  }
 
-	// leaf (set distance to nearest/farthest box intersection for now)
 	op.leaf(cur, previous_node);
-	//	if( !NodeRef((stackPtr-1)->ptr).isLeaf() ) { previous_node = cur; }
 	
       }
     return;
