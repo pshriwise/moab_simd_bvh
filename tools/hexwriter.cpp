@@ -21,7 +21,7 @@ public:
     hw_mbi = new moab::Core();
   }
 
-  HexWriter(moab::Interface* original_moab_instance, bool write_leaves = true, bool write_set_leaves = false) : num_leaves(0), num_set_leaves(0), orig_mbi(original_moab_instance), write_leaves(write_leaves), write_set_leaves(write_set_leaves) {
+  HexWriter(moab::Interface* original_moab_instance, bool write_tris = true, bool write_leaves = true, bool write_set_leaves = false) : num_leaves(0), num_set_leaves(0), orig_mbi(original_moab_instance), write_leaves(write_leaves), write_set_leaves(write_set_leaves), write_tris(write_tris) {
     num_leaves = 0;
     hw_mbi = new moab::Core();
   }
@@ -31,7 +31,7 @@ public:
   }
   
 private:
-  bool write_leaves, write_set_leaves;
+  bool write_tris, write_leaves, write_set_leaves;
   
   // some counters
   int num_leaves;
@@ -87,6 +87,18 @@ public:
     std::stringstream outfilename;
     outfilename << "set_leaf_box_" << std::setfill('0') << std::setw(4) << num_set_leaves << ".vtk";
     write_and_clear(outfilename.str());
+
+    SetNode* snode = (SetNode*)current_node.snode();
+    moab::EntityHandle surface_handle = snode->setID;
+    
+    if(write_tris) {
+      moab::ErrorCode rval;
+      moab::Range tris;
+      rval = orig_mbi->get_entities_by_type(surface_handle, moab::MBTRI, tris);
+      MB_CHK_ERR_CONT(rval);
+
+      transfer_tris(tris);
+    }
     
     return;
   }
@@ -107,16 +119,18 @@ public:
     moab::EntityHandle hex = aabb_to_hex(box);
     
     moab::ErrorCode rval;
-    
-    // get leaf entities
-    size_t numPrims;
-    MBTriangleRef* prims = (MBTriangleRef*)current_node.leaf(numPrims);
 
-    for(size_t i = 0; i < numPrims; i++) {
-      moab::EntityHandle tri = prims[i].eh;
-      transfer_tri(tri);
+    if(write_tris) {
+      // get leaf entities
+      size_t numPrims;
+      MBTriangleRef* prims = (MBTriangleRef*)current_node.leaf(numPrims);
+      
+      for(size_t i = 0; i < numPrims; i++) {
+	moab::EntityHandle tri = prims[i].eh;
+	transfer_tri(tri);
+      }
     }
-
+    
     std::stringstream outfilename;
     outfilename << "leaf_box_" << std::setfill('0') << std::setw(4) << num_leaves << ".vtk";
     write_and_clear(outfilename.str());
@@ -188,6 +202,21 @@ public:
     return child_number;
   }
 
+  std::vector<moab::EntityHandle> transfer_tris(std::vector<moab::EntityHandle> tris) {
+    std::vector<moab::EntityHandle> new_tris;
+    for(std::vector<moab::EntityHandle>::iterator i = tris.begin(); i != tris.end(); i++) {
+      new_tris.push_back(transfer_tri(*i));
+    }
+    return new_tris;
+  }
+  
+  moab::Range transfer_tris(moab::Range tris) {
+    moab::Range new_tris;
+    for(moab::Range::iterator i = tris.begin(); i != tris.end(); i++) {
+      new_tris.insert(transfer_tri(*i));
+    }
+    return new_tris;
+  }
   
   moab::EntityHandle transfer_tri(moab::EntityHandle tri) {
     moab::ErrorCode rval;
@@ -235,8 +264,11 @@ int main (int argc, char** argv) {
   po.addRequiredArg<std::string>("DAGMC Model", "File name of the DAGMC model.", &filename);
 
   int vol_id = -1, surf_id = -1;
+  bool write_set_leaves = false, write_tris = false;
   po.addOpt<int>("v", "ID of the volume to write as hexes. (1 by default)", &vol_id);
   po.addOpt<int>("s", "ID of the surface to write as hexes.", &surf_id);
+  po.addOpt<void>("write-sets", "Write box files for the set nodes.", &write_set_leaves);
+  po.addOpt<void>("write-tris", "Write triangles along with the leaf boxes.", &write_tris);
 
   // parse command line
   po.parseCommandLine(argc, argv);
@@ -316,7 +348,7 @@ int main (int argc, char** argv) {
   //create the traversal class
   BVHCustomTraversal*  tool = new BVHCustomTraversal();
   MBRay ray; ray.tfar = inf;
-  HexWriter* op = new HexWriter(MBI);
+  HexWriter* op = new HexWriter(MBI, write_tris, true, write_set_leaves);
   tool->traverse(root, ray, *op);
   op->write();
 
