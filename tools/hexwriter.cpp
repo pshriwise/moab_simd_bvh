@@ -17,13 +17,12 @@ typedef BVHCustomTraversalT<Vec3da, double, moab::EntityHandle> BVHCustomTravers
 class HexWriter : public BVHOperator {
 
 public:
-  HexWriter() : num_leaves(0), num_set_leaves(0) {
-    hw_mbi = new moab::Core();
-  }
 
   HexWriter(moab::Interface* original_moab_instance, bool write_tris = true, bool write_leaves = true, bool write_set_leaves = false) : num_leaves(0), num_set_leaves(0), orig_mbi(original_moab_instance), write_leaves(write_leaves), write_set_leaves(write_set_leaves), write_tris(write_tris) {
     num_leaves = 0;
     hw_mbi = new moab::Core();
+
+    
   }
 
   ~HexWriter() {
@@ -36,7 +35,8 @@ private:
   // some counters
   int num_leaves;
   int num_set_leaves;
-  
+  int num_leaf_triangles_written;
+  int num_set_leaf_triangles_written;
   // MOAB instance used to write leaf boxes
   moab::Interface *hw_mbi;
   // MOAB instance used to load file and construct boxes origiinally
@@ -78,17 +78,15 @@ public:
     if (!write_set_leaves) { return; }
     
     num_set_leaves++;
+
+    SetNodeT<moab::EntityHandle>* snode = (SetNodeT<moab::EntityHandle>*)current_node.snode();
+    current_node = current_node.setLeaf();
     
     // get the box for this set (should be the same for all children)
     AABB box = current_node.node()->getBound(0);
 
     aabb_to_hex(box);
 
-    std::stringstream outfilename;
-    outfilename << "set_leaf_box_" << std::setfill('0') << std::setw(4) << num_set_leaves << ".vtk";
-    write_and_clear(outfilename.str());
-
-    SetNode* snode = (SetNode*)current_node.snode();
     moab::EntityHandle surface_handle = snode->setID;
     
     if(write_tris) {
@@ -98,7 +96,12 @@ public:
       MB_CHK_ERR_CONT(rval);
 
       transfer_tris(tris);
+      num_set_leaf_triangles_written += tris.size();
     }
+
+    std::stringstream outfilename;
+    outfilename << "set_leaf_box_" << std::setfill('0') << std::setw(4) << num_set_leaves << ".vtk";
+    write_and_clear(outfilename.str());
     
     return;
   }
@@ -128,6 +131,7 @@ public:
       for(size_t i = 0; i < numPrims; i++) {
 	moab::EntityHandle tri = prims[i].eh;
 	transfer_tri(tri);
+	num_leaf_triangles_written++;
       }
     }
     
@@ -250,6 +254,12 @@ public:
   
   int get_num_leaves() { return num_leaves; }
 
+  int get_num_set_leaves() { return num_set_leaves; }
+
+  int get_num_leaf_triangles_written() { return num_leaf_triangles_written; }
+  
+  int get_num_set_leaf_triangles_written() { return num_set_leaf_triangles_written; }
+
   void write() {
   }
   
@@ -352,8 +362,18 @@ int main (int argc, char** argv) {
   tool->traverse(root, ray, *op);
   op->write();
 
+  // output about standard leaves
   std::cout << "Num leaves found: " << op->get_num_leaves() << std::endl;
+  if(write_tris) std::cout << "Num leaf triangles written: " << op->get_num_leaf_triangles_written() << std::endl;
   
+  std::cout << std::endl;
+
+  // output about set leaves
+  if (write_set_leaves) {
+    std::cout << "Num set leaves found: " << op->get_num_set_leaves() << std::endl;
+    if(write_tris) std::cout << "Num set leaf triangles written: " << op->get_num_set_leaf_triangles_written() << std::endl;
+  }
+    
   return 0;
   
 }
