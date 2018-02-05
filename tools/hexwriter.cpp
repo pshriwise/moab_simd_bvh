@@ -17,12 +17,11 @@ typedef BVHCustomTraversalT<Vec3da, double, moab::EntityHandle> BVHCustomTravers
 class HexWriter : public BVHOperator {
 
 public:
-  HexWriter() {
-    num_leaves = 0;
+  HexWriter() : num_leaves(0), num_set_leaves(0) {
     hw_mbi = new moab::Core();
   }
 
-  HexWriter(moab::Interface* original_moab_instance) : orig_mbi(original_moab_instance) {
+  HexWriter(moab::Interface* original_moab_instance, bool write_leaves = true, bool write_set_leaves = false) : num_leaves(0), num_set_leaves(0), orig_mbi(original_moab_instance), write_leaves(write_leaves), write_set_leaves(write_set_leaves) {
     num_leaves = 0;
     hw_mbi = new moab::Core();
   }
@@ -32,7 +31,12 @@ public:
   }
   
 private:
+  bool write_leaves, write_set_leaves;
+  
+  // some counters
   int num_leaves;
+  int num_set_leaves;
+  
   // MOAB instance used to write leaf boxes
   moab::Interface *hw_mbi;
   // MOAB instance used to load file and construct boxes origiinally
@@ -51,7 +55,11 @@ public:
       mask = 15;
 
       // if this is a set leaf, remove the encoding and continue
-      if( current_node.isSetLeaf() ) { current_node = current_node.setLeaf(); }
+      if( current_node.isSetLeaf() ) {
+	setLeaf(current_node);
+	current_node = current_node.setLeaf();
+
+      }
 
       // if there is a mix of leafs and interior nodes, make sure the interior nodes
       // come last in the traversal by artificially setting distances
@@ -66,31 +74,70 @@ public:
   }
 
   virtual void setLeaf(NodeRef current_node) {
+
+    if (!write_set_leaves) { return; }
+    
+    num_set_leaves++;
+    
+    // get the box for this set (should be the same for all children)
+    AABB box = current_node.node()->getBound(0);
+
+    aabb_to_hex(box);
+
+    std::stringstream outfilename;
+    outfilename << "set_leaf_box_" << std::setfill('0') << std::setw(4) << num_set_leaves << ".vtk";
+    write_and_clear(outfilename.str());
+    
     return;
   }
 
   virtual void leaf(NodeRef current_node, NodeRef previous_node) {
-    // if node is empty, do nothing
+    if (!write_leaves) { return; }
     
+    // if node is empty, do nothing
     if ( current_node.isEmpty() ) return;
     
     num_leaves++;
-    
-    const Node* node = previous_node.bnode();
-    
-    // find what "number" this child is
-    size_t child_number = -1;
-    for(size_t i = 0; i < N; i++){
-      if ( node->child(i) == current_node ) {
-	child_number = i;
-	break;
-      }
-    }
-    assert( child_number >= 0 );
 
+    int child_number = find_child_number(current_node, previous_node);
+    
     // retrieve bounding box for this leaf from the parent node
     AABB box = previous_node.node()->getBound(child_number);
 
+    moab::EntityHandle hex = aabb_to_hex(box);
+    
+    moab::ErrorCode rval;
+    
+    // get leaf entities
+    size_t numPrims;
+    MBTriangleRef* prims = (MBTriangleRef*)current_node.leaf(numPrims);
+
+    for(size_t i = 0; i < numPrims; i++) {
+      moab::EntityHandle tri = prims[i].eh;
+      transfer_tri(tri);
+    }
+
+    std::stringstream outfilename;
+    outfilename << "leaf_box_" << std::setfill('0') << std::setw(4) << num_leaves << ".vtk";
+    write_and_clear(outfilename.str());
+    
+    return;
+  }
+
+  void write_and_clear(std::string filename) {
+
+    moab::ErrorCode rval;
+    rval = hw_mbi->write_file(filename.c_str());
+    MB_CHK_ERR_CONT(rval);
+
+    // clean out mesh for next leaf write
+    rval = hw_mbi->delete_mesh();
+    MB_CHK_ERR_CONT(rval);
+
+    return;
+  }
+  
+  moab::EntityHandle aabb_to_hex(AABB box) {
     // create vertex coordinates for hex element
     std::vector<double> vertex_coords;
     // lower face in Z
@@ -121,27 +168,27 @@ public:
     rval = hw_mbi->create_element(moab::MBHEX, &(hex_vert_vec[0]), 8, hex);
     MB_CHK_ERR_CONT(rval);
 
-    // get leaf entities
-    size_t numPrims;
-    MBTriangleRef* prims = (MBTriangleRef*)current_node.leaf(numPrims);
-
-    for(size_t i = 0; i < numPrims; i++) {
-      moab::EntityHandle tri = prims[i].eh;
-      transfer_tri(tri);
-    }
-
-    std::stringstream outfilename;
-    outfilename << "leaf_box_" << std::setfill('0') << std::setw(4) << num_leaves << ".vtk";
-    rval = hw_mbi->write_file(outfilename.str().c_str());
-    MB_CHK_ERR_CONT(rval);
-
-    // clean out mesh for next leaf write
-    rval = hw_mbi->delete_mesh();
-    MB_CHK_ERR_CONT(rval);
+    return hex;
+  }
+  
+  int find_child_number(NodeRef current_node, NodeRef previous_node) {
     
-    return;
+    const Node* node = previous_node.bnode();
+    
+    // find what "number" this child is
+    size_t child_number = -1;
+    for(size_t i = 0; i < N; i++){
+      if ( node->child(i) == current_node ) {
+	child_number = i;
+	break;
+      }
+    }
+    assert( child_number >= 0 );
+
+    return child_number;
   }
 
+  
   moab::EntityHandle transfer_tri(moab::EntityHandle tri) {
     moab::ErrorCode rval;
     // get vertices from original instance
