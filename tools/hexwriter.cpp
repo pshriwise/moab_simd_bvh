@@ -9,6 +9,8 @@
 #include "TraversalClass.hpp"
 
 #include <string>
+#include <sstream>
+#include <iomanip>
 
 typedef BVHCustomTraversalT<Vec3da, double, moab::EntityHandle> BVHCustomTraversal;
 
@@ -109,7 +111,16 @@ public:
     moab::EntityHandle hex;
     rval = hw_mbi->create_element(moab::MBHEX, &(hex_vert_vec[0]), 8, hex);
     MB_CHK_ERR_CONT(rval);
-        
+
+    std::stringstream outfilename;
+    outfilename << "leaf_box_" << std::setfill('0') << std::setw(4) << num_leaves << ".vtk";
+    rval = hw_mbi->write_file(outfilename.str().c_str());
+    MB_CHK_ERR_CONT(rval);
+
+    // clean out mesh for next leaf write
+    rval = hw_mbi->delete_mesh();
+    MB_CHK_ERR_CONT(rval);
+    
     return;
   }
 
@@ -120,9 +131,6 @@ public:
   int get_num_leaves() { return num_leaves; }
 
   void write() {
-    moab::ErrorCode rval;
-    rval = hw_mbi->write_file("leaf_boxes.h5m");
-    MB_CHK_ERR_CONT(rval);
   }
   
 };
