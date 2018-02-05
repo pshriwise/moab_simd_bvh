@@ -19,15 +19,24 @@ class HexWriter : public BVHOperator {
 public:
   HexWriter() {
     num_leaves = 0;
-
     hw_mbi = new moab::Core();
-    
+  }
+
+  HexWriter(moab::Interface* original_moab_instance) : orig_mbi(original_moab_instance) {
+    num_leaves = 0;
+    hw_mbi = new moab::Core();
+  }
+
+  ~HexWriter() {
+    delete hw_mbi;
   }
   
 private:
   int num_leaves;
+  // MOAB instance used to write leaf boxes
   moab::Interface *hw_mbi;
-  moab::Range leaf_set;
+  // MOAB instance used to load file and construct boxes origiinally
+  moab::Interface *orig_mbi;
   
 public:
   
@@ -112,6 +121,15 @@ public:
     rval = hw_mbi->create_element(moab::MBHEX, &(hex_vert_vec[0]), 8, hex);
     MB_CHK_ERR_CONT(rval);
 
+    // get leaf entities
+    size_t numPrims;
+    MBTriangleRef* prims = (MBTriangleRef*)current_node.leaf(numPrims);
+
+    for(size_t i = 0; i < numPrims; i++) {
+      moab::EntityHandle tri = prims[i].eh;
+      transfer_tri(tri);
+    }
+
     std::stringstream outfilename;
     outfilename << "leaf_box_" << std::setfill('0') << std::setw(4) << num_leaves << ".vtk";
     rval = hw_mbi->write_file(outfilename.str().c_str());
@@ -124,8 +142,34 @@ public:
     return;
   }
 
-  AABB get_child_box(Node node, size_t child_number) {
-    
+  moab::EntityHandle transfer_tri(moab::EntityHandle tri) {
+    moab::ErrorCode rval;
+    // get vertices from original instance
+    moab::Range verts;
+    rval = orig_mbi->get_connectivity(&tri, 1, verts);
+    MB_CHK_ERR_CONT(rval);
+    assert(verts.size() == 3);
+
+    // get the triangle's vertex coordinates
+    moab::CartVect coords[3];
+    rval = orig_mbi->get_coords(verts, coords[0].array());
+    MB_CHK_ERR_CONT(rval);
+
+    // create vertices in the other instance
+    moab::Range new_verts;
+    rval = hw_mbi->create_vertices(coords[0].array(), 3, new_verts);
+    MB_CHK_ERR_CONT(rval);
+
+    std::vector<moab::EntityHandle> new_verts_vec;
+    for(moab::Range::iterator i = new_verts.begin(); i != new_verts.end(); i++) {
+      new_verts_vec.push_back(*i);
+    }
+    // create triangle
+    moab::EntityHandle new_tri;
+    rval = hw_mbi->create_element(moab::MBTRI, &(new_verts_vec[0]), 3, new_tri);
+    MB_CHK_ERR_CONT(rval);
+
+    return new_tri;
   }
   
   int get_num_leaves() { return num_leaves; }
@@ -225,7 +269,7 @@ int main (int argc, char** argv) {
   //create the traversal class
   BVHCustomTraversal*  tool = new BVHCustomTraversal();
   MBRay ray; ray.tfar = inf;
-  HexWriter* op = new HexWriter();
+  HexWriter* op = new HexWriter(MBI);
   tool->traverse(root, ray, *op);
   op->write();
 
