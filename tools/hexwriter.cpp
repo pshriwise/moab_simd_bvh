@@ -21,7 +21,7 @@ public:
   HexWriter(moab::Interface* original_moab_instance, bool write_tris = true, bool write_leaves = true, bool write_set_leaves = false) : num_leaves(0), num_set_leaves(0), orig_mbi(original_moab_instance), write_leaves(write_leaves), write_set_leaves(write_set_leaves), write_tris(write_tris) {
     num_leaves = 0;
     hw_mbi = new moab::Core();
-
+    found_tris.clear();
     
   }
 
@@ -41,6 +41,8 @@ private:
   moab::Interface *hw_mbi;
   // MOAB instance used to load file and construct boxes origiinally
   moab::Interface *orig_mbi;
+
+  moab::Range found_tris;
   
 public:
   
@@ -130,6 +132,7 @@ public:
       
       for(size_t i = 0; i < numPrims; i++) {
 	moab::EntityHandle tri = prims[i].eh;
+	found_tris.insert(tri);
 	transfer_tri(tri);
 	num_leaf_triangles_written++;
       }
@@ -260,7 +263,24 @@ public:
   
   int get_num_set_leaf_triangles_written() { return num_set_leaf_triangles_written; }
 
-  void write() {
+  bool validate_tree(moab::EntityHandle ent, bool verbose = true) {
+    moab::ErrorCode rval;
+    moab::Range ent_triangles;
+    rval = orig_mbi->get_entities_by_type(ent, moab::MBTRI, ent_triangles, true);
+    MB_CHK_ERR_CONT(rval);
+    
+    moab::Range result = subtract(ent_triangles, found_tris);
+    
+    if(!result.empty() && verbose) {
+      std::cout << "Warning: Tree does not contain all entities underneath the specified entity set." << std::endl;
+      std::cout << "Triangles in the set: " << ent_triangles.size() << std::endl;
+      std::cout << "Triangles found in the traversal: " << found_tris.size() << std::endl;
+      std::cout << "Number missing: " << result.size() << std::endl;
+      std::cout << "Triangles missing from the tree" << std::endl;
+      std::cout << result << std::endl;
+    }
+    
+    return result.empty();
   }
   
 };
@@ -360,7 +380,8 @@ int main (int argc, char** argv) {
   MBRay ray; ray.tfar = inf;
   HexWriter* op = new HexWriter(MBI, write_tris, true, write_set_leaves);
   tool->traverse(root, ray, *op);
-  op->write();
+
+  bool result = op->validate_tree(ent);
 
   // output about standard leaves
   std::cout << "Num leaves found: " << op->get_num_leaves() << std::endl;
