@@ -20,6 +20,7 @@ public:
 
   TravWriter(moab::Interface* original_moab_instance) : nodes_visited(0) {
     tw_mbi = new moab::Core();
+    orig_mbi = original_moab_instance;
   }
 
   ~TravWriter() {
@@ -43,9 +44,6 @@ public:
       return false;
     }
     else {
-
-      nodes_visited++;
-      
       // if this is a set leaf, remove the encoding and continue
       if( current_node.isSetLeaf() ) {
 	current_node = current_node.setLeaf();
@@ -54,25 +52,28 @@ public:
       // perform ray intersection
       mask = intersectBox(*current_node.node(), vray, tnear, tfar, tNear);
 
-      size_t mask_copy = mask;
+      if ( mask != 0 ) {
+	nodes_visited++;
+	size_t mask_copy = mask;
 
-      while(mask_copy != 0) {
-	size_t r = __bscf(mask_copy);
-	// get the box for this set (should be the same for all children)
-	AABB box = current_node.node()->getBound(r);
-	aabb_to_hex(box);
+	while(mask_copy != 0) {
+	  size_t r = __bscf(mask_copy);
+	  // get the box for this set (should be the same for all children)
+	  AABB box = current_node.node()->getBound(r);
+	  aabb_to_hex(box);
 
+	}
+
+	std::stringstream outfilename;
+	outfilename << "step_" << std::setfill('0') << std::setw(4) << nodes_visited << ".vtk";
+	write_and_clear(outfilename.str());
+      
+	// if there is a mix of leafs and interior nodes, make sure the interior nodes
+	// come last in the traversal by artificially setting distances
+	for (size_t i = 0; i < N; i++) {
+	  if ( !current_node.bnode()->child(i).isLeaf() ) tNear[i] = inf;
+	}
       }
-      
-      std::stringstream outfilename;
-      outfilename << "step_" << std::setfill('0') << std::setw(4) << nodes_visited << ".vtk";
-      write_and_clear(outfilename.str());
-      
-      // if there is a mix of leafs and interior nodes, make sure the interior nodes
-      // come last in the traversal by artificially setting distances
-      // for (size_t i = 0; i < N; i++) {
-      // 	if ( !current_node.bnode()->child(i).isLeaf() ) tNear[i] = inf;
-      // }
       
     }
     return true;
@@ -117,22 +118,20 @@ public:
 
   void create_ray(Ray ray) {
     moab::ErrorCode rval;
-    moab::Range ray_verts;
-    std::vector<double> vertex_coords;
-    vertex_coords.push_back(ray.org.x); vertex_coords.push_back(ray.org.y); vertex_coords.push_back(ray.org.z);
-    ray.dir = ray.dir* 50;
-    vertex_coords.push_back(ray.dir.x); vertex_coords.push_back(ray.dir.y); vertex_coords.push_back(ray.dir.z);
-      
-    rval = tw_mbi->create_vertices(&(vertex_coords[0]), 2, ray_verts);
+    moab::EntityHandle ray_verts[2];
+
+    double coords1[3] = {ray.org.x, ray.org.y, ray.org.z};
+    rval = tw_mbi->create_vertex(coords1, ray_verts[0]);
     MB_CHK_ERR_CONT(rval);
 
-    std::vector<moab::EntityHandle> ray_verts_vec;
-    for(moab::Range::iterator i = ray_verts.begin(); i != ray_verts.end(); i++) {
-      ray_verts_vec.push_back(*i);
-    }
+    Vec3da end_pnt = ray.org + ray.dir * 30;
+    double coords2[3] = {end_pnt.x, end_pnt.y, end_pnt.z};
+    rval = tw_mbi->create_vertex(coords2, ray_verts[1]);
+    MB_CHK_ERR_CONT(rval);
+
     
     moab::EntityHandle edge;
-    rval = tw_mbi->create_element(moab::MBEDGE, &(ray_verts_vec[0]), 2, edge);
+    rval = tw_mbi->create_element(moab::MBEDGE, &(ray_verts[0]), 2, edge);
     MB_CHK_ERR_CONT(rval);
 
     write_and_clear("ray.vtk");
@@ -373,6 +372,8 @@ int main (int argc, char** argv) {
   op->create_ray(ray);
   tool->traverse(root, ray, *op);
 
+
+  delete MBI;
   
   return 0;
   
