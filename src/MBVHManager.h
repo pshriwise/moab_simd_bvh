@@ -129,7 +129,7 @@ struct MBVHManager {
       rval = MBI->tag_get_data(geom_dim_tag, &(*ri), 1, &dim);
       MB_CHK_SET_ERR(rval, "Failed to get the geom dimension of EntitySet: " << *ri);
 
-      moab::Range tris;
+      std::vector<moab::EntityHandle> tris;
       moab::Range child_surfs;
       std::vector<NodeRef*> sets;
       NodeRef* root;
@@ -145,7 +145,7 @@ struct MBVHManager {
 	  MB_CHK_SET_ERR(rval, "Failed to get triangles for surface: " << *ri);
 
 	  // IN PROGRESS
-	  root = MOABBVH->Build(tris.front(), tris.front() - MDAM->first_element, tris.size());
+	  root = MOABBVH->Build(&(tris[0]), tris.size());
 	  if(!root) { MB_CHK_SET_ERR(moab::MB_FAILURE, "Failed to build BVH for surface: " << *ri); }
 
 	  BVHRoots[*ri - lowest_set] = root;

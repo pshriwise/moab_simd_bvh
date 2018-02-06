@@ -56,8 +56,6 @@ class BVH {
   size_t depth;
   size_t maxDepth;
 
-  int current_build_id;
-  
   int num_stored;
 
   std::vector<P> leaf_sequence_storage;
@@ -321,14 +319,14 @@ class BVH {
     return this_node;
   }
 
-  inline NodeRef* Build(I id, int start, size_t numPrimitives, BVHSettings* settings = NULL) {
+  inline NodeRef* Build(I* id, size_t numPrimitives, BVHSettings* settings = NULL) {
     // create BuildState of PrimitiveReferences
     BuildState bs(0);
-    int end = numPrimitives;
-    for( size_t i = 0; i < end; i++ ) {
-      int index = start+i;
+    for( size_t i = 0; i < numPrimitives; i++ ) {
+      I handle = *(id+i);
+      int index = handle - MDAM->first_element;
       
-      P triref = P((I*)MDAM->conn + (index*MDAM->element_stride), id+i);
+      P triref = P((I*)MDAM->conn + (index*MDAM->element_stride), handle);
       
       Vec3fa lower, upper;
       
@@ -338,8 +336,6 @@ class BVH {
 
       bs.prims.push_back(p);
     }
-
-    current_build_id = id;
 
     // if the settings pointer is null, create a settings struct
     if(!settings) settings = new BVHSettings();

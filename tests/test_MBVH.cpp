@@ -135,6 +135,10 @@ int main(int argc, char** argv) {
   rval = get_triangles_on_volume(mbi, volumes[0], volume_triangles);
   MB_CHK_SET_ERR(rval, "Failed to retrieve triangles for the volume with handle: " << volumes );
 
+  std::vector<moab::EntityHandle> volume_triangles_vec;
+  for(moab::Range::iterator i = volume_triangles.begin(); i != volume_triangles.end(); i++) {
+    volume_triangles_vec.push_back(*i);
+  }
   
   //set the connectivity pointer
   moab::EntityHandle* connPointer;
@@ -160,7 +164,8 @@ int main(int argc, char** argv) {
   MBVH* BVH = new MBVH(MDAM);
   std::cout << "Building SIMD BVH..." << std::endl;
   start = std::clock();
-  NodeRef* root = BVH->Build(volumes[0], 0, volume_triangles.size());
+  moab::EntityHandle vol = volumes[0];
+  NodeRef* root = BVH->Build(&(volume_triangles_vec[0]), volume_triangles.size());
   duration = (std::clock() - start);
   std::cout << "BVH build complete after " << duration / (double)CLOCKS_PER_SEC << " seconds" << std::endl;
   if ( mem_report ) report_memory_usage();
