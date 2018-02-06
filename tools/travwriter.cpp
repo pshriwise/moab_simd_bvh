@@ -276,9 +276,6 @@ public:
   }
   
   int get_nodes_visited() { return nodes_visited; }
-
-  void write() {
-  }
   
 };
 
