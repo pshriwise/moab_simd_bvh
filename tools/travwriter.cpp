@@ -256,7 +256,7 @@ public:
 int main (int argc, char** argv) {
 
   // define program options
-  ProgOptions po("A program for representing the MBVH as a series of hex mesh elements.");
+  ProgOptions po("A program for representing a single ray traversal as a VTK file database.");
 
   std::string filename;
 
@@ -266,9 +266,9 @@ int main (int argc, char** argv) {
   po.addRequiredArg<double>("y", "y position of ray origin", &y);
   po.addRequiredArg<double>("z", "z position of ray origin", &z);
   double u, v, w;
-  po.addRequiredArg<double>("u", "u direction of ray origin", &u);
-  po.addRequiredArg<double>("v", "v direction of ray origin", &v);
-  po.addRequiredArg<double>("w", "w direction of ray origin", &w);
+  po.addRequiredArg<double>("u", "u direction of ray direction", &u);
+  po.addRequiredArg<double>("v", "v direction of ray direction", &v);
+  po.addRequiredArg<double>("w", "w direction of ray direction", &w);
 
   int vol_id = 1;
   po.addOpt<int>("i", "ID of the volume to write as hexes. (1 by default)", &vol_id);

@@ -288,7 +288,7 @@ public:
 int main (int argc, char** argv) {
 
   // define program options
-  ProgOptions po("A program for representing the MBVH as a series of hex mesh elements.");
+  ProgOptions po("A program for representing the leaves of the MBVH as a series of VTK database files.");
 
   std::string filename;
   po.addRequiredArg<std::string>("DAGMC Model", "File name of the DAGMC model.", &filename);
@@ -297,7 +297,7 @@ int main (int argc, char** argv) {
   bool write_set_leaves = false, write_tris = false;
   po.addOpt<int>("v", "ID of the volume to write as hexes. (1 by default)", &vol_id);
   po.addOpt<int>("s", "ID of the surface to write as hexes.", &surf_id);
-  po.addOpt<void>("write-sets", "Write box files for the set nodes.", &write_set_leaves);
+  po.addOpt<void>("write-sets", "Write box files for the set (surface) nodes.", &write_set_leaves);
   po.addOpt<void>("write-tris", "Write triangles along with the leaf boxes.", &write_tris);
 
   // parse command line
