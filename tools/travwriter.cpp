@@ -6,6 +6,7 @@
 #include "moab/Core.hpp"
 #include "moab/ProgOptions.hpp"
 
+#include "WriteVisitor.hpp"
 #include "TraversalClass.hpp"
 
 #include <string>
@@ -14,26 +15,17 @@
 
 typedef BVHCustomTraversalT<Vec3da, double, moab::EntityHandle> BVHCustomTraversal;
 
-class TravWriter : public BVHOperator<Vec3da, double, moab::EntityHandle> {
+class TravWriter : public WriteVisitor {
 
 public:
 
-  TravWriter(moab::Interface* original_moab_instance) : nodes_visited(0) {
-    tw_mbi = new moab::Core();
-    orig_mbi = original_moab_instance;
-  }
-
-  ~TravWriter() {
-    delete tw_mbi;
+  TravWriter(moab::Interface* original_moab_instance) : WriteVisitor(original_moab_instance),
+							nodes_visited(0) {
   }
   
 private:
   // some counters
   int nodes_visited;
-  // MOAB instance used to write leaf boxes
-  moab::Interface *tw_mbi;
-  // MOAB instance used to load file and construct boxes origiinally
-  moab::Interface *orig_mbi;
   
 public:
   
@@ -80,12 +72,12 @@ public:
     
   }
 
-  virtual void setLeaf(NodeRef current_node) {    
-    return;
+  virtual void setLeaf(NodeRef current_node) {
+    // nothing to do for set leaves
+    return; 
   }
 
   virtual void leaf(NodeRef current_node, NodeRef previous_node, Ray ray) {
-    
     // if node is empty, do nothing
     if ( current_node.isEmpty() ) return;
     
@@ -96,10 +88,9 @@ public:
     // retrieve bounding box for this leaf from the parent node
     AABB box = previous_node.node()->getBound(child_number);
 
-    moab::EntityHandle hex = aabb_to_hex(box);
+    aabb_to_hex(box);
     
     moab::ErrorCode rval;
-
     // get leaf entities
     size_t numPrims;
     MBTriangleRef* prims = (MBTriangleRef*)current_node.leaf(numPrims);
@@ -114,139 +105,6 @@ public:
     write_and_clear(outfilename.str());
     
     return;
-  }
-
-  void create_ray(Ray ray) {
-    moab::ErrorCode rval;
-    moab::EntityHandle ray_verts[2];
-
-    double coords1[3] = {ray.org.x, ray.org.y, ray.org.z};
-    rval = tw_mbi->create_vertex(coords1, ray_verts[0]);
-    MB_CHK_ERR_CONT(rval);
-
-    Vec3da end_pnt = ray.org + ray.dir * 30;
-    double coords2[3] = {end_pnt.x, end_pnt.y, end_pnt.z};
-    rval = tw_mbi->create_vertex(coords2, ray_verts[1]);
-    MB_CHK_ERR_CONT(rval);
-
-    
-    moab::EntityHandle edge;
-    rval = tw_mbi->create_element(moab::MBEDGE, &(ray_verts[0]), 2, edge);
-    MB_CHK_ERR_CONT(rval);
-
-    write_and_clear("ray.vtk");
-    
-    return;
-  }
-
-  void write_and_clear(std::string filename) {
-
-    moab::ErrorCode rval;
-    rval = tw_mbi->write_file(filename.c_str());
-    MB_CHK_ERR_CONT(rval);
-
-    // clean out mesh for next leaf write
-    rval = tw_mbi->delete_mesh();
-    MB_CHK_ERR_CONT(rval);
-
-    return;
-  }
-  
-  moab::EntityHandle aabb_to_hex(AABB box) {
-    // create vertex coordinates for hex element
-    std::vector<double> vertex_coords;
-    // lower face in Z
-    vertex_coords.push_back(box.lower[0]); vertex_coords.push_back(box.lower[1]); vertex_coords.push_back(box.lower[2]);
-    vertex_coords.push_back(box.upper[0]); vertex_coords.push_back(box.lower[1]); vertex_coords.push_back(box.lower[2]);
-    vertex_coords.push_back(box.upper[0]); vertex_coords.push_back(box.upper[1]); vertex_coords.push_back(box.lower[2]);
-    vertex_coords.push_back(box.lower[0]); vertex_coords.push_back(box.upper[1]); vertex_coords.push_back(box.lower[2]);
-    // upper face in Z
-    vertex_coords.push_back(box.lower[0]); vertex_coords.push_back(box.lower[1]); vertex_coords.push_back(box.upper[2]);
-    vertex_coords.push_back(box.upper[0]); vertex_coords.push_back(box.lower[1]); vertex_coords.push_back(box.upper[2]);
-    vertex_coords.push_back(box.upper[0]); vertex_coords.push_back(box.upper[1]); vertex_coords.push_back(box.upper[2]);
-    vertex_coords.push_back(box.lower[0]); vertex_coords.push_back(box.upper[1]); vertex_coords.push_back(box.upper[2]);
-
-    // create mesh vertices and hex element for box
-    moab::ErrorCode rval;
-    moab::Range hex_verts;
-    rval = tw_mbi->create_vertices(&(vertex_coords[0]), 8, hex_verts);
-    MB_CHK_ERR_CONT(rval);
-
-    // convet to vector - MOAB has no element constructor using Ranges?
-    std::vector<moab::EntityHandle> hex_vert_vec;
-    for(moab::Range::iterator i = hex_verts.begin(); i != hex_verts.end() ; i++) {
-      hex_vert_vec.push_back(*i);
-    }
-
-    // create hex element
-    moab::EntityHandle hex;
-    rval = tw_mbi->create_element(moab::MBHEX, &(hex_vert_vec[0]), 8, hex);
-    MB_CHK_ERR_CONT(rval);
-
-    return hex;
-  }
-  
-  int find_child_number(NodeRef current_node, NodeRef previous_node) {
-    
-    const Node* node = previous_node.bnode();
-    
-    // find what "number" this child is
-    size_t child_number = -1;
-    for(size_t i = 0; i < N; i++){
-      if ( node->child(i) == current_node ) {
-	child_number = i;
-	break;
-      }
-    }
-    assert( child_number >= 0 );
-
-    return child_number;
-  }
-
-  std::vector<moab::EntityHandle> transfer_tris(std::vector<moab::EntityHandle> tris) {
-    std::vector<moab::EntityHandle> new_tris;
-    for(std::vector<moab::EntityHandle>::iterator i = tris.begin(); i != tris.end(); i++) {
-      new_tris.push_back(transfer_tri(*i));
-    }
-    return new_tris;
-  }
-  
-  moab::Range transfer_tris(moab::Range tris) {
-    moab::Range new_tris;
-    for(moab::Range::iterator i = tris.begin(); i != tris.end(); i++) {
-      new_tris.insert(transfer_tri(*i));
-    }
-    return new_tris;
-  }
-  
-  moab::EntityHandle transfer_tri(moab::EntityHandle tri) {
-    moab::ErrorCode rval;
-    // get vertices from original instance
-    moab::Range verts;
-    rval = orig_mbi->get_connectivity(&tri, 1, verts);
-    MB_CHK_ERR_CONT(rval);
-    assert(verts.size() == 3);
-
-    // get the triangle's vertex coordinates
-    moab::CartVect coords[3];
-    rval = orig_mbi->get_coords(verts, coords[0].array());
-    MB_CHK_ERR_CONT(rval);
-
-    // create vertices in the other instance
-    moab::Range new_verts;
-    rval = tw_mbi->create_vertices(coords[0].array(), 3, new_verts);
-    MB_CHK_ERR_CONT(rval);
-
-    std::vector<moab::EntityHandle> new_verts_vec;
-    for(moab::Range::iterator i = new_verts.begin(); i != new_verts.end(); i++) {
-      new_verts_vec.push_back(*i);
-    }
-    // create triangle
-    moab::EntityHandle new_tri;
-    rval = tw_mbi->create_element(moab::MBTRI, &(new_verts_vec[0]), 3, new_tri);
-    MB_CHK_ERR_CONT(rval);
-
-    return new_tri;
   }
   
   int get_nodes_visited() { return nodes_visited; }
@@ -270,6 +128,9 @@ int main (int argc, char** argv) {
   po.addRequiredArg<double>("v", "v direction of ray direction", &v);
   po.addRequiredArg<double>("w", "w direction of ray direction", &w);
 
+  double ray_length;
+  po.addOpt<double>("r", "Create a file representing the ray (ray.vtk) for visualization. The user-specified value is the length of the ray.");
+		    
   int vol_id = 1;
   po.addOpt<int>("i", "ID of the volume to write as hexes. (1 by default)", &vol_id);
 
@@ -289,7 +150,6 @@ int main (int argc, char** argv) {
   rval = BVHManager->build_all();
   MB_CHK_SET_ERR(rval, "Failed to construct trees");
 
-
   //get the global id tag and the geometry dim tag
   moab::Tag gid_tag;
   rval = MBI->tag_get_handle(GLOBAL_ID_TAG_NAME, gid_tag);
@@ -304,9 +164,7 @@ int main (int argc, char** argv) {
   int ent_id;
   cat_name = "Volume";
   ent_id = vol_id;
-
   cat_name.resize(CATEGORY_TAG_SIZE);
-
   const void* ptr[2] = { &ent_id, cat_name.c_str()};
   moab::Tag tags[2] = {gid_tag, cat_tag};
   
@@ -332,7 +190,7 @@ int main (int argc, char** argv) {
   std::cout << "Writing tree for " << cat_name << " with id " << ent_id << " and handle " << entities[0] << std::endl;
 
   //create the traversal class
-  BVHCustomTraversal*  tool = new BVHCustomTraversal();
+  BVHCustomTraversal* tool = new BVHCustomTraversal();
 
   // set up ray 
   MBRay ray;
@@ -344,12 +202,16 @@ int main (int argc, char** argv) {
 
   // perform traversal
   TravWriter* op = new TravWriter(MBI);
-  op->create_ray(ray);
+  // write the ray if requested
+  if ( po.getOpt("r", &ray_length) ) {
+  op->create_ray(ray, ray_length);
+  }
   tool->traverse(root, ray, *op);
 
-
+  // cleanup
   delete MBI;
+  delete BVHManager;
+  delete tool;
   
   return 0;
-  
 }

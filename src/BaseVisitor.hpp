@@ -1,4 +1,6 @@
 
+#pragma once
+
 #include "Node.h"
 
 template<typename V, typename P, typename I>

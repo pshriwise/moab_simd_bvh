@@ -7,26 +7,32 @@
 #include "moab/ProgOptions.hpp"
 
 #include "TraversalClass.hpp"
-
+#include "WriteVisitor.hpp"
 #include <string>
 #include <sstream>
 #include <iomanip>
 
 typedef BVHCustomTraversalT<Vec3da, double, moab::EntityHandle> BVHCustomTraversal;
 
-class HexWriter : public BVHOperator<Vec3da,double,moab::EntityHandle>{
+class HexWriter : public WriteVisitor {
 
 public:
 
-  HexWriter(moab::Interface* original_moab_instance, bool write_tris = true, bool write_leaves = true, bool write_set_leaves = false) : num_leaves(0), num_set_leaves(0), orig_mbi(original_moab_instance), write_leaves(write_leaves), write_set_leaves(write_set_leaves), write_tris(write_tris) {
-    num_leaves = 0;
-    hw_mbi = new moab::Core();
+  HexWriter(moab::Interface* original_moab_instance,
+	    bool write_tris = true,
+	    bool write_leaves = true,
+	    bool write_set_leaves = false) : WriteVisitor(original_moab_instance),
+					     num_leaves(0),
+					     num_set_leaves(0),
+					     write_leaves(write_leaves),
+					     write_set_leaves(write_set_leaves),
+					     write_tris(write_tris)
+  {
     found_tris.clear();
-    
   }
 
   ~HexWriter() {
-    delete hw_mbi;
+    delete new_mbi;
   }
   
 private:
@@ -37,22 +43,21 @@ private:
   int num_set_leaves;
   int num_leaf_triangles_written;
   int num_set_leaf_triangles_written;
-  // MOAB instance used to write leaf boxes
-  moab::Interface *hw_mbi;
-  // MOAB instance used to load file and construct boxes origiinally
-  moab::Interface *orig_mbi;
 
   moab::Range found_tris;
   
 public:
   
-  virtual bool visit(NodeRef& current_node, TravRay vray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& tNear, size_t& mask)  {
+  virtual bool visit(NodeRef& current_node, TravRay vray,
+		     const vfloat4& tnear,
+		     const vfloat4& tfar,
+		     vfloat4& tNear,
+		     size_t& mask)  {
     // if this is a leaf, no intersection
     if(current_node.isLeaf()) {
       return false;
     }
     else {
-
       // if this is not a leaf, visit all child nodes
       mask = 15;
 
@@ -60,7 +65,6 @@ public:
       if( current_node.isSetLeaf() ) {
 	setLeaf(current_node);
 	current_node = current_node.setLeaf();
-
       }
 
       // if there is a mix of leafs and interior nodes, make sure the interior nodes
@@ -69,17 +73,17 @@ public:
       for (size_t i = 0; i < N; i++) {
 	if ( current_node.bnode()->child(i).isLeaf() ) tNear[i] = 0.0f;
       }
-
     }
-    return true;
     
+    return true;
   }
 
   virtual void setLeaf(NodeRef current_node) {
 
-    if (!write_set_leaves) { return; }
-    
     num_set_leaves++;
+
+    // if hexes for set leaves weren't requested, then do nothing
+    if (!write_set_leaves) { return; }
 
     SetNodeT<moab::EntityHandle>* snode = (SetNodeT<moab::EntityHandle>*)current_node.snode();
     current_node = current_node.setLeaf();
@@ -87,10 +91,13 @@ public:
     // get the box for this set (should be the same for all children)
     AABB box = current_node.node()->getBound(0);
 
+    // write the box to the class MOAB instance
     aabb_to_hex(box);
 
     moab::EntityHandle surface_handle = snode->setID;
-    
+
+    // if requrested, gather all triangles for this surface and and write
+    // them as well
     if(write_tris) {
       moab::ErrorCode rval;
       moab::Range tris;
@@ -109,22 +116,29 @@ public:
   }
 
   virtual void leaf(NodeRef current_node, NodeRef previous_node, Ray ray) {
+
+    // if node is empty, do nothing
+    if ( current_node.isEmpty() ) { return; }
+
+    num_leaves++;
+    
+    // if no leaf writing was requested, then do nothing
     if (!write_leaves) { return; }
     
-    // if node is empty, do nothing
-    if ( current_node.isEmpty() ) return;
-    
-    num_leaves++;
-
+    // get the child number of this node using the parent node
     int child_number = find_child_number(current_node, previous_node);
     
     // retrieve bounding box for this leaf from the parent node
     AABB box = previous_node.node()->getBound(child_number);
 
-    moab::EntityHandle hex = aabb_to_hex(box);
+    // write box to class MOAB instance
+    aabb_to_hex(box);
     
     moab::ErrorCode rval;
 
+    // if triangles are to be written with the hexes, then
+    // decode the leaf and transfer the triangle to the
+    // class MOAB instance
     if(write_tris) {
       // get leaf entities
       size_t numPrims;
@@ -137,122 +151,13 @@ public:
 	num_leaf_triangles_written++;
       }
     }
-    
+
+    // create the filename using the number of leaves visited
     std::stringstream outfilename;
     outfilename << "leaf_box_" << std::setfill('0') << std::setw(4) << num_leaves << ".vtk";
     write_and_clear(outfilename.str());
     
     return;
-  }
-
-  void write_and_clear(std::string filename) {
-
-    moab::ErrorCode rval;
-    rval = hw_mbi->write_file(filename.c_str());
-    MB_CHK_ERR_CONT(rval);
-
-    // clean out mesh for next leaf write
-    rval = hw_mbi->delete_mesh();
-    MB_CHK_ERR_CONT(rval);
-
-    return;
-  }
-  
-  moab::EntityHandle aabb_to_hex(AABB box) {
-    // create vertex coordinates for hex element
-    std::vector<double> vertex_coords;
-    // lower face in Z
-    vertex_coords.push_back(box.lower[0]); vertex_coords.push_back(box.lower[1]); vertex_coords.push_back(box.lower[2]);
-    vertex_coords.push_back(box.upper[0]); vertex_coords.push_back(box.lower[1]); vertex_coords.push_back(box.lower[2]);
-    vertex_coords.push_back(box.upper[0]); vertex_coords.push_back(box.upper[1]); vertex_coords.push_back(box.lower[2]);
-    vertex_coords.push_back(box.lower[0]); vertex_coords.push_back(box.upper[1]); vertex_coords.push_back(box.lower[2]);
-    // upper face in Z
-    vertex_coords.push_back(box.lower[0]); vertex_coords.push_back(box.lower[1]); vertex_coords.push_back(box.upper[2]);
-    vertex_coords.push_back(box.upper[0]); vertex_coords.push_back(box.lower[1]); vertex_coords.push_back(box.upper[2]);
-    vertex_coords.push_back(box.upper[0]); vertex_coords.push_back(box.upper[1]); vertex_coords.push_back(box.upper[2]);
-    vertex_coords.push_back(box.lower[0]); vertex_coords.push_back(box.upper[1]); vertex_coords.push_back(box.upper[2]);
-
-    // create mesh vertices and hex element for box
-    moab::ErrorCode rval;
-    moab::Range hex_verts;
-    rval = hw_mbi->create_vertices(&(vertex_coords[0]), 8, hex_verts);
-    MB_CHK_ERR_CONT(rval);
-
-    // convet to vector - MOAB has no element constructor using Ranges?
-    std::vector<moab::EntityHandle> hex_vert_vec;
-    for(moab::Range::iterator i = hex_verts.begin(); i != hex_verts.end() ; i++) {
-      hex_vert_vec.push_back(*i);
-    }
-
-    // create hex element
-    moab::EntityHandle hex;
-    rval = hw_mbi->create_element(moab::MBHEX, &(hex_vert_vec[0]), 8, hex);
-    MB_CHK_ERR_CONT(rval);
-
-    return hex;
-  }
-  
-  int find_child_number(NodeRef current_node, NodeRef previous_node) {
-    
-    const Node* node = previous_node.bnode();
-    
-    // find what "number" this child is
-    size_t child_number = -1;
-    for(size_t i = 0; i < N; i++){
-      if ( node->child(i) == current_node ) {
-	child_number = i;
-	break;
-      }
-    }
-    assert( child_number >= 0 );
-
-    return child_number;
-  }
-
-  std::vector<moab::EntityHandle> transfer_tris(std::vector<moab::EntityHandle> tris) {
-    std::vector<moab::EntityHandle> new_tris;
-    for(std::vector<moab::EntityHandle>::iterator i = tris.begin(); i != tris.end(); i++) {
-      new_tris.push_back(transfer_tri(*i));
-    }
-    return new_tris;
-  }
-  
-  moab::Range transfer_tris(moab::Range tris) {
-    moab::Range new_tris;
-    for(moab::Range::iterator i = tris.begin(); i != tris.end(); i++) {
-      new_tris.insert(transfer_tri(*i));
-    }
-    return new_tris;
-  }
-  
-  moab::EntityHandle transfer_tri(moab::EntityHandle tri) {
-    moab::ErrorCode rval;
-    // get vertices from original instance
-    moab::Range verts;
-    rval = orig_mbi->get_connectivity(&tri, 1, verts);
-    MB_CHK_ERR_CONT(rval);
-    assert(verts.size() == 3);
-
-    // get the triangle's vertex coordinates
-    moab::CartVect coords[3];
-    rval = orig_mbi->get_coords(verts, coords[0].array());
-    MB_CHK_ERR_CONT(rval);
-
-    // create vertices in the other instance
-    moab::Range new_verts;
-    rval = hw_mbi->create_vertices(coords[0].array(), 3, new_verts);
-    MB_CHK_ERR_CONT(rval);
-
-    std::vector<moab::EntityHandle> new_verts_vec;
-    for(moab::Range::iterator i = new_verts.begin(); i != new_verts.end(); i++) {
-      new_verts_vec.push_back(*i);
-    }
-    // create triangle
-    moab::EntityHandle new_tri;
-    rval = hw_mbi->create_element(moab::MBTRI, &(new_verts_vec[0]), 3, new_tri);
-    MB_CHK_ERR_CONT(rval);
-
-    return new_tri;
   }
   
   int get_num_leaves() { return num_leaves; }
@@ -394,7 +299,12 @@ int main (int argc, char** argv) {
     std::cout << "Num set leaves found: " << op->get_num_set_leaves() << std::endl;
     if(write_tris) std::cout << "Num set leaf triangles written: " << op->get_num_set_leaf_triangles_written() << std::endl;
   }
-    
+
+  // cleanup
+  delete MBI;
+  delete tool;
+  delete BVHManager;
+  
   return 0;
   
 }
