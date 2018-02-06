@@ -14,11 +14,11 @@
 
 typedef BVHCustomTraversalT<Vec3da, double, moab::EntityHandle> BVHCustomTraversal;
 
-class HexWriter : public WriteVisitor {
+class LeafWriter : public WriteVisitor {
 
 public:
 
-  HexWriter(moab::Interface* original_moab_instance,
+  LeafWriter(moab::Interface* original_moab_instance,
 	    bool write_tris = true,
 	    bool write_leaves = true,
 	    bool write_set_leaves = false) : WriteVisitor(original_moab_instance),
@@ -31,7 +31,7 @@ public:
     found_tris.clear();
   }
 
-  ~HexWriter() {
+  ~LeafWriter() {
     delete new_mbi;
   }
   
@@ -283,10 +283,8 @@ int main (int argc, char** argv) {
   //create the traversal class
   BVHCustomTraversal*  tool = new BVHCustomTraversal();
   MBRay ray; ray.tfar = inf;
-  HexWriter* op = new HexWriter(MBI, write_tris, true, write_set_leaves);
+  LeafWriter* op = new LeafWriter(MBI, write_tris, true, write_set_leaves);
   tool->traverse(root, ray, *op);
-
-  bool result = op->validate_tree(ent);
 
   // output about standard leaves
   std::cout << "Num leaves found: " << op->get_num_leaves() << std::endl;

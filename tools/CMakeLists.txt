@@ -8,9 +8,12 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/tests)
 ADD_EXECUTABLE(ray_fire ray_fire.cpp ${SRC_FILES})
 ADD_EXECUTABLE(leaf_writer leafwriter.cpp ${SRC_FILES})
 ADD_EXECUTABLE(traversal_writer travwriter.cpp ${SRC_FILES})
+ADD_EXECUTABLE(bvh_validator validator.cpp ${SRC_FILES})
 ADD_EXECUTABLE(performance_report performance_report.cpp ${SRC_FILES})
 
 TARGET_LINK_LIBRARIES(ray_fire  ${MOAB_LIBRARIES})
 TARGET_LINK_LIBRARIES(leaf_writer ${MOAB_LIBRARIES})
 TARGET_LINK_LIBRARIES(traversal_writer ${MOAB_LIBRARIES})
+TARGET_LINK_LIBRARIES(bvh_validator ${MOAB_LIBRARIES})
 TARGET_LINK_LIBRARIES(performance_report ${MOAB_LIBRARIES})
+

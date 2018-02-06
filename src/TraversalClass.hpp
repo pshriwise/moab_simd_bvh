@@ -6,7 +6,7 @@
 #include "Intersector.h"
 #include "Stack.h"
 #include "Primitive.h"
-#include "BaseVisitor.hpp"
+#include "TraversalVisitor.hpp"
 
 #include <vector>
 

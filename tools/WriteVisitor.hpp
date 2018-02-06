@@ -3,18 +3,15 @@
 #include "BaseVisitor.hpp"
 #include "moab/Core.hpp"
 
-class WriteVisitor : public BVHOperator<Vec3da,double,moab::EntityHandle> {
+class WriteVisitor : public BaseVisitor {
 
 public:
-  WriteVisitor(moab::Interface* mbi) {
-    orig_mbi = mbi;
+  WriteVisitor(moab::Interface* mbi) : BaseVisitor(mbi) {
     new_mbi = new moab::Core();
   }
   
   // MOAB instance used to write vtk files
   moab::Interface* new_mbi;
-  // MOAB instance used to load file and build the tree
-  moab::Interface* orig_mbi;
 
   ~WriteVisitor() { delete new_mbi; }
   
@@ -22,7 +19,6 @@ public:
 
   moab::Interface* write_mbi() { return new_mbi; }
 
-  moab::Interface* original_mbi() { return orig_mbi; }
   void write_and_clear(std::string filename) {
     
     moab::ErrorCode rval;
@@ -70,23 +66,6 @@ public:
     return hex;
   }
   
-  int find_child_number(NodeRef current_node, NodeRef previous_node) {
-    
-    const Node* node = previous_node.bnode();
-    
-    // find what "number" this child is
-    size_t child_number = -1;
-    for(size_t i = 0; i < N; i++){
-      if ( node->child(i) == current_node ) {
-	child_number = i;
-	break;
-      }
-    }
-    assert( child_number >= 0 );
-
-    return child_number;
-  }
-
   std::vector<moab::EntityHandle> transfer_tris(std::vector<moab::EntityHandle> tris) {
     std::vector<moab::EntityHandle> new_tris;
     for(std::vector<moab::EntityHandle>::iterator i = tris.begin(); i != tris.end(); i++) {
