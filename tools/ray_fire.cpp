@@ -116,7 +116,9 @@ int main(int argc, char** argv) {
 
     rval = BVHManager->fireRay(volume, r);
     MB_CHK_SET_ERR(rval, "Failed to fire user-specified ray");
-    
+
+    std::cout << r << std::endl;
+    return rval;
   }
 
 
