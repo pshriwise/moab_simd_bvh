@@ -139,31 +139,6 @@ public:
     return;
   }
 
-  void create_trav_ray(TravRay ray) {
-    moab::ErrorCode rval;
-    moab::Range ray_verts;
-    std::vector<double> vertex_coords;
-    vertex_coords.push_back(ray.org.x); vertex_coords.push_back(ray.org.y); vertex_coords.push_back(ray.org.z);
-    ray.dir = ray.dir* 50;
-    vertex_coords.push_back(ray.dir.x); vertex_coords.push_back(ray.dir.y); vertex_coords.push_back(ray.dir.z);
-      
-    rval = tw_mbi->create_vertices(&(vertex_coords[0]), 2, ray_verts);
-    MB_CHK_ERR_CONT(rval);
-
-    std::vector<moab::EntityHandle> ray_verts_vec;
-    for(moab::Range::iterator i = ray_verts.begin(); i != ray_verts.end(); i++) {
-      ray_verts_vec.push_back(*i);
-    }
-    
-    moab::EntityHandle edge;
-    rval = tw_mbi->create_element(moab::MBEDGE, &(ray_verts_vec[0]), 2, edge);
-    MB_CHK_ERR_CONT(rval);
-
-    write_and_clear("trav_ray.vtk");
-    
-    return;
-  }
-
   void write_and_clear(std::string filename) {
 
     moab::ErrorCode rval;
