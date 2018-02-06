@@ -14,23 +14,23 @@
 
 typedef BVHCustomTraversalT<Vec3da, double, moab::EntityHandle> BVHCustomTraversal;
 
-class TravWriter : public BVHOperator {
+class TravWriter : public BVHOperator<Vec3da, double, moab::EntityHandle> {
 
 public:
 
   TravWriter(moab::Interface* original_moab_instance) : nodes_visited(0) {
-    hw_mbi = new moab::Core();
+    tw_mbi = new moab::Core();
   }
 
   ~TravWriter() {
-    delete hw_mbi;
+    delete tw_mbi;
   }
   
 private:
   // some counters
   int nodes_visited;
   // MOAB instance used to write leaf boxes
-  moab::Interface *hw_mbi;
+  moab::Interface *tw_mbi;
   // MOAB instance used to load file and construct boxes origiinally
   moab::Interface *orig_mbi;
   
@@ -63,7 +63,7 @@ public:
 	aabb_to_hex(box);
 
       }
-
+      
       std::stringstream outfilename;
       outfilename << "step_" << std::setfill('0') << std::setw(4) << nodes_visited << ".vtk";
       write_and_clear(outfilename.str());
@@ -83,7 +83,7 @@ public:
     return;
   }
 
-  virtual void leaf(NodeRef current_node, NodeRef previous_node) {
+  virtual void leaf(NodeRef current_node, NodeRef previous_node, Ray ray) {
     
     // if node is empty, do nothing
     if ( current_node.isEmpty() ) return;
@@ -107,7 +107,7 @@ public:
       moab::EntityHandle tri = prims[i].eh;
       transfer_tri(tri);
     }
-    
+
     std::stringstream outfilename;
     outfilename << "step_" << std::setfill('0') << std::setw(4) << nodes_visited << ".vtk";
     write_and_clear(outfilename.str());
@@ -115,14 +115,64 @@ public:
     return;
   }
 
+  void create_ray(Ray ray) {
+    moab::ErrorCode rval;
+    moab::Range ray_verts;
+    std::vector<double> vertex_coords;
+    vertex_coords.push_back(ray.org.x); vertex_coords.push_back(ray.org.y); vertex_coords.push_back(ray.org.z);
+    ray.dir = ray.dir* 50;
+    vertex_coords.push_back(ray.dir.x); vertex_coords.push_back(ray.dir.y); vertex_coords.push_back(ray.dir.z);
+      
+    rval = tw_mbi->create_vertices(&(vertex_coords[0]), 2, ray_verts);
+    MB_CHK_ERR_CONT(rval);
+
+    std::vector<moab::EntityHandle> ray_verts_vec;
+    for(moab::Range::iterator i = ray_verts.begin(); i != ray_verts.end(); i++) {
+      ray_verts_vec.push_back(*i);
+    }
+    
+    moab::EntityHandle edge;
+    rval = tw_mbi->create_element(moab::MBEDGE, &(ray_verts_vec[0]), 2, edge);
+    MB_CHK_ERR_CONT(rval);
+
+    write_and_clear("ray.vtk");
+    
+    return;
+  }
+
+  void create_trav_ray(TravRay ray) {
+    moab::ErrorCode rval;
+    moab::Range ray_verts;
+    std::vector<double> vertex_coords;
+    vertex_coords.push_back(ray.org.x); vertex_coords.push_back(ray.org.y); vertex_coords.push_back(ray.org.z);
+    ray.dir = ray.dir* 50;
+    vertex_coords.push_back(ray.dir.x); vertex_coords.push_back(ray.dir.y); vertex_coords.push_back(ray.dir.z);
+      
+    rval = tw_mbi->create_vertices(&(vertex_coords[0]), 2, ray_verts);
+    MB_CHK_ERR_CONT(rval);
+
+    std::vector<moab::EntityHandle> ray_verts_vec;
+    for(moab::Range::iterator i = ray_verts.begin(); i != ray_verts.end(); i++) {
+      ray_verts_vec.push_back(*i);
+    }
+    
+    moab::EntityHandle edge;
+    rval = tw_mbi->create_element(moab::MBEDGE, &(ray_verts_vec[0]), 2, edge);
+    MB_CHK_ERR_CONT(rval);
+
+    write_and_clear("trav_ray.vtk");
+    
+    return;
+  }
+
   void write_and_clear(std::string filename) {
 
     moab::ErrorCode rval;
-    rval = hw_mbi->write_file(filename.c_str());
+    rval = tw_mbi->write_file(filename.c_str());
     MB_CHK_ERR_CONT(rval);
 
     // clean out mesh for next leaf write
-    rval = hw_mbi->delete_mesh();
+    rval = tw_mbi->delete_mesh();
     MB_CHK_ERR_CONT(rval);
 
     return;
@@ -145,7 +195,7 @@ public:
     // create mesh vertices and hex element for box
     moab::ErrorCode rval;
     moab::Range hex_verts;
-    rval = hw_mbi->create_vertices(&(vertex_coords[0]), 8, hex_verts);
+    rval = tw_mbi->create_vertices(&(vertex_coords[0]), 8, hex_verts);
     MB_CHK_ERR_CONT(rval);
 
     // convet to vector - MOAB has no element constructor using Ranges?
@@ -156,7 +206,7 @@ public:
 
     // create hex element
     moab::EntityHandle hex;
-    rval = hw_mbi->create_element(moab::MBHEX, &(hex_vert_vec[0]), 8, hex);
+    rval = tw_mbi->create_element(moab::MBHEX, &(hex_vert_vec[0]), 8, hex);
     MB_CHK_ERR_CONT(rval);
 
     return hex;
@@ -210,7 +260,7 @@ public:
 
     // create vertices in the other instance
     moab::Range new_verts;
-    rval = hw_mbi->create_vertices(coords[0].array(), 3, new_verts);
+    rval = tw_mbi->create_vertices(coords[0].array(), 3, new_verts);
     MB_CHK_ERR_CONT(rval);
 
     std::vector<moab::EntityHandle> new_verts_vec;
@@ -219,7 +269,7 @@ public:
     }
     // create triangle
     moab::EntityHandle new_tri;
-    rval = hw_mbi->create_element(moab::MBTRI, &(new_verts_vec[0]), 3, new_tri);
+    rval = tw_mbi->create_element(moab::MBTRI, &(new_verts_vec[0]), 3, new_tri);
     MB_CHK_ERR_CONT(rval);
 
     return new_tri;
@@ -323,9 +373,10 @@ int main (int argc, char** argv) {
 
   // perform traversal
   TravWriter* op = new TravWriter(MBI);
+  op->create_ray(ray);
   tool->traverse(root, ray, *op);
-  op->write();
-    
+
+  
   return 0;
   
 }

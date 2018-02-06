@@ -14,7 +14,7 @@
 
 typedef BVHCustomTraversalT<Vec3da, double, moab::EntityHandle> BVHCustomTraversal;
 
-class HexWriter : public BVHOperator {
+class HexWriter : public BVHOperator<Vec3da,double,moab::EntityHandle>{
 
 public:
 
@@ -108,7 +108,7 @@ public:
     return;
   }
 
-  virtual void leaf(NodeRef current_node, NodeRef previous_node) {
+  virtual void leaf(NodeRef current_node, NodeRef previous_node, Ray ray) {
     if (!write_leaves) { return; }
     
     // if node is empty, do nothing

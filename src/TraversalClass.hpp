@@ -29,7 +29,7 @@ public:
   
   bool intersect(NodeRef& node, const TravRay& ray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& dist, size_t& mask);
   
-  void traverse(NodeRef root, RayT<V,P,I> & ray, BVHOperator& op);
+  void traverse(NodeRef root, RayT<V,P,I> & ray, BVHOperator<V,P,I>& op);
 
 };
 
@@ -41,7 +41,7 @@ bool BVHCustomTraversalT<V,P,I>::intersect(NodeRef& node, const TravRay& ray, co
   }
 
 template<typename V, typename P, typename I>
-void BVHCustomTraversalT<V,P,I>::traverse(NodeRef root, RayT<V,P,I> & ray, BVHOperator& op) {
+void BVHCustomTraversalT<V,P,I>::traverse(NodeRef root, RayT<V,P,I> & ray, BVHOperator<V,P,I>& op) {
 
     /* initialiez stack state */
     StackItemT<NodeRef> stack[stackSize];
@@ -106,7 +106,7 @@ void BVHCustomTraversalT<V,P,I>::traverse(NodeRef root, RayT<V,P,I> & ray, BVHOp
 	    nodeTraverser.traverseClosest(cur, mask, tNear, stackPtr, stackEnd);
 	  }
 
-	op.leaf(cur, previous_node);
+	op.leaf(cur, previous_node, ray);
 	
       }
     return;
