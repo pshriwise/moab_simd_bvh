@@ -807,19 +807,21 @@ class BVH {
     return;
   }
 
-  __forceinline void intersectClosest(NodeRef root, Ray &ray) {
+
+    static inline bool intersectNearest(NodeRef& node, const TravRay& ray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& dist, size_t& mask) {
+    if(node.isLeaf() || node.isSetLeaf() ) return false;
+    mask = nearestOnBox<I>(*node.node(),ray,tnear,tfar,dist);
+    return true;
+  }
+
+  
+  inline void intersectClosest(NodeRef root, Ray &ray) {
     TravRay vray(ray.org, ray.dir);
     intersectClosest(root, ray, vray);
     return;
   }
-
-  __forceinline void closest_to_location(NodeRef root, Ray &ray) {
-    TravRay vray(ray.org);
-    intersectRay(root, ray, vray);
-    return;
-  }
   
-  __forceinline void closest_to_location(NodeRef root, Ray &ray, TravRay &vray) {
+  inline void intersectClosest(NodeRef root, Ray &ray, TravRay &vray) {
         /* initialiez stack state */
     StackItemT<NodeRef> stack[stackSize];
     StackItemT<NodeRef>* stackPtr = stack+1;
@@ -840,12 +842,12 @@ class BVH {
 	NodeRef cur = NodeRef(stackPtr->ptr);
 	
 	// if the ray doesn't reach this node, move to next
-	if(*(float*)&stackPtr->dist > (ray.tfar*ray.tfar)) { continue; }
+	if(*(float*)&stackPtr->dist > ray.tfar) { continue; }
 	
 	while (true)
 	  {
 	    size_t mask = 0; vfloat4 tNear(inf);
-	    bool nodeIntersected = intersectClosest(cur, vray, ray_near, ray_far, tNear, mask);
+	    bool nodeIntersected = intersectNearest(cur, vray, ray_near, ray_far, tNear, mask);
 
 	    if(!nodeIntersected) {
 	      break;
@@ -855,34 +857,33 @@ class BVH {
 
 	    nodeTraverser.traverseClosest(cur, mask, tNear, stackPtr, stackEnd);
 	  }
-      
 
     	if ( !cur.isEmpty() ) {
 	  // leaf (set distance to nearest/farthest box intersection for now)
-	
-	if (cur.isSetLeaf() ) {
-	  // update the geom id of the travray
-	  SetNode* snode = (SetNode*)cur.snode();
-	  vray.setID = snode->setID;
-	  if(snode->fwdID == ray.instID) {
-	    vray.sense = 0;
+	  
+	  if (cur.isSetLeaf() ) {
+	    // update the geom id of the travray
+	    SetNode* snode = (SetNode*)cur.snode();
+	    vray.setID = snode->setID;
+	    if(snode->fwdID == ray.instID) {
+	      vray.sense = 0;
+	    }
+	    else {
+	      //	    assert(snode->revID == ray.instID);
+	      vray.sense = 1;
+	    }
+	    // WILL ALSO SET SENSE HERE AT SOME POINT
+	    NodeRef setNode = cur.setLeaf();
+	    intersectClosest(setNode, ray, vray);
+	    continue;
 	  }
-	  else {
-	    //	    assert(snode->revID == ray.instID);
-	    vray.sense = 1;
-	  }
-	  // WILL ALSO SET SENSE HERE AT SOME POINT
-	  NodeRef setNode = cur.setLeaf();
-	  intersectRay(setNode, ray, vray);
-	  continue;
-	}
-	
+	  
 	  size_t numPrims;
 	  P* primIDs = (P*)cur.leaf(numPrims);
 	  
 	  for (size_t i = 0; i < numPrims; i++) {
 	    P t = primIDs[i];
-	    t.closestPnt(vray, ray, filter, (void*)MDAM);
+	    t.closestPnt(vray, ray, (void*)MDAM);
 	  }
 	}
       }

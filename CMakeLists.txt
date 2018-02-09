@@ -54,9 +54,11 @@ LIST(APPEND TEST_FILES "manager")
 LIST(APPEND TEST_FILES "buildsettings")
 LIST(APPEND TEST_FILES "distant_rays")
 LIST(APPEND TEST_FILES "filter_funcs")
+LIST(APPEND TEST_FILES "closest_to_location")
 LIST(APPEND TEST_FILES "moab_mesh")
 LIST(APPEND TEST_FILES "moab_old")
 LIST(APPEND TEST_FILES "MBVH")
+
 
 ADD_SUBDIRECTORY(tests)
 

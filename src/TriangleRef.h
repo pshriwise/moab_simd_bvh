@@ -260,12 +260,13 @@ template<typename V, typename P, typename I>
       ray.primID = eh;
       ray.geomID = tray.setID;
 
-      moab::CartVect normal = ((coords[1]-coords[0]) % (coords[2]-coords[0]));
+      moab::CartVect normal = ((coords[1]-coords[0]) * (coords[2]-coords[0]));
+      Vec3da norm = Vec3da(normal[0], normal[1], normal[2]);
       
-      ray.Ng = tray.sense ? (normal * -1.0) : normal;
+      ray.Ng = tray.sense ? (norm * -1.0) : norm;
       ray.Ng.normalize();
 
-      ray.dir = vec;
+      ray.dir = Vec3da(vec[0], vec[1], vec[2]);
       ray.dir.normalize();
     }
 

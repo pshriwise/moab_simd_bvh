@@ -268,7 +268,7 @@ __forceinline size_t intersectBox(const AANode &node, const TravRayT<I> &ray, co
 };
 
 template<typename I>
-__forceinline size_t intersectClosest(const AANode &node, const TravRayT<I> &ray, const vfloat4 &tnear, const vfloat4 &tfar, vfloat4 &dist) {
+__forceinline size_t nearestOnBox(const AANode &node, const TravRayT<I> &ray, const vfloat4 &tnear, const vfloat4 &tfar, vfloat4 &dist) {
 
 
   // find the center of the boxes
@@ -286,4 +286,4 @@ __forceinline size_t intersectClosest(const AANode &node, const TravRayT<I> &ray
 
   // we claim to "intersect" all boxes
   return 15;
-}
+};

@@ -7,7 +7,7 @@
 
 // for abs(x) >= min_rcp_input the newton raphson rcp calculation does not fail
 static const float min_rcp_input = std::numeric_limits<float>::min() /* FIX ME */ *1E5 /* SHOULDNT NEED TO MULTIPLY BY THIS VALUE */;  
-static const int BVH_MAX_DEPTH = 32;
+static const int BVH_MAX_DEPTH = 64;
 
 /* we consider floating point numbers in that range as valid input numbers */
 static float FLT_LARGE = 1.844E18f;
