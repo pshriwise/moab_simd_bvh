@@ -267,3 +267,23 @@ __forceinline size_t intersectBox(const AANode &node, const TravRayT<I> &ray, co
   return mask;
 };
 
+template<typename I>
+__forceinline size_t intersectClosest(const AANode &node, const TravRayT<I> &ray, const vfloat4 &tnear, const vfloat4 &tfar, vfloat4 &dist) {
+
+
+  // find the center of the boxes
+  const vfloat4 centerX = (node.lower_x+node.upper_x)*0.5;
+  const vfloat4 centerY = (node.lower_y+node.upper_y)*0.5;
+  const vfloat4 centerZ = (node.lower_z+node.upper_z)*0.5;
+
+  // compute the vector from the ray origin to the box center
+  const vfloat4 tX = ray.org.x - centerX;
+  const vfloat4 tY = ray.org.y - centerY;
+  const vfloat4 tZ = ray.org.z - centerZ;
+
+  // return the squared distance to the center of the box
+  dist = (tX*tX) + (tY*tY) + (tZ*tZ);
+
+  // we claim to "intersect" all boxes
+  return 15;
+}

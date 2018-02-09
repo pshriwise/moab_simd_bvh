@@ -807,4 +807,87 @@ class BVH {
     return;
   }
 
+  __forceinline void intersectClosest(NodeRef root, Ray &ray) {
+    TravRay vray(ray.org, ray.dir);
+    intersectClosest(root, ray, vray);
+    return;
+  }
+
+  __forceinline void closest_to_location(NodeRef root, Ray &ray) {
+    TravRay vray(ray.org);
+    intersectRay(root, ray, vray);
+    return;
+  }
+  
+  __forceinline void closest_to_location(NodeRef root, Ray &ray, TravRay &vray) {
+        /* initialiez stack state */
+    StackItemT<NodeRef> stack[stackSize];
+    StackItemT<NodeRef>* stackPtr = stack+1;
+    StackItemT<NodeRef>* stackEnd = stack+stackSize;
+    stack[0].ptr = root;
+    stack[0].dist = neg_inf;
+
+    
+    vfloat4 ray_near = std::max(ray.tnear, 0.0);
+    vfloat4 ray_far = std::max(ray.tfar, 0.0);
+    
+    BVHTraverser nodeTraverser = BVHTraverser();
+
+    while (true) pop:
+      {
+	if(stackPtr == stack) break;
+	stackPtr--;
+	NodeRef cur = NodeRef(stackPtr->ptr);
+	
+	// if the ray doesn't reach this node, move to next
+	if(*(float*)&stackPtr->dist > (ray.tfar*ray.tfar)) { continue; }
+	
+	while (true)
+	  {
+	    size_t mask = 0; vfloat4 tNear(inf);
+	    bool nodeIntersected = intersectClosest(cur, vray, ray_near, ray_far, tNear, mask);
+
+	    if(!nodeIntersected) {
+	      break;
+	    }
+
+	    if (mask == 0) { goto pop; }
+
+	    nodeTraverser.traverseClosest(cur, mask, tNear, stackPtr, stackEnd);
+	  }
+      
+
+    	if ( !cur.isEmpty() ) {
+	  // leaf (set distance to nearest/farthest box intersection for now)
+	
+	if (cur.isSetLeaf() ) {
+	  // update the geom id of the travray
+	  SetNode* snode = (SetNode*)cur.snode();
+	  vray.setID = snode->setID;
+	  if(snode->fwdID == ray.instID) {
+	    vray.sense = 0;
+	  }
+	  else {
+	    //	    assert(snode->revID == ray.instID);
+	    vray.sense = 1;
+	  }
+	  // WILL ALSO SET SENSE HERE AT SOME POINT
+	  NodeRef setNode = cur.setLeaf();
+	  intersectRay(setNode, ray, vray);
+	  continue;
+	}
+	
+	  size_t numPrims;
+	  P* primIDs = (P*)cur.leaf(numPrims);
+	  
+	  for (size_t i = 0; i < numPrims; i++) {
+	    P t = primIDs[i];
+	    t.closestPnt(vray, ray, filter, (void*)MDAM);
+	  }
+	}
+      }
+    
+    return;
+  }
+  
 };

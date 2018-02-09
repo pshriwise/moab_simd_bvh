@@ -235,6 +235,42 @@ template<typename V, typename P, typename I>
     return hit;
   }
 
+
+  __forceinline void closestPnt(const TravRayT<I>& tray, RayT<V,P,I> &ray, void* mesh_ptr = NULL) {
+
+    if( !mesh_ptr ) MB_CHK_SET_ERR_CONT(moab::MB_FAILURE, "No Mesh Pointer");
+
+    MOABDirectAccessManager* mdam = (MOABDirectAccessManager*) mesh_ptr;
+
+    moab::CartVect coords[3];
+
+    coords[0] = moab::CartVect(mdam->xPtr[i1], mdam->yPtr[i1], mdam->zPtr[i1]);
+    coords[1] = moab::CartVect(mdam->xPtr[i2], mdam->yPtr[i2], mdam->zPtr[i2]);
+    coords[2] = moab::CartVect(mdam->xPtr[i3], mdam->yPtr[i3], mdam->zPtr[i3]);
+
+    moab::CartVect closest_out;
+    moab::CartVect location = moab::CartVect(ray.org.x, ray.org.y, ray.org.z);
+
+    moab::GeomUtil::closest_location_on_tri(location, coords, closest_out);
+
+    moab::CartVect vec = closest_out-location;
+    double dist = vec.length();
+    if ( dist < ray.tfar) {
+      ray.tfar = dist;
+      ray.primID = eh;
+      ray.geomID = tray.setID;
+
+      moab::CartVect normal = ((coords[1]-coords[0]) % (coords[2]-coords[0]));
+      
+      ray.Ng = tray.sense ? (normal * -1.0) : normal;
+      ray.Ng.normalize();
+
+      ray.dir = vec;
+      ray.dir.normalize();
+    }
+
+  }
+  
 };
 
 typedef MBTriangleRefT<Vec3da, double, moab::EntityHandle> MBTriangleRef;

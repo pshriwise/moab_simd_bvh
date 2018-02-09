@@ -116,6 +116,7 @@ struct TravRayT {
   
     Vec3fa org_xyz, dir_xyz;
     Vec3vf org, dir, rdir;
+    Vec3vf tnear;
 #if defined(__AVX2__)
     Vec3vf org_rdir;
 #endif
