@@ -46,6 +46,11 @@ __forceinline const size_t movemask( const vbool4& v ) { return sgn(v.b[3]) << 3
 
 __forceinline bool all( const vbool4& v ) { return v.b[0] && v.b[1] && v.b[2] && v.b[3]; }
 
+__forceinline const vbool4 operator -( const vbool4& a) { return vbool4(!a[0], !a[1], !a[2], !a[3]); }
+
+__forceinline const vbool4 operator +(const vbool4& a, const vbool4 &c) { return vbool4(a[0]&&c[0],a[1]&&c[1],a[2]&&c[2],a[3]&&c[3]); }
+
+
 /* ////////// Unary Ops ////////// */
 /* __forceinline const vbool4 operator +( const vbool4& a ) { return a; } */
 /* __forceinline const vbool4 operator -( const vbool4& a ) { return vbool4(-a[0],-a[1],-a[2],-a[3]); } */

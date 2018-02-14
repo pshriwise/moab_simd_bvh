@@ -160,6 +160,7 @@ int main(int argc, char** argv) {
   start = std::clock();
   MBVHM->build_all();
   duration = (std::clock() - start);
+  MBVH* BVH = MBVHM->MOABBVH;
   std::cout << "BVH build complete after " << duration / (double)CLOCKS_PER_SEC << " seconds" << std::endl;
   if ( mem_report ) report_memory_usage();
 
@@ -185,7 +186,7 @@ int main(int argc, char** argv) {
   
   double accumulated_error = 0.0;
   
-  int num_pnts = 1000;
+  int num_pnts = 10000;
 
   int i = 0;
 
@@ -195,7 +196,7 @@ int main(int argc, char** argv) {
   
   while(i < num_pnts) {
     i++;
-    moab::CartVect origin = src_sample(GQT, vol);
+    moab::CartVect origin = /*{0.0, 0.0, 0.0}; */ src_sample(GQT, vol);
     
     // fire ray
     moab::CartVect nearest_location;
@@ -208,19 +209,13 @@ int main(int argc, char** argv) {
     MB_CHK_SET_ERR(rval, "Failed in MOAB to intersect a ray with the mesh");
     moab_total += duration;
 
-    std::cout << dist << std::endl;
-    
     r = MBRay(origin.array(), Vec3da(0,0,0), 0.0, inf);
     
     start = std::clock();
-    MBVHM->MOABBVH->intersectClosest(*root, r);
+    BVH->intersectClosest(*root, r);
     duration = (std::clock() - start);
     total += duration;
 
-    std::cout << r.tfar << std::endl;
-
-    std::cout << std::endl;
-    
     if (r.primID == -1) {
       misses++;
       continue;
@@ -234,7 +229,6 @@ int main(int argc, char** argv) {
       incorrect_triangles++;
     }
 
-    
     // make sure the distance to hit is the same
     if( dist != r.tfar ) {
       incorrect_distances++;
@@ -276,9 +270,6 @@ int main(int argc, char** argv) {
             << std::endl;
   std::cout << "Accumulated error due to incorrect distances: " << std::setprecision(20)
 	    << accumulated_error << std::endl;
-
-
-
   
   return misses+incorrect_distances;
   

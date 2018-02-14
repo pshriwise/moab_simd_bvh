@@ -20,6 +20,12 @@ struct vfloat4
   __forceinline vfloat4( const __m128 a ) : v(a) {}
   __forceinline operator const __m128&( void ) const { return v; }
   __forceinline operator       __m128&( void )       { return v; }
+
+  __forceinline vfloat4 ( const vbool4& other ) {f[0] = (float)other.b[0];
+                                                 f[1] = (float)other.b[1];
+						 f[2] = (float)other.b[2];
+						 f[3] = (float)other.b[3];
+  }
   
   __forceinline vfloat4 (const vfloat4& other) { f[0] = other.f[0];
                                           f[1] = other.f[1];

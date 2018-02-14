@@ -271,9 +271,9 @@ template<typename I>
 __forceinline size_t nearestOnBox(const AANode &node, const TravRayT<I> &ray, const vfloat4 &tnear, const vfloat4 &tfar, vfloat4 &dist) {
 
   // find the center of the boxes
-  const vfloat4 centerX = (node.lower_x+node.upper_x)*0.5;
-  const vfloat4 centerY = (node.lower_y+node.upper_y)*0.5;
-  const vfloat4 centerZ = (node.lower_z+node.upper_z)*0.5;
+  /* const vfloat4 centerX = (node.lower_x+node.upper_x)*0.5; */
+  /* const vfloat4 centerY = (node.lower_y+node.upper_y)*0.5; */
+  /* const vfloat4 centerZ = (node.lower_z+node.upper_z)*0.5; */
 
   // compute the vector from the ray origin to the box center
   const vfloat4 tminX = node.lower_x - ray.org.x;
@@ -283,9 +283,9 @@ __forceinline size_t nearestOnBox(const AANode &node, const TravRayT<I> &ray, co
   const vfloat4 tmaxY = ray.org.y - node.upper_y;
   const vfloat4 tmaxZ = ray.org.z - node.upper_z;
 
-  vfloat4 tX = max(tminX, tmaxX);
-  vfloat4 tY = max(tminY, tmaxY);
-  vfloat4 tZ = max(tminZ, tmaxZ);
+  vfloat4 tX = max(tminX, tmaxX, tnear);
+  vfloat4 tY = max(tminY, tmaxY, tnear);
+  vfloat4 tZ = max(tminZ, tmaxZ, tnear);
 
   dist = max(tX,tY,tZ);
 
