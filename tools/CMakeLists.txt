@@ -11,11 +11,11 @@ ADD_EXECUTABLE(traversal_writer travwriter.cpp ${SRC_FILES})
 ADD_EXECUTABLE(bvh_validator validator.cpp ${SRC_FILES})
 ADD_EXECUTABLE(performance_report performance_report.cpp ${SRC_FILES})
 
-TARGET_LINK_LIBRARIES(ray_fire  ${MOAB_LIBRARIES})
-TARGET_LINK_LIBRARIES(leaf_writer ${MOAB_LIBRARIES})
-TARGET_LINK_LIBRARIES(traversal_writer ${MOAB_LIBRARIES})
-TARGET_LINK_LIBRARIES(bvh_validator ${MOAB_LIBRARIES})
-TARGET_LINK_LIBRARIES(performance_report ${MOAB_LIBRARIES})
+TARGET_LINK_LIBRARIES(ray_fire  ${MOAB_LIBRARIES} MBVH)
+TARGET_LINK_LIBRARIES(leaf_writer ${MOAB_LIBRARIES} MBVH)
+TARGET_LINK_LIBRARIES(traversal_writer ${MOAB_LIBRARIES} MBVH)
+TARGET_LINK_LIBRARIES(bvh_validator ${MOAB_LIBRARIES} MBVH)
+TARGET_LINK_LIBRARIES(performance_report ${MOAB_LIBRARIES} MBVH)
 
 INSTALL( TARGETS ray_fire leaf_writer traversal_writer bvh_validator performance_report
          DESTINATION ${TOOLS_INSTALL_DIR})
