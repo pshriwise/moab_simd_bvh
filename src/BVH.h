@@ -321,6 +321,18 @@ class BVH {
 
   inline NodeRef* Build(I* id, size_t numPrimitives, BVHSettings* settings = NULL) {
     // create BuildState of PrimitiveReferences
+
+    // if no primitives are passed, return a node pointing to emptt leaves
+    if(numPrimitives == 0) {
+      AANode *aanode = new AANode();
+      NodeRef* node = new NodeRef((size_t)aanode);
+      node->node()->setRef(0,NodeRef());
+      node->node()->setRef(1,NodeRef());
+      node->node()->setRef(2,NodeRef());
+      node->node()->setRef(3,NodeRef());
+      return node;
+    }
+    
     BuildState bs(0);
     for( size_t i = 0; i < numPrimitives; i++ ) {
       I handle = *(id+i);
