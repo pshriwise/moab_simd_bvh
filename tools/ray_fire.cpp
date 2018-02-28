@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
   ProgOptions po("A tool for firing rays on a DagMC geometry using a SIMD BVH.");
 
   //declare options
-  bool build_stats, trav_stats;
+  bool build_stats = false, trav_stats = false;
 
   int vol_gid = 1, num_rand_rays = 1000;
 
