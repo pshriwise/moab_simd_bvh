@@ -123,7 +123,6 @@ moab::ErrorCode MBVHManager::build_all() {
 
 
 moab::ErrorCode MBVHManager::fireRay( MBRay &ray ) {
-<<<<<<< 47b362ae076076d0218b837966cad6f89eaf9622
   NodeRef* root = get_root(ray.instID);
   if(!root) { MB_CHK_SET_ERR(moab::MB_FAILURE, "Failed to retrieve the root for EntitySet " << ray.instID); }
   MOABBVH->intersectRay(*root, ray);
@@ -151,18 +150,3 @@ moab::ErrorCode MBVHManager::closestToLocationSurf( MBRay &ray ) {
   return moab::MB_SUCCESS;
 }
 
-
-=======
-      NodeRef* root = get_root(ray.instID);
-    if(!root) { MB_CHK_SET_ERR(moab::MB_FAILURE, "Failed to retrieve the root for EntitySet " << ray.instID); }
-    MOABBVH->intersectRay(*root, ray);
-    return moab::MB_SUCCESS;
-  }
-
-moab::ErrorCode MBVHManager::fireRaySurf( MBRay &ray ) {
-    NodeRef* root = get_root(ray.geomID);
-    if(!root) { MB_CHK_SET_ERR(moab::MB_FAILURE, "Failed to retrieve the root for EntitySet " << ray.geomID); }
-    MOABBVH->intersectRay(*root, ray);
-    return moab::MB_SUCCESS;
-  }
->>>>>>> Adding shared library to build.
