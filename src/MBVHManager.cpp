@@ -123,15 +123,31 @@ moab::ErrorCode MBVHManager::build_all() {
 
 
 moab::ErrorCode MBVHManager::fireRay( MBRay &ray ) {
-      NodeRef* root = get_root(ray.instID);
-    if(!root) { MB_CHK_SET_ERR(moab::MB_FAILURE, "Failed to retrieve the root for EntitySet " << ray.instID); }
-    MOABBVH->intersectRay(*root, ray);
-    return moab::MB_SUCCESS;
-  }
+  NodeRef* root = get_root(ray.instID);
+  if(!root) { MB_CHK_SET_ERR(moab::MB_FAILURE, "Failed to retrieve the root for EntitySet " << ray.instID); }
+  MOABBVH->intersectRay(*root, ray);
+  return moab::MB_SUCCESS;
+}
 
 moab::ErrorCode MBVHManager::fireRaySurf( MBRay &ray ) {
-    NodeRef* root = get_root(ray.geomID);
-    if(!root) { MB_CHK_SET_ERR(moab::MB_FAILURE, "Failed to retrieve the root for EntitySet " << ray.geomID); }
-    MOABBVH->intersectRay(*root, ray);
-    return moab::MB_SUCCESS;
-  }
+  NodeRef* root = get_root(ray.geomID);
+  if(!root) { MB_CHK_SET_ERR(moab::MB_FAILURE, "Failed to retrieve the root for EntitySet " << ray.geomID); }
+  MOABBVH->intersectRay(*root, ray);
+  return moab::MB_SUCCESS;
+}
+
+moab::ErrorCode MBVHManager::closestToLocation( MBRay &ray ) {
+  NodeRef *root = get_root(ray.instID);
+  if(!root) { MB_CHK_SET_ERR(moab::MB_FAILURE, "Failed to retrieve the root for EntitySet " << ray.instID); }
+  MOABBVH->intersectClosest(*root, ray);
+  return moab::MB_SUCCESS;
+}
+  
+moab::ErrorCode MBVHManager::closestToLocationSurf( MBRay &ray ) {
+  NodeRef* root = get_root(ray.geomID);
+  if(!root) { MB_CHK_SET_ERR(moab::MB_FAILURE, "Failed to retrieve the root for EntitySet " << ray.geomID); }
+  MOABBVH->intersectClosest(*root, ray);
+  return moab::MB_SUCCESS;
+}
+
+
