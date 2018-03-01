@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
     MBRay r(ray_center, ray_dir);
     r.instID = volume;
 
-    rval = BVHManager->fireRay(volume, r);
+    rval = BVHManager->fireRay(r);
     MB_CHK_SET_ERR(rval, "Failed to fire user-specified ray");
 
     std::cout << r << std::endl;
@@ -144,7 +144,7 @@ int main(int argc, char** argv) {
       
       ray = MBRay(org.array(), dir.array());
       start = std::clock();
-      BVHManager->fireRay(volume, ray);
+      BVHManager->fireRay(ray);
       duration += std::clock() - start;
       if(ray.geomID == -1) { random_rays_missed++; }
     }

@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
     MBRay r(origins[i], directions[i]);
     r.instID = vols[0];
 
-    rval = MBVHM.fireRay(vols[0], r);
+    rval = MBVHM.fireRay(r);
     MB_CHK_SET_ERR(rval, "Failed to fire ray");
 
     CHECK_REAL_EQUAL(expected_distance, r.tfar, EPS);

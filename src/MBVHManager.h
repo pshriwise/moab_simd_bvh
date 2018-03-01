@@ -213,12 +213,19 @@ struct MBVHManager {
   }
 
 
-  inline moab::ErrorCode fireRay(const moab::EntityHandle &set, MBRay &ray) {
-    NodeRef* root = get_root(set);
-    if(!root) { MB_CHK_SET_ERR(moab::MB_FAILURE, "Failed to retrieve the root for EntitySet " << set); }
+  inline moab::ErrorCode fireRay( MBRay &ray ) {
+    NodeRef* root = get_root(ray.instID);
+    if(!root) { MB_CHK_SET_ERR(moab::MB_FAILURE, "Failed to retrieve the root for EntitySet " << ray.instID); }
     MOABBVH->intersectRay(*root, ray);
     return moab::MB_SUCCESS;
   }
-    
+
+  inline moab::ErrorCode fireRaySurf( MBRay &ray ) {
+    NodeRef* root = get_root(ray.geomID);
+    if(!root) { MB_CHK_SET_ERR(moab::MB_FAILURE, "Failed to retrieve the root for EntitySet " << ray.geomID); }
+    MOABBVH->intersectRay(*root, ray);
+    return moab::MB_SUCCESS;
+  }
+
 };
   

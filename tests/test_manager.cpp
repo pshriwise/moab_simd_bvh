@@ -80,8 +80,9 @@ moab::ErrorCode test_manager_for_file(std::string filename, int vol_idx, int sur
   Vec3da dir(0.0, 0.0, 1.0);
   
   MBRay r(org, dir, 0.0, inf);
-  
-  rval = MBVHM.fireRay(surfs[surf_idx], r);
+  r.geomID = surfs[surf_idx];
+    
+  rval = MBVHM.fireRaySurf(r);
   MB_CHK_SET_ERR(rval, "Failed to fire ray at surface " << surfs[0]);
   CHECK(r.tfar != (double)inf);
   CHECK(r.primID != -1);
@@ -90,7 +91,7 @@ moab::ErrorCode test_manager_for_file(std::string filename, int vol_idx, int sur
   r = MBRay(org, dir, 0.0, inf);
   r.instID = vols[vol_idx];
   
-  rval = MBVHM.fireRay(vols[vol_idx], r);
+  rval = MBVHM.fireRay(r);
   MB_CHK_SET_ERR(rval, "Failed to fire ray at surface " << surfs[0]);
   CHECK(r.tfar != (double)inf);
   CHECK_EQUAL(vols[vol_idx], r.instID);

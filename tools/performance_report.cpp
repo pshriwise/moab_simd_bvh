@@ -122,7 +122,7 @@ moab::ErrorCode test_model(std::string filename) {
     ray.instID = volumes[0];
 
     start = std::clock();
-    rval = MBVH->fireRay(volumes[0], ray);
+    rval = MBVH->fireRay(ray);
     bvh_ray_fire_duration += (std::clock() - start);
     MB_CHK_SET_ERR(rval, "Failed to fire ray " << ray << " on BVH");
 

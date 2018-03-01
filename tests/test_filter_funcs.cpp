@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
   ray.instID = vols[0];
   ray.tfar = inf;
   
-  rval = BVH->fireRay(vols[0], ray);
+  rval = BVH->fireRay(ray);
   MB_CHK_SET_ERR(rval, "Failed to fire ray");
 
   CHECK_REAL_EQUAL(15.0, ray.tfar, 0.0);
