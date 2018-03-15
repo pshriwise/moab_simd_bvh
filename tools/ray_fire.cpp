@@ -11,6 +11,7 @@
 #include "program_stats.hpp"
 #include "rayutil.hpp"
 
+#include <fstream>
 
 moab::ErrorCode set_volume(moab::Interface* MBI, int vol_id, moab::EntityHandle &volume) {
 
@@ -45,6 +46,8 @@ int main(int argc, char** argv) {
 
   moab::ErrorCode rval;
 
+  srand(12345);
+  
   moab::Interface *mbi = new moab::Core();
 
   // options handling
@@ -62,6 +65,8 @@ int main(int argc, char** argv) {
 
 
   std::string filename;
+
+  
   po.addRequiredArg<std::string>("MOAB Model", "Filename of the MOAB model.", &filename);
   
   po.addOpt<void>("build-stats,s", "Print the BVH structural statistics", &build_stats);
@@ -75,6 +80,8 @@ int main(int argc, char** argv) {
 
   po.addOpt<double>("r",   "Random ray radius. Random rays will begin at a distance r from the center of the random ray origin", &rand_ray_radius);
 
+  po.addOpt<std::string>("rf", "If provided, read rays from the provided csv file (x,y,z,u,v,w)");
+  
   po.addOpt<double>("cx",  "Specify the x-value of single ray generation");
   po.addOpt<double>("cy",  "Specify the y-value of single ray generation");
   po.addOpt<double>("cz",  "Specify the z-value of single ray generation");
@@ -103,6 +110,8 @@ int main(int argc, char** argv) {
   rval = set_volume(MBI, vol_gid, volume);
   MB_CHK_SET_ERR(rval, "Failed to get and set the volume");
 
+  int random_rays_missed = 0;
+  
   // fire specified ray, if any
   if( po.getOpt("cx", ray_center)   &&
       po.getOpt("cy", ray_center+1) &&
@@ -111,44 +120,102 @@ int main(int argc, char** argv) {
       po.getOpt("cv", ray_dir+1)    &&
       po.getOpt("cw", ray_dir+2) ) {
 
-    MBRay r(ray_center, ray_dir);
-    r.instID = volume;
-
-    rval = BVHManager->fireRay(r);
+    MBRay ray(ray_center, ray_dir);
+    ray.instID = volume;
+    rval = BVHManager->fireRay(ray);
     MB_CHK_SET_ERR(rval, "Failed to fire user-specified ray");
-
-    std::cout << r << std::endl;
+    if(ray.geomID == -1) { random_rays_missed++; }
+    std::cout << ray << std::endl;
+    
     return rval;
   }
 
 
   std::clock_t start;
   double duration = 0.0;
-  
-  /* Fire and time random rays */
-  if(num_rand_rays > 0) {
-    std::cout << "Firing " << num_rand_rays
-	      << " random rays at volume " << vol_gid << "..." << std::flush;
-  }
-  
-    MBRay ray;
-    moab::CartVect org, dir;
-    int random_rays_missed = 0;
-    org = moab::CartVect(rand_ray_center);
-    for(int i = 0; i < num_rand_rays; i++){
-      RNDVEC(dir);
 
-      if( rand_ray_radius > 0.0) {
-	org = dir * rand_ray_radius + moab::CartVect(rand_ray_center);
+  // if the user provided a ray file,
+  // then fire the rays from there and exit
+  std::string ray_file;
+
+  if ( po.getOpt("rf", &ray_file) ) {
+
+    std::ifstream file(ray_file);
+    int rays_fired = 0;
+    
+    std::string line;
+    std::string comma = ",";
+    double r[6];
+    while( file.good() ){
+      getline(file, line);
+      rays_fired++;
+      int index = 0;
+      while( line.size() ) {
+	size_t it = line.find(comma);
+	if (it == std::string::npos) {
+	  r[index] = stod(line);
+	  break;
+	}
+      std::string val = line.substr(0, it);
+      line.erase(0, it + comma.length());
+      r[index] = stod(val);
+      index++;
       }
-      
-      ray = MBRay(org.array(), dir.array());
+
+      MBRay ray;
+      ray.org = Vec3da(r[0], r[1], r[2]);
+      ray.dir = Vec3da(r[3], r[4], r[5]);
+      ray.instID = volume;
+      ray.tfar = inf;
+      ray.tnear = 0.0;
+
       start = std::clock();
       BVHManager->fireRay(ray);
       duration += std::clock() - start;
       if(ray.geomID == -1) { random_rays_missed++; }
     }
 
+    // repotr missed rays
+    if(random_rays_missed) {
+      std::cout << "Warning: " << random_rays_missed << " random rays did not hit the target volume" << std::endl;
+    }
+
+    // report on random rays if any were fired
+    if (num_rand_rays > 0 ) {
+      std::cout << "Total time per ray fire: " << duration / (double)CLOCKS_PER_SEC / num_rand_rays << " sec" << std::endl;
+      report_memory_usage();
+    }
+
+    return 0;
+
+  }
+  
+  /* Fire and time random rays */
+  if(num_rand_rays > 0) {
+    std::cout << "Firing " << num_rand_rays
+	      << " random rays at volume " << vol_gid << "..." << std::flush;
+  }
+
+  MBRay ray;
+  moab::CartVect org, dir;
+  
+  org = moab::CartVect(rand_ray_center);
+  for(int i = 0; i < num_rand_rays; i++){
+    RNDVEC(dir);
+    
+    if( rand_ray_radius > 0.0) {
+      org = dir * rand_ray_radius + moab::CartVect(rand_ray_center);
+    }
+    
+    
+    ray = MBRay(org.array(), dir.array());
+    ray.instID = volume;
+    start = std::clock();
+    BVHManager->fireRay(ray);
+    duration += std::clock() - start;
+    if(ray.geomID == -1) { random_rays_missed++; }
+  }
+  
     /// REPORTING ///
     std::cout << std::endl;
     
@@ -164,7 +231,6 @@ int main(int argc, char** argv) {
     // report on random rays if any were fired
     if (num_rand_rays > 0 ) {
       std::cout << "Total time per ray fire: " << duration / (double)CLOCKS_PER_SEC / num_rand_rays << " sec" << std::endl;
-
       report_memory_usage();
     }
 
