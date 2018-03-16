@@ -195,7 +195,8 @@ int main(int argc, char** argv) {
       ray.org = Vec3da(r[0], r[1], r[2]);
       ray.dir = Vec3da(r[3], r[4], r[5]);
       ray.instID = volume;
-
+      ray.tfar = inf; ray.tnear = zero;
+      
       rays_fired++;
       start = std::clock();
       rval = BVHManager->fireRay(ray);
