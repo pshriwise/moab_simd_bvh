@@ -69,11 +69,12 @@ double plucker_edge_test(const moab::CartVect& vertexa, const moab::CartVect& ve
 
 
 double plucker_edge_test(const Vec3da& vertexa, const Vec3da& vertexb,
-                         const Vec3da& ray, const Vec3da& ray_normal) {
+                         const moab::CartVect& ray, const moab::CartVect& ray_normal) {
   return plucker_edge_test(moab::CartVect(vertexa[0], vertexa[1], vertexa[2]),
 			   moab::CartVect(vertexb[0], vertexb[1], vertexb[2]),
-			   moab::CartVect(ray[0]    , ray[1]    , ray[2]    ),
-			   moab::CartVect(ray_normal[0], ray_normal[1], ray_normal[2]));
+			   ray, ray_normal);
+  //			   moab::CartVect(ray[0]    , ray[1]    , ray[2]    ),
+  //			   moab::CartVect(ray_normal[0], ray_normal[1], ray_normal[2]));
 }
 
 /* This test uses the same edge-ray computation for adjacent triangles so that
@@ -89,7 +90,7 @@ double plucker_edge_test(const Vec3da& vertexa, const Vec3da& vertexb,
 
    N. Platis and T. Theoharis, "Fast Ray-Tetrahedron Intersection using Plücker
    Coordinates", Journal of Graphics Tools, Vol. 8, Part 4, Pages 37-48 (2003). */
-bool plucker_ray_tri_intersect( const Vec3da coords[3],
+bool plucker_ray_tri_intersect( const Vec3da vertices[3],
                                 const Vec3da& org,
                                 const Vec3da& dir,
                                 double& dist_out,
@@ -98,10 +99,10 @@ bool plucker_ray_tri_intersect( const Vec3da coords[3],
                                 const int*    orientation = NULL,
                                 intersection_type* type = NULL) {
 
-  moab::CartVect vertices[3]; moab::CartVect origin, direction;
-  vertices[0] = moab::CartVect(coords[0][0], coords[0][1], coords[0][2]);
-  vertices[1] = moab::CartVect(coords[1][0], coords[1][1], coords[1][2]);
-  vertices[2] = moab::CartVect(coords[2][0], coords[2][1], coords[2][2]);
+  /* moab::CartVect vertices[3]; */ moab::CartVect origin, direction; 
+  /* vertices[0] = moab::CartVect(coords[0][0], coords[0][1], coords[0][2]); */
+  /* vertices[1] = moab::CartVect(coords[1][0], coords[1][1], coords[1][2]); */
+  /* vertices[2] = moab::CartVect(coords[2][0], coords[2][1], coords[2][2]); */
   origin = moab::CartVect(org[0], org[1], org[2]);
   direction = moab::CartVect(dir[0], dir[1], dir[2]);
   
@@ -154,9 +155,9 @@ bool plucker_ray_tri_intersect( const Vec3da coords[3],
   // get the distance to intersection
   const double inverse_sum = 1.0/(plucker_coord0+plucker_coord1+plucker_coord2);
   assert(0.0 != inverse_sum);
-  const moab::CartVect intersection(plucker_coord0*inverse_sum*vertices[2]+ 
-                              plucker_coord1*inverse_sum*vertices[0]+
-                              plucker_coord2*inverse_sum*vertices[1]);
+  const moab::CartVect intersection(plucker_coord0*inverse_sum*moab::CartVect(vertices[2][0], vertices[2][1], vertices[2][2])+ 
+				    plucker_coord1*inverse_sum*moab::CartVect(vertices[0][0], vertices[0][1], vertices[0][2])+
+				    plucker_coord2*inverse_sum*moab::CartVect(vertices[1][0], vertices[1][1], vertices[1][2]));
 
   // To minimize numerical error, get index of largest magnitude direction.
   int idx = 0;
