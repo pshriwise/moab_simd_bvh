@@ -183,21 +183,6 @@ template<typename V, typename P, typename I>
     coords[1] = Vec3da(mdam->xPtr[i2], mdam->yPtr[i2], mdam->zPtr[i2]);
     coords[2] = Vec3da(mdam->xPtr[i3], mdam->yPtr[i3], mdam->zPtr[i3]);
 
-    /* moab::CartVect origin(ray.org.x, ray.org.y, ray.org.z); */
-    /* moab::CartVect direction(ray.dir.x, ray.dir.y, ray.dir.z); */
-    
-    /* moab::CartVect mbcoords[3]; */
-
-
-
-    
-    /* moab::ErrorCode rval; */
-    
-    /* moab::CartVect coords[3]; */
-    
-    /* rval = mbi->get_coords(eh, 3, coords[0].array() ); */
-    /* MB_CHK_SET_ERR_CONT(rval, "Failed to get triangle vert coords"); */
-    
     double dist;
     double huge_val = 1E37;
     bool hit = plucker_ray_tri_intersect(coords,
