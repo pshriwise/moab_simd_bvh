@@ -3,6 +3,7 @@
 
 #include "Ray.h"
 #include "sys.h"
+#include "moab/CartVect.hpp"
 
 #define EXIT_EARLY if(type) *type = NONE; return false;
 
@@ -22,7 +23,7 @@ const intersection_type type_list[] = {INTERIOR, EDGE0, EDGE1, NODE1, EDGE2, NOD
    ray-edge computation, the Plücker test needs to use consistent edge 
    representation. This would be more simple with MOAB handles instead of 
    coordinates... */
-__forceinline bool first( const Vec3da& a, const Vec3da& b) {
+inline bool first( const moab::CartVect& a, const moab::CartVect& b) {
   if(a[0] < b[0]) {
     return true;
   } else if(a[0] == b[0]) {
@@ -42,20 +43,20 @@ __forceinline bool first( const Vec3da& a, const Vec3da& b) {
   }
 }
 
-__forceinline double plucker_edge_test(const Vec3da& vertexa, const Vec3da& vertexb,
-				       const Vec3da& ray, const Vec3da& ray_normal) {
+double plucker_edge_test(const moab::CartVect& vertexa, const moab::CartVect& vertexb,
+                         const moab::CartVect& ray, const moab::CartVect& ray_normal) {
 
   double pip;
-  const double near_zero = 10.0*std::numeric_limits<double>::epsilon();
+  const double near_zero = 10*std::numeric_limits<double>::epsilon();
   
   if(first(vertexa,vertexb)) {
-    const Vec3da edge = vertexb-vertexa;
-    const Vec3da edge_normal = cross(edge,vertexa);
-    pip = dot(ray,edge_normal) + dot(ray_normal,edge);
+    const moab::CartVect edge = vertexb-vertexa;
+    const moab::CartVect edge_normal = edge*vertexa;
+    pip = ray % edge_normal + ray_normal % edge;
   } else {
-    const Vec3da edge = vertexa-vertexb;
-    const Vec3da edge_normal = cross(edge,vertexb);
-    pip = dot(ray,edge_normal) + dot(ray_normal,edge);
+    const moab::CartVect edge = vertexa-vertexb;
+    const moab::CartVect edge_normal = edge*vertexb;
+    pip = ray % edge_normal + ray_normal % edge;
     pip = -pip;
   }
 
@@ -63,7 +64,7 @@ __forceinline double plucker_edge_test(const Vec3da& vertexa, const Vec3da& vert
 
   return pip;
 }
-
+  
 /* This test uses the same edge-ray computation for adjacent triangles so that
    rays passing close to edges/nodes are handled consistently.
 
@@ -77,17 +78,19 @@ __forceinline double plucker_edge_test(const Vec3da& vertexa, const Vec3da& vert
 
    N. Platis and T. Theoharis, "Fast Ray-Tetrahedron Intersection using Plücker
    Coordinates", Journal of Graphics Tools, Vol. 8, Part 4, Pages 37-48 (2003). */
-__forceinline bool plucker_ray_tri_intersect( const Vec3da vertices[3],
-					      const Vec3da& origin,
-					      const Vec3da& direction,
-					      double& dist_out,
-					      double *nonneg_ray_len,
-					      const double* neg_ray_len = 0,
-					      const int*    orientation = 0,
-					      intersection_type* type = 0 ) {
+bool plucker_ray_tri_intersect( const moab::CartVect vertices[3],
+                                const moab::CartVect& origin,
+                                const moab::CartVect& direction,
+                                double& dist_out,
+                                const double* nonneg_ray_len,
+                                const double* neg_ray_len = NULL,
+                                const int*    orientation = NULL,
+                                intersection_type* type = NULL) {
 
-  const Vec3da raya = direction;
-  const Vec3da rayb = cross(direction,origin);
+  const moab::CartVect raya = direction;
+  const moab::CartVect rayb = direction*origin;
+
+
 
   // Determine the value of the first Plucker coordinate from edge 0
   double plucker_coord0 = plucker_edge_test(vertices[0], vertices[1], raya, rayb);
@@ -135,7 +138,7 @@ __forceinline bool plucker_ray_tri_intersect( const Vec3da vertices[3],
   // get the distance to intersection
   const double inverse_sum = 1.0/(plucker_coord0+plucker_coord1+plucker_coord2);
   assert(0.0 != inverse_sum);
-  const Vec3da intersection(plucker_coord0*inverse_sum*vertices[2]+ 
+  const moab::CartVect intersection(plucker_coord0*inverse_sum*vertices[2]+ 
                               plucker_coord1*inverse_sum*vertices[0]+
                               plucker_coord2*inverse_sum*vertices[1]);
 
