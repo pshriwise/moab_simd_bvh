@@ -78,7 +78,7 @@ double plucker_edge_test(const moab::CartVect& vertexa, const moab::CartVect& ve
 
    N. Platis and T. Theoharis, "Fast Ray-Tetrahedron Intersection using Plücker
    Coordinates", Journal of Graphics Tools, Vol. 8, Part 4, Pages 37-48 (2003). */
-bool plucker_ray_tri_intersect( const moab::CartVect vertices[3],
+bool plucker_ray_tri_intersect( const Vec3da coords[3],
                                 const moab::CartVect& origin,
                                 const moab::CartVect& direction,
                                 double& dist_out,
@@ -86,6 +86,11 @@ bool plucker_ray_tri_intersect( const moab::CartVect vertices[3],
                                 const double* neg_ray_len = NULL,
                                 const int*    orientation = NULL,
                                 intersection_type* type = NULL) {
+
+  moab::CartVect vertices[3];
+  vertices[0] = moab::CartVect(coords[0][0], coords[0][1], coords[0][2]);
+  vertices[1] = moab::CartVect(coords[1][0], coords[1][1], coords[1][2]);
+  vertices[2] = moab::CartVect(coords[2][0], coords[2][1], coords[2][2]);
 
   const moab::CartVect raya = direction;
   const moab::CartVect rayb = direction*origin;

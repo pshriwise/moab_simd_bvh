@@ -188,9 +188,6 @@ template<typename V, typename P, typename I>
     
     moab::CartVect mbcoords[3];
 
-    mbcoords[0] = moab::CartVect(coords[0][0], coords[0][1], coords[0][2]);
-    mbcoords[1] = moab::CartVect(coords[1][0], coords[1][1], coords[1][2]);
-    mbcoords[2] = moab::CartVect(coords[2][0], coords[2][1], coords[2][2]);
 
 
     
@@ -203,7 +200,7 @@ template<typename V, typename P, typename I>
     
     double dist;
     double huge_val = 1E37;
-    bool hit = plucker_ray_tri_intersect(mbcoords,
+    bool hit = plucker_ray_tri_intersect(coords,
 					 origin,
 					 direction,
 					 dist,
@@ -223,9 +220,9 @@ template<typename V, typename P, typename I>
     
     if (hit && dist < ray.tfar && dist >= ray.tnear) {
 
-      moab::CartVect nrm = (mbcoords[1]-mbcoords[0])*(mbcoords[2]-mbcoords[0]);
+     Vec3da normal = cross((coords[1]-coords[0]),(coords[2]-coords[0]));
       
-     Vec3da normal(nrm[0], nrm[1], nrm[2]); //cross((coords[1]-coords[0]),(coords[2]-coords[0]));
+     // Vec3da normal(nrm[0], nrm[1], nrm[2]); //cross((coords[1]-coords[0]),(coords[2]-coords[0]));
 
       I pID = ray.primID, gID = ray.geomID;
       P d = ray.tfar;
