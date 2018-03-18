@@ -183,10 +183,10 @@ template<typename V, typename P, typename I>
     coords[1] = Vec3da(mdam->xPtr[i2], mdam->yPtr[i2], mdam->zPtr[i2]);
     coords[2] = Vec3da(mdam->xPtr[i3], mdam->yPtr[i3], mdam->zPtr[i3]);
 
-    moab::CartVect origin(ray.org.x, ray.org.y, ray.org.z);
-    moab::CartVect direction(ray.dir.x, ray.dir.y, ray.dir.z);
+    /* moab::CartVect origin(ray.org.x, ray.org.y, ray.org.z); */
+    /* moab::CartVect direction(ray.dir.x, ray.dir.y, ray.dir.z); */
     
-    moab::CartVect mbcoords[3];
+    /* moab::CartVect mbcoords[3]; */
 
 
 
@@ -201,8 +201,8 @@ template<typename V, typename P, typename I>
     double dist;
     double huge_val = 1E37;
     bool hit = plucker_ray_tri_intersect(coords,
-					 origin,
-					 direction,
+					 ray.org,
+					 ray.dir,
 					 dist,
 					 &huge_val);
    
