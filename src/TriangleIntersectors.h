@@ -91,23 +91,17 @@ double plucker_edge_test(const Vec3da& vertexa, const Vec3da& vertexb,
    N. Platis and T. Theoharis, "Fast Ray-Tetrahedron Intersection using Plücker
    Coordinates", Journal of Graphics Tools, Vol. 8, Part 4, Pages 37-48 (2003). */
 bool plucker_ray_tri_intersect( const Vec3da vertices[3],
-                                const Vec3da& org,
-                                const Vec3da& dir,
+                                const Vec3da& origin,
+                                const Vec3da& direction,
                                 double& dist_out,
                                 const double* nonneg_ray_len,
                                 const double* neg_ray_len = NULL,
                                 const int*    orientation = NULL,
                                 intersection_type* type = NULL) {
-
-  /* moab::CartVect vertices[3]; */ moab::CartVect origin, direction; 
-  /* vertices[0] = moab::CartVect(coords[0][0], coords[0][1], coords[0][2]); */
-  /* vertices[1] = moab::CartVect(coords[1][0], coords[1][1], coords[1][2]); */
-  /* vertices[2] = moab::CartVect(coords[2][0], coords[2][1], coords[2][2]); */
-  origin = moab::CartVect(org[0], org[1], org[2]);
-  direction = moab::CartVect(dir[0], dir[1], dir[2]);
   
-  const moab::CartVect raya = direction;
-  const moab::CartVect rayb = direction*origin;
+  const moab::CartVect raya = moab::CartVect(direction[0], direction[1], direction[2]);;
+  Vec3da raybv = cross(direction, origin);
+  const moab::CartVect rayb = moab::CartVect(raybv[0], raybv[1], raybv[2]);
 
   // Determine the value of the first Plucker coordinate from edge 0
   double plucker_coord0 = plucker_edge_test(vertices[0], vertices[1], raya, rayb);
