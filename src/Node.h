@@ -247,16 +247,18 @@ __forceinline size_t intersectBox(const AANode &node, const TravRayT<I> &ray, co
   const vfloat4 tFarX = (vfloat4::load((void*)((const char*)&node.lower_x + ray.farX)) - ray.org.x) * ray.rdir.x;
   const vfloat4 tFarY = (vfloat4::load((void*)((const char*)&node.lower_x + ray.farY)) - ray.org.y) * ray.rdir.y;
   const vfloat4 tFarZ = (vfloat4::load((void*)((const char*)&node.lower_x + ray.farZ)) - ray.org.z) * ray.rdir.z;
-#endif
+  #endif
+  
+  const float round_down = 1.0f-2.0f*float(ulp); // FIXME: use per instruction rounding for AVX512
+  const float round_up   = 1.0f+2.0f*float(ulp);
   
 #if defined(__SSE4_1__)
   const vfloat4 tNear = maxi(tNearX,tNearY,tNearZ,tnear);
   const vfloat4 tFar  = mini(tFarX ,tFarY ,tFarZ ,tfar);
-  const vbool4 vmask = asInt(tNear) > asInt(tFar);
+  const vbool4 vmask = round_down*tNear > round_up*tFar;
+  //  const vbool4 vmask = asInt(tNear) > asInt(tFar);
   const size_t mask = movemask(vmask) ^ ((1<<4)-1);
 #else
-  const float round_down = 1.0f-2.0f*float(ulp); // FIXME: use per instruction rounding for AVX512
-  const float round_up   = 1.0f+2.0f*float(ulp);
   const vfloat4 tNear = max(tNearX, tNearY, tNearZ, tnear);
   const vfloat4 tFar = min(tFarX, tFarY, tFarZ, tfar);
   const vbool4 vmask = (round_down*tNear <= round_up*tFar);

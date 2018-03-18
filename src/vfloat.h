@@ -160,16 +160,18 @@ __forceinline vfloat4 max(const vfloat4& a, const vfloat4&b, const vfloat4& c, c
 
 #if defined(__SSE4_1__)
     __forceinline vfloat4 mini(const vfloat4& a, const vfloat4& b) {
-      const __m128i ai = _mm_castps_si128(a);
-      const __m128i bi = _mm_castps_si128(b);
-      const __m128i ci = _mm_min_epi32(ai,bi);
-      return _mm_castsi128_ps(ci);
+      return _mm_min_ps(a,b);
+      /* const __m128i ai = _mm_castps_si128(a); */
+      /* const __m128i bi = _mm_castps_si128(b); */
+      /* const __m128i ci = _mm_min_epi32(ai,bi); */
+      /* return _mm_castsi128_ps(ci); */
     }
     __forceinline vfloat4 maxi(const vfloat4& a, const vfloat4& b) {
-      const __m128i ai = _mm_castps_si128(a);
-      const __m128i bi = _mm_castps_si128(b);
-      const __m128i ci = _mm_max_epi32(ai,bi);
-      return _mm_castsi128_ps(ci);
+      return _mm_max_ps(a,b);
+      /* const __m128i ai = _mm_castps_si128(a); */
+      /* const __m128i bi = _mm_castps_si128(b); */
+      /* const __m128i ci = _mm_max_epi32(ai,bi); */
+      /* return _mm_castsi128_ps(ci); */
     }
 #else
     __forceinline vfloat4 mini(const vfloat4& a, const vfloat4& b) {
