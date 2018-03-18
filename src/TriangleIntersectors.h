@@ -43,22 +43,25 @@ inline bool first( const moab::CartVect& a, const moab::CartVect& b) {
   }
 }
 
+inline bool first(const Vec3da& a, const Vec3da& b) {
+  return first(moab::CartVect(a[0], a[1], a[2]),
+	       moab::CartVect(b[0], b[1], b[2]));
+}
 
 
-double plucker_edge_test(const moab::CartVect& vertexa, const moab::CartVect& vertexb,
-                         const moab::CartVect& ray, const moab::CartVect& ray_normal) {
-
+double plucker_edge_test(const Vec3da& vertexa, const Vec3da& vertexb,
+                         const Vec3da& ray, const Vec3da& ray_normal) {
   double pip;
   const double near_zero = 10*std::numeric_limits<double>::epsilon();
   
   if(first(vertexa,vertexb)) {
-    const moab::CartVect edge = vertexb-vertexa;
-    const moab::CartVect edge_normal = edge*vertexa;
-    pip = ray % edge_normal + ray_normal % edge;
+    const Vec3da edge = vertexb-vertexa;
+    const Vec3da edge_normal = cross(edge,vertexa);
+    pip = dot(ray,edge_normal) + dot(ray_normal,edge);
   } else {
-    const moab::CartVect edge = vertexa-vertexb;
-    const moab::CartVect edge_normal = edge*vertexb;
-    pip = ray % edge_normal + ray_normal % edge;
+    const Vec3da edge = vertexa-vertexb;
+    const Vec3da edge_normal = cross(edge,vertexb);
+    pip = dot(ray,edge_normal) + dot(ray_normal,edge);
     pip = -pip;
   }
 
@@ -68,13 +71,13 @@ double plucker_edge_test(const moab::CartVect& vertexa, const moab::CartVect& ve
 }
 
 
-double plucker_edge_test(const Vec3da& vertexa, const Vec3da& vertexb,
-                         const Vec3da& ray, const Vec3da& ray_normal) {
-  return plucker_edge_test(moab::CartVect(vertexa[0], vertexa[1], vertexa[2]),
-			   moab::CartVect(vertexb[0], vertexb[1], vertexb[2]),
-  			   moab::CartVect(ray[0]    , ray[1]    , ray[2]    ),
-  			   moab::CartVect(ray_normal[0], ray_normal[1], ray_normal[2]));
-}
+/* double plucker_edge_test(const Vec3da& vertexa, const Vec3da& vertexb, */
+/*                          const Vec3da& ray, const Vec3da& ray_normal) { */
+/*   return plucker_edge_test(moab::CartVect(vertexa[0], vertexa[1], vertexa[2]), */
+/* 			   moab::CartVect(vertexb[0], vertexb[1], vertexb[2]), */
+/*   			   moab::CartVect(ray[0]    , ray[1]    , ray[2]    ), */
+/*   			   moab::CartVect(ray_normal[0], ray_normal[1], ray_normal[2])); */
+/* } */
 
 /* This test uses the same edge-ray computation for adjacent triangles so that
    rays passing close to edges/nodes are handled consistently.
