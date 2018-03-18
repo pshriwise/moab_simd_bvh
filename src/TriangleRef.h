@@ -177,20 +177,21 @@ template<typename V, typename P, typename I>
 
     MOABDirectAccessManager* mdam = (MOABDirectAccessManager*) mesh_ptr;
 
-    //    Vec3da coords[3];
+    Vec3da coords[3];
 
-    /* coords[0] = Vec3da(mdam->xPtr[i1], mdam->yPtr[i1], mdam->zPtr[i1]); */
-    /* coords[1] = Vec3da(mdam->xPtr[i2], mdam->yPtr[i2], mdam->zPtr[i2]); */
-    /* coords[2] = Vec3da(mdam->xPtr[i3], mdam->yPtr[i3], mdam->zPtr[i3]); */
+    coords[0] = Vec3da(mdam->xPtr[i1], mdam->yPtr[i1], mdam->zPtr[i1]);
+    coords[1] = Vec3da(mdam->xPtr[i2], mdam->yPtr[i2], mdam->zPtr[i2]);
+    coords[2] = Vec3da(mdam->xPtr[i3], mdam->yPtr[i3], mdam->zPtr[i3]);
 
     moab::CartVect origin(ray.org.x, ray.org.y, ray.org.z);
     moab::CartVect direction(ray.dir.x, ray.dir.y, ray.dir.z);
     
-    moab::CartVect coords[3];
+    moab::CartVect mbcoords[3];
 
-    coords[0] = moab::CartVect(mdam->xPtr[i1], mdam->yPtr[i1], mdam->zPtr[i1]);
-    coords[1] = moab::CartVect(mdam->xPtr[i2], mdam->yPtr[i2], mdam->zPtr[i2]);
-    coords[2] = moab::CartVect(mdam->xPtr[i3], mdam->yPtr[i3], mdam->zPtr[i3]);
+    mbcoords[0] = moab::CartVect(coords[0][0], coords[0][1], coords[0][2]);
+    mbcoords[1] = moab::CartVect(coords[1][0], coords[1][1], coords[1][2]);
+    mbcoords[2] = moab::CartVect(coords[2][0], coords[2][1], coords[2][2]);
+
 
     
     /* moab::ErrorCode rval; */
@@ -202,7 +203,7 @@ template<typename V, typename P, typename I>
     
     double dist;
     double huge_val = 1E37;
-    bool hit = plucker_ray_tri_intersect(coords,
+    bool hit = plucker_ray_tri_intersect(mbcoords,
 					 origin,
 					 direction,
 					 dist,
@@ -222,7 +223,7 @@ template<typename V, typename P, typename I>
     
     if (hit && dist < ray.tfar && dist >= ray.tnear) {
 
-      moab::CartVect nrm = (coords[1]-coords[0])*(coords[2]-coords[0]);
+      moab::CartVect nrm = (mbcoords[1]-mbcoords[0])*(mbcoords[2]-mbcoords[0]);
       
      Vec3da normal(nrm[0], nrm[1], nrm[2]); //cross((coords[1]-coords[0]),(coords[2]-coords[0]));
 
