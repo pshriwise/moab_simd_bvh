@@ -69,12 +69,11 @@ double plucker_edge_test(const moab::CartVect& vertexa, const moab::CartVect& ve
 
 
 double plucker_edge_test(const Vec3da& vertexa, const Vec3da& vertexb,
-                         const moab::CartVect& ray, const moab::CartVect& ray_normal) {
+                         const Vec3da& ray, const Vec3da& ray_normal) {
   return plucker_edge_test(moab::CartVect(vertexa[0], vertexa[1], vertexa[2]),
 			   moab::CartVect(vertexb[0], vertexb[1], vertexb[2]),
-			   ray, ray_normal);
-  //			   moab::CartVect(ray[0]    , ray[1]    , ray[2]    ),
-  //			   moab::CartVect(ray_normal[0], ray_normal[1], ray_normal[2]));
+  			   moab::CartVect(ray[0]    , ray[1]    , ray[2]    ),
+  			   moab::CartVect(ray_normal[0], ray_normal[1], ray_normal[2]));
 }
 
 /* This test uses the same edge-ray computation for adjacent triangles so that
@@ -99,9 +98,9 @@ bool plucker_ray_tri_intersect( const Vec3da vertices[3],
                                 const int*    orientation = NULL,
                                 intersection_type* type = NULL) {
   
-  const moab::CartVect raya = moab::CartVect(direction[0], direction[1], direction[2]);;
-  Vec3da raybv = cross(direction, origin);
-  const moab::CartVect rayb = moab::CartVect(raybv[0], raybv[1], raybv[2]);
+  const Vec3da raya = direction;
+  const Vec3da rayb = cross(direction, origin);
+  //  const moab::CartVect rayb = moab::CartVect(raybv[0], raybv[1], raybv[2]);
 
   // Determine the value of the first Plucker coordinate from edge 0
   double plucker_coord0 = plucker_edge_test(vertices[0], vertices[1], raya, rayb);
