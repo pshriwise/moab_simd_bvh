@@ -23,7 +23,7 @@ const intersection_type type_list[] = {INTERIOR, EDGE0, EDGE1, NODE1, EDGE2, NOD
    ray-edge computation, the Plücker test needs to use consistent edge 
    representation. This would be more simple with MOAB handles instead of 
    coordinates... */
-inline bool first( const moab::CartVect& a, const moab::CartVect& b) {
+inline bool first( const Vec3da& a, const Vec3da& b) {
   if(a[0] < b[0]) {
     return true;
   } else if(a[0] == b[0]) {
@@ -42,12 +42,6 @@ inline bool first( const moab::CartVect& a, const moab::CartVect& b) {
     return false;
   }
 }
-
-inline bool first(const Vec3da& a, const Vec3da& b) {
-  return first(moab::CartVect(a[0], a[1], a[2]),
-	       moab::CartVect(b[0], b[1], b[2]));
-}
-
 
 double plucker_edge_test(const Vec3da& vertexa, const Vec3da& vertexb,
                          const Vec3da& ray, const Vec3da& ray_normal) {
