@@ -3,7 +3,6 @@
 
 #include "Ray.h"
 #include "sys.h"
-#include "moab/CartVect.hpp"
 
 #define EXIT_EARLY if(type) *type = NONE; return false;
 
@@ -135,9 +134,9 @@ bool plucker_ray_tri_intersect( const Vec3da vertices[3],
   // get the distance to intersection
   const double inverse_sum = 1.0/(plucker_coord0+plucker_coord1+plucker_coord2);
   assert(0.0 != inverse_sum);
-  const moab::CartVect intersection(plucker_coord0*inverse_sum*moab::CartVect(vertices[2][0], vertices[2][1], vertices[2][2])+ 
-				    plucker_coord1*inverse_sum*moab::CartVect(vertices[0][0], vertices[0][1], vertices[0][2])+
-				    plucker_coord2*inverse_sum*moab::CartVect(vertices[1][0], vertices[1][1], vertices[1][2]));
+  const Vec3da intersection(plucker_coord0*inverse_sum*vertices[2]+ 
+			    plucker_coord1*inverse_sum*vertices[0]+
+			    plucker_coord2*inverse_sum*vertices[1]);
 
   // To minimize numerical error, get index of largest magnitude direction.
   int idx = 0;
