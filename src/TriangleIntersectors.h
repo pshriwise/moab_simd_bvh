@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "Ray.h"
 #include "sys.h"
 
@@ -42,7 +41,7 @@ inline bool first( const Vec3da& a, const Vec3da& b) {
   }
 }
 
-double plucker_edge_test(const Vec3da& vertexa, const Vec3da& vertexb,
+inline double plucker_edge_test(const Vec3da& vertexa, const Vec3da& vertexb,
                          const Vec3da& ray, const Vec3da& ray_normal) {
   double pip;
   const double near_zero = 10*std::numeric_limits<double>::epsilon();
@@ -76,7 +75,7 @@ double plucker_edge_test(const Vec3da& vertexa, const Vec3da& vertexb,
 
    N. Platis and T. Theoharis, "Fast Ray-Tetrahedron Intersection using Plücker
    Coordinates", Journal of Graphics Tools, Vol. 8, Part 4, Pages 37-48 (2003). */
-bool plucker_ray_tri_intersect( const Vec3da vertices[3],
+inline bool plucker_ray_tri_intersect( const Vec3da vertices[3],
                                 const Vec3da& origin,
                                 const Vec3da& direction,
                                 double& dist_out,
