@@ -4,7 +4,7 @@
 #include "Vec3.h"
 #include "Vec3fa.h"
 #include "Ray.h"
-
+#include "mat3.h"
 
 // Oriented Bounding Box Tree
 struct OBB {
