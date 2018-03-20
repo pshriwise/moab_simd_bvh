@@ -37,6 +37,8 @@
 #include <float.h>
 #include <assert.h>
 #include <vector>
+#include "Vec3fa.h"
+
 
 #ifdef _MSC_VER
 # define finite _finite
@@ -46,7 +48,7 @@ namespace moab {
 
 namespace Matrix{
 	template< typename Matrix>
-	Matrix inverse( const Matrix & d, const double i){
+	Matrix inverse( const Matrix & d, const float i){
 		Matrix m( d);
 		 m( 0) = i * (d(4) * d(8) - d(5) * d(7));
 	         m( 1) = i * (d(2) * d(7) - d(8) * d(1));
@@ -62,10 +64,10 @@ namespace Matrix{
 
 	template< typename Matrix>
 	inline bool positive_definite( const Matrix & d, 
-				       double& det ){
-	        double subdet6 = d(1)*d(5)-d(2)*d(4);
-	        double subdet7 = d(2)*d(3)-d(0)*d(5);
-	        double subdet8 = d(0)*d(4)-d(1)*d(3);
+				       float& det ){
+	        float subdet6 = d(1)*d(5)-d(2)*d(4);
+	        float subdet7 = d(2)*d(3)-d(0)*d(5);
+	        float subdet8 = d(0)*d(4)-d(1)*d(3);
 	        det = d(6)*subdet6 + d(7)*subdet7 + d(8)*subdet8;
 	        return d(0) > 0 && subdet8 > 0 && det > 0;
 	}
@@ -98,7 +100,7 @@ namespace Matrix{
 		return m;
 	}
 	template< typename Matrix>
-	inline double determinant3( const Matrix & d){
+	inline float determinant3( const Matrix & d){
 		return (d(0) * d(4) * d(8) 
 		     + d(1) * d(5) * d(6)
 		     + d(2) * d(3) * d(7)
@@ -109,7 +111,7 @@ namespace Matrix{
 	
 	template< typename Matrix>
 	inline const Matrix inverse( const Matrix & d){
-		const double det = 1.0/determinant3( d);
+		const float det = 1.0/determinant3( d);
 		return inverse( d, det);
 	}
 	
@@ -147,13 +149,13 @@ namespace Matrix{
 
 	template< typename Matrix, typename Vector>
 	ErrorCode EigenDecomp( const Matrix & _a,
-	                       double w[3],
+	                       float w[3],
 	                       Vector v[3] ) {
 	  const int MAX_ROTATIONS = 20;
-	  const double one_ninth = 1./9;
+	  const float one_ninth = 1./9;
 	  int i, j, k, iq, ip, numPos;
-	  double tresh, theta, tau, t, sm, s, h, g, c, tmp;
-	  double b[3], z[3];
+	  float tresh, theta, tau, t, sm, s, h, g, c, tmp;
+	  float b[3], z[3];
 	  Matrix a( _a);
 
 	  // initialize
@@ -257,7 +259,7 @@ namespace Matrix{
 	    for (numPos=0, i=0; i<3; i++) {
 	      if ( v[i][j] >= 0.0 ) { numPos++; }
 	    }
-	//    if ( numPos < ceil(double(n)/double(2.0)) )
+	//    if ( numPos < ceil(float(n)/float(2.0)) )
 	    if ( numPos < ceil_half_n) {
 	      for(i=0; i<3; i++) { v[i][j] *= -1.0; }
 	    }
@@ -268,7 +270,7 @@ namespace Matrix{
 
 class Matrix3  {
   //TODO: std::array when we can use C++11
-  double d[9];
+  float d[9];
 
 public:
   //Default Constructor
@@ -277,12 +279,12 @@ public:
   }
   //TODO: Deprecate this.
   //Then we can go from three Constructors to one. 
-  inline Matrix3( double diagonal ){ 
+  inline Matrix3( float diagonal ){ 
       d[0] = d[4] = d[8] = diagonal;
       d[1] = d[2] = d[3] = 0.0;
       d[5] = d[6] = d[7] = 0.0;
   }
-  inline Matrix3( const CartVect & diagonal ){ 
+  inline Matrix3( const Vec3fa & diagonal ){ 
       d[0] = diagonal[0];
       d[4] = diagonal[1],
       d[8] = diagonal[2];
@@ -290,8 +292,8 @@ public:
       d[5] = d[6] = d[7] = 0.0;
   }
   //TODO: not strictly correct as the Matrix3 object
-  //is a double d[ 9] so the only valid model of T is
-  //double, or any refinement (int, float) 
+  //is a float d[ 9] so the only valid model of T is
+  //float, or any refinement (int, float) 
   //*but* it doesn't really matter anything else
   //will fail to compile.
   template< typename T> 
@@ -303,9 +305,9 @@ public:
       d[5] = d[6] = d[7] = 0.0;
   }
 
-inline Matrix3( double v00, double v01, double v02,
-                double v10, double v11, double v12,
-                double v20, double v21, double v22 ){
+inline Matrix3( float v00, float v01, float v02,
+                float v10, float v11, float v12,
+                float v20, float v21, float v22 ){
     d[0] = v00; d[1] = v01; d[2] = v02;
     d[3] = v10; d[4] = v11; d[5] = v12;
     d[6] = v20; d[7] = v21; d[8] = v22;
@@ -327,7 +329,7 @@ inline Matrix3( double v00, double v01, double v02,
       }
   }
   
-  inline Matrix3( const double* v ){ 
+  inline Matrix3( const float* v ){ 
       d[0] = v[0]; d[1] = v[1]; d[2] = v[2];
       d[3] = v[3]; d[4] = v[4]; d[5] = v[5]; 
       d[6] = v[6]; d[7] = v[7]; d[8] = v[8];
@@ -340,24 +342,24 @@ inline Matrix3( double v00, double v01, double v02,
       return *this;
   }
   
-  inline Matrix3& operator=( const double* v ){ 
+  inline Matrix3& operator=( const float* v ){ 
       d[0] = v[0]; d[1] = v[1]; d[2] = v[2];
       d[3] = v[3]; d[4] = v[4]; d[5] = v[5]; 
       d[6] = v[6]; d[7] = v[7]; d[8] = v[8];
       return *this;
  }
 
-  inline double* operator[]( unsigned i ){ return d + 3*i; }
-  inline const double* operator[]( unsigned i ) const{ return d + 3*i; }
-  inline double& operator()(unsigned r, unsigned c) { return d[3*r+c]; }
-  inline double operator()(unsigned r, unsigned c) const { return d[3*r+c]; }
-  inline double& operator()(unsigned i) { return d[i]; }
-  inline double operator()(unsigned i) const { return d[i]; }
+  inline float* operator[]( unsigned i ){ return d + 3*i; }
+  inline const float* operator[]( unsigned i ) const{ return d + 3*i; }
+  inline float& operator()(unsigned r, unsigned c) { return d[3*r+c]; }
+  inline float operator()(unsigned r, unsigned c) const { return d[3*r+c]; }
+  inline float& operator()(unsigned i) { return d[i]; }
+  inline float operator()(unsigned i) const { return d[i]; }
   
-    // get pointer to array of nine doubles
-  inline double* array()
+    // get pointer to array of nine floats
+  inline float* array()
       { return d; }
-  inline const double* array() const
+  inline const float* array() const
       { return d; }
 
   inline Matrix3& operator+=( const Matrix3& m ){
@@ -374,14 +376,14 @@ inline Matrix3( double v00, double v01, double v02,
       return *this;
   }
   
-  inline Matrix3& operator*=( double s ){
+  inline Matrix3& operator*=( float s ){
       d[0] *= s; d[1] *= s; d[2] *= s;
       d[3] *= s; d[4] *= s; d[5] *= s;
       d[6] *= s; d[7] *= s; d[8] *= s;
       return *this;
  }
   
-  inline Matrix3& operator/=( double s ){
+  inline Matrix3& operator/=( float s ){
       d[0] /= s; d[1] /= s; d[2] /= s;
       d[3] /= s; d[4] /= s; d[5] /= s;
       d[6] /= s; d[7] /= s; d[8] /= s;
@@ -393,39 +395,39 @@ inline Matrix3( double v00, double v01, double v02,
 	return *this;
   }
   
-  inline double determinant() const{
+  inline float determinant() const{
   	return moab::Matrix::determinant3( *this);
   }
  
   inline Matrix3 inverse() const { 
-	const double i = 1.0/determinant();
+	const float i = 1.0/determinant();
 	return moab::Matrix::inverse( *this, i); 
   }
-  inline Matrix3 inverse( double i ) const {
+  inline Matrix3 inverse( float i ) const {
   	return moab::Matrix::inverse( *this, i); 
   }
   
   inline bool positive_definite() const{
-  	double tmp;
+  	float tmp;
   	return positive_definite( tmp);
   }
   
-  inline bool positive_definite( double& det ) const{
+  inline bool positive_definite( float& det ) const{
 	  return moab::Matrix::positive_definite( *this, det);
   }
   
   inline Matrix3 transpose() const{ return moab::Matrix::transpose( *this); }
   
   inline bool invert() {
-    double i = 1.0 / determinant();
-    if (!finite(i) || fabs(i) < std::numeric_limits<double>::epsilon())
+    float i = 1.0 / determinant();
+    if (!finite(i) || fabs(i) < std::numeric_limits<float>::epsilon())
       return false;
     *this = inverse( i );
     return true;
   }
     // Calculate determinant of 2x2 submatrix composed of the
     // elements not in the passed row or column.
-  inline double subdet( int r, int c ) const{
+  inline float subdet( int r, int c ) const{
 	const int r1 = (r+1)%3, r2 = (r+2)%3;
 	const int c1 = (c+1)%3, c2 = (c+2)%3;
 	assert(r >= 0 && c >= 0);
@@ -463,11 +465,11 @@ inline std::vector< T> operator*( const std::vector< T>& v, const Matrix3&m){
 		return moab::Matrix::vector_matrix( v, m);
 }
 
-inline CartVect operator*( const Matrix3&m,  const CartVect& v){
+inline Vec3fa operator*( const Matrix3&m,  const Vec3fa& v){
 		return moab::Matrix::matrix_vector( m, v);
 }
 
-inline CartVect operator*( const CartVect& v, const Matrix3& m){
+inline Vec3fa operator*( const Vec3fa& v, const Matrix3& m){
 		return moab::Matrix::vector_matrix( v, m);
 }
 
