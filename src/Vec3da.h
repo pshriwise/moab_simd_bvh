@@ -31,7 +31,9 @@ struct Vec3da {
   __forceinline const double& operator[](const size_t index) const { assert(index < 3); return (&x)[index]; }
   __forceinline       double& operator[](const size_t index)       { assert(index < 3); return (&x)[index]; }
 
-  __forceinline double length () const { return sqrt(x*x + y*y + z*z); }
+  __forceinline double length () const { return sqrt(length_sqr()); }
+  
+  __forceinline double length_sqr () const { return x*x + y*y + z*z; }
 
   __forceinline Vec3da normalize() { double len = length();
     len = len < min_rcp_input ? min_rcp_input : len;
