@@ -41,17 +41,22 @@ struct OBB {
     ax2 = other.ax2;
     return *this;
   }
-
+    
   __forceinline bool isValid() {
     return ax0.length() + ax0.length() + ax2.length() > 0;
   }
 
+  // property methods
   __forceinline Vec3fa center() { return cen; }
 
   __forceinline Vec3fa center2() { return 2.0f * cen; }
-
-  __forceinline Vec3fa size() const { return Vec3fa(ax0.length(), ax1.length(), ax2.length()); }
   
+  __forceinline Vec3fa size() const { return Vec3fa(ax0.length(), ax1.length(), ax2.length()); }
+
+  __forceinline float inner_radius() { return min(ax0.length(), ax1.length(), ax2.length()); }
+
+  __forceinline float outer_radius() { return max(ax0.length(), ax1.length(), ax2.length()); }
+
   __forceinline bool point_in_box( const Vec3fa& point ) const {
     Vec3fa from_center = point - cen;
 
@@ -81,3 +86,20 @@ __forceinline float volume( const OBB& box) { return reduce_mul(box.size()); }
 __forceinline float halfArea( const OBB& box ) { return halfArea(box.size()); }
 
 __forceinline float area(const OBB& box) { return 2.0f * halfArea(box); }
+
+template<typename I>
+ bool ray_intersection(const OBB& box, const TravRayT<I> &ray ) {
+
+  const Vec3fa cx = center - ray.org;
+  const float  dist_s = dot(cx,ray.dir);
+  const float dist_sq = dot(cx,cx - cross(dist_s,dist_s));
+  const float max_diag = box.outer_radius()*box.outer_radius();
+
+  // For the largest sphere, no intersections exist if discriminant is negative.
+  // Geometrically, if distance from box center to line is greater than the 
+  // longest diagonal, there is no intersection.
+  // manipulate the discriminant: 0 > dist_s*dist_s - cx%cx + max_diagsq
+  if(dist_sq > max_diagsq) return false;
+  
+  
+}
