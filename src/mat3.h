@@ -24,13 +24,9 @@
  * anyways, and it will ignore it or add it when it thinks its necessary.
  */
 
-#ifndef MOAB_MATRIX3_HPP
-#define MOAB_MATRIX3_HPP
+#pragma once
 
-#include "moab/Types.hpp"
-//#include "moab/EigenDecomp.hpp"
 #include <iostream>
-#include "moab/CartVect.hpp"
 
 #include <iosfwd>
 #include <limits>
@@ -43,8 +39,6 @@
 #ifdef _MSC_VER
 # define finite _finite
 #endif
-
-namespace moab {
 
 namespace Matrix{
 	template< typename Matrix>
@@ -148,9 +142,9 @@ namespace Matrix{
 	//automatically inlines them.
 
 	template< typename Matrix, typename Vector>
-	ErrorCode EigenDecomp( const Matrix & _a,
-	                       float w[3],
-	                       Vector v[3] ) {
+	void EigenDecomp( const Matrix & _a,
+			  float w[3],
+			  Vector v[3] ) {
 	  const int MAX_ROTATIONS = 20;
 	  const float one_ninth = 1./9;
 	  int i, j, k, iq, ip, numPos;
@@ -227,7 +221,6 @@ namespace Matrix{
 	  //// this is NEVER called
 	  if ( i >= MAX_ROTATIONS ) {
 	      std::cerr << "Matrix3D: Error extracting eigenfunctions" << std::endl;
-	      return MB_FAILURE;
 	  }
 
 	  // sort eigenfunctions                 these changes do not affect accuracy
@@ -264,7 +257,6 @@ namespace Matrix{
 	      for(i=0; i<3; i++) { v[i][j] *= -1.0; }
 	    }
 	  }
-	  return MB_SUCCESS;
 	}
 } //namespace Matrix
 
@@ -391,20 +383,20 @@ inline Matrix3( float v00, float v01, float v02,
   }
  
   inline Matrix3& operator*=( const Matrix3& m ){
-	(*this) = moab::Matrix::mmult3((*this),m); 
+	(*this) = Matrix::mmult3((*this),m); 
 	return *this;
   }
   
   inline float determinant() const{
-  	return moab::Matrix::determinant3( *this);
+  	return Matrix::determinant3( *this);
   }
  
   inline Matrix3 inverse() const { 
 	const float i = 1.0/determinant();
-	return moab::Matrix::inverse( *this, i); 
+	return Matrix::inverse( *this, i); 
   }
   inline Matrix3 inverse( float i ) const {
-  	return moab::Matrix::inverse( *this, i); 
+  	return Matrix::inverse( *this, i); 
   }
   
   inline bool positive_definite() const{
@@ -413,10 +405,10 @@ inline Matrix3( float v00, float v01, float v02,
   }
   
   inline bool positive_definite( float& det ) const{
-	  return moab::Matrix::positive_definite( *this, det);
+	  return Matrix::positive_definite( *this, det);
   }
   
-  inline Matrix3 transpose() const{ return moab::Matrix::transpose( *this); }
+  inline Matrix3 transpose() const{ return Matrix::transpose( *this); }
   
   inline bool invert() {
     float i = 1.0 / determinant();
@@ -444,7 +436,7 @@ inline Matrix3 operator-( const Matrix3& a, const Matrix3& b ){
 }
 
 inline Matrix3 operator*( const Matrix3& a, const Matrix3& b ) {
-	return moab::Matrix::mmult3( a, b);
+	return Matrix::mmult3( a, b);
 }
 
 template< typename Vector>
@@ -457,31 +449,30 @@ inline Matrix3 outer_product( const Vector & u,
 
 template< typename T>
 inline std::vector< T> operator*( const Matrix3&m, const std::vector< T> & v){
-		return moab::Matrix::matrix_vector( m, v);
+		return Matrix::matrix_vector( m, v);
 }
 
 template< typename T>
 inline std::vector< T> operator*( const std::vector< T>& v, const Matrix3&m){
-		return moab::Matrix::vector_matrix( v, m);
+		return Matrix::vector_matrix( v, m);
 }
 
 inline Vec3fa operator*( const Matrix3&m,  const Vec3fa& v){
-		return moab::Matrix::matrix_vector( m, v);
+		return Matrix::matrix_vector( m, v);
 }
 
 inline Vec3fa operator*( const Vec3fa& v, const Matrix3& m){
-		return moab::Matrix::vector_matrix( v, m);
+		return Matrix::vector_matrix( v, m);
 }
 
-} // namespace moab
 
 #ifndef MOAB_MATRIX3_OPERATORLESS
 #define MOAB_MATRIX3_OPERATORLESS
-inline std::ostream& operator<<( std::ostream& s, const moab::Matrix3& m ){
+inline std::ostream& operator<<( std::ostream& s, const Matrix3& m ){
   return s <<  "| " << m(0,0) << " " << m(0,1) << " " << m(0,2) 
            << " | " << m(1,0) << " " << m(1,1) << " " << m(1,2) 
            << " | " << m(2,0) << " " << m(2,1) << " " << m(2,2) 
            << " |" ;
 }
 #endif//MOAB_MATRIX3_OPERATORLESS
-#endif //MOAB_MATRIX3_HPP
+
