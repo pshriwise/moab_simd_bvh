@@ -19,7 +19,7 @@ int main( int argc, char** argv) {
   // test point containment method
   point_contain_tests();
   // testing various property calculations for the box
-  // property_tests();
+  property_tests();
   
   return 0;
 }
@@ -107,24 +107,27 @@ void property_tests() {
   OBB box = OBB(center, ax0, ax1, ax2);
   
   // check center
-  Vec3fa expected_center(7.5, 5.0, 0.5);
+  Vec3fa expected_center(1.5, 2.5, 3.5);
   CHECK_VECREAL_EQUAL(expected_center, box.center());
 
   // check center2
-  Vec3fa expected_center2(15.0, 10.0, 1.0);
+  Vec3fa expected_center2(3.0, 5.0, 7.0);
   CHECK_VECREAL_EQUAL(expected_center2, box.center2());
 
   // check size
-  Vec3fa expected_size(5.0, 20.0, 7.0);
+  Vec3fa expected_size(3.0, 3.0, 3.0);
   CHECK_VECREAL_EQUAL(expected_size, box.size());
 
   // check halfarea
-  float expected_halfArea = 275.0;
+  float expected_halfArea = 27.0;
   CHECK_REAL_EQUAL(expected_halfArea, halfArea(box), 0.0f);
 
   // check actual area
-  float expected_area = 550.0;
+  float expected_area = 54.0;
   CHECK_REAL_EQUAL(expected_area, area(box), 0.0f);
 
+  float expected_vol = 27.0;
+  CHECK_REAL_EQUAL(expected_vol, volume(box), 0.0f);
+  
   return;
 }
