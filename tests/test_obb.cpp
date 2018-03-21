@@ -8,9 +8,8 @@
 // test function signatures
 void constructor_tests();
 void point_contain_tests();
-void extend_tests();
-void merge_tests();
 void property_tests();
+void ray_intersection_tests();
 
 int main( int argc, char** argv) {
 
@@ -20,6 +19,8 @@ int main( int argc, char** argv) {
   point_contain_tests();
   // testing various property calculations for the box
   property_tests();
+  // test intersections with box
+  ray_intersection_tests();
   
   return 0;
 }
@@ -130,4 +131,30 @@ void property_tests() {
   CHECK_REAL_EQUAL(expected_vol, volume(box), 0.0f);
   
   return;
+}
+
+void ray_intersection_tests() {
+
+    // test-box values
+  float x_min = 0.0, y_min = 1.0, z_min = 2.0,
+        x_max = 3.0, y_max = 4.0, z_max = 5.0;
+
+  Vec3fa center((x_min + x_max) / 2.0f,
+		(y_min + y_max) / 2.0f,
+		(z_min + z_max) / 2.0f);
+  Vec3fa ax0 ( (x_max - x_min) / 2.0f, 0.0f, 0.0f );
+  Vec3fa ax1 ( 0.0f, (y_max - y_min) / 2.0f, 0.0f );
+  Vec3fa ax2 ( 0.0f, 0.0f, (z_max - z_min) / 2.0f );
+
+  // create test box
+  OBB box = OBB(center, ax0, ax1, ax2);
+
+  // create test ray
+  RayT<Vec3fa,float,int> ray;
+  ray.org = Vec3fa(9.0f, 2.0f, 3.0f);
+  ray.dir = Vec3fa(-1.0f, 0.0f, 0.0f);
+  ray.tfar = inf;
+
+  CHECK(ray_intersection(box, ray));
+  
 }

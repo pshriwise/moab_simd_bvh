@@ -126,12 +126,12 @@ inline bool check_ray_limits(const float  normal_par_pos,
   return false;
 }
 
-template<typename I>
- bool ray_intersection(const OBB& box, const TravRayT<I> &ray ) {
+template<typename V, typename P, typename I>
+  bool ray_intersection( const OBB& box, const RayT<V,P,I> &ray ) {
 
-  const Vec3fa cx = box.center - ray.org;
+  const Vec3fa cx = box.cen - ray.org;
   const float  dist_s = dot(cx,ray.dir);
-  const float dist_sq = dot(cx,cx - cross(dist_s,dist_s));
+  const float dist_sq = dot(cx,cx) - (dist_s*dist_s);
   const float max_diagsq = box.outer_radius()*box.outer_radius();
 
   // For the largest sphere, no intersections exist if discriminant is negative.
