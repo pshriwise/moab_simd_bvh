@@ -313,12 +313,22 @@ inline Matrix3( float v00, float v01, float v02,
   template< typename Vector> 
   inline Matrix3(   const Vector & row0,
                     const Vector & row1,
-                    const Vector & row2 ) {
+                    const Vector & row2,
+		    bool as_cols = false) {
+    if(as_cols) {
+      for(std::size_t i = 0; i < 3; ++i){
+	d[ 3*i] = row0[ i];
+	d[ 3*i+1]= row1[ i];
+	d[ 3*i+2] = row2[ i];
+      }
+    }
+    else {
       for(std::size_t i = 0; i < 3; ++i){
 	d[ i] = row0[ i];
 	d[ i+3]= row1[ i];
 	d[ i+6] = row2[ i];
       }
+    }
   }
   
   inline Matrix3( const float* v ){ 
