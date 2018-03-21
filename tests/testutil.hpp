@@ -198,15 +198,15 @@ void check_equal( const char* A, const char* B, const char* sA, const char* sB, 
 //  {  check_equal( A.c_str(), B.c_str(), sA, sB, line, file); }
 
 void check_equal( float A, float B, float eps, const char* sA, const char* sB, int line, const char* file )
-  {  EQUAL_TEST_IMPL( fabsf(A - B) <= eps, f ) }
+  {  EQUAL_TEST_IMPL( std::abs(A - B) <= eps, f ) }
 
 void check_equal( double A, double B, double eps, const char* sA, const char* sB, int line, const char* file )
-   {  EQUAL_TEST_IMPL( fabs(A - B) <= eps, f ) }
+   {  EQUAL_TEST_IMPL( std::abs(A - B) <= eps, f ) }
 
 
 template<typename T>
 void check_equal( T A, T B, T eps, const char* sA, const char* sB, int line, const char* file )
-     {  EQUAL_TEST_IMPL( fabs(A - B) <= eps, f ) }
+     {  EQUAL_TEST_IMPL( std::abs(A - B) <= eps, f ) }
 
 /*
 void check_equal( moab::EntityHandle A, moab::EntityHandle B, const char* sA, const char* sB, int line, const char* file )
@@ -270,7 +270,7 @@ inline void check_equal_Vec3( const Vec3fa& A,
 {
   check_equal( A.length(), B.length(), tol, sA, sB, line, file);
 
-  if( fabs(A[0] - B[0]) <= tol && fabs(A[1] - B[1]) <= tol && fabs(A[2] - B[2]) <= tol )
+  if( std::abs(A[0] - B[0]) <= tol && std::abs(A[1] - B[1]) <= tol && std::abs(A[2] - B[2]) <= tol )
     return;
   
   std::cout << "Equality Test Failed: " << sA << " == " << sB << std::endl;
@@ -293,7 +293,7 @@ inline void check_equal_Vec3( const Vec3da& A,
 {
   check_equal( A.length(), B.length(), tol, sA, sB, line, file);
 
-  if( fabs(A[0] - B[0]) <= tol && fabs(A[1] - B[1]) <= tol && fabs(A[2] - B[2]) <= tol )
+  if( std::abs(A[0] - B[0]) <= tol && std::abs(A[1] - B[1]) <= tol && std::abs(A[2] - B[2]) <= tol )
     return;
   
   std::cout << "Equality Test Failed: " << sA << " == " << sB << std::endl;
