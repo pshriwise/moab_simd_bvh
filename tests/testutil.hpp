@@ -35,7 +35,10 @@
 /** Check that two arrays contain the same values in the same order */
 #define CHECK_ARRAYS_EQUAL( EXP, EXP_LEN, ACT, ACT_LEN ) check_array_equal( (EXP), (EXP_LEN), (ACT), (ACT_LEN), #EXP, #ACT, __LINE__, __FILE__ )
 /** Check that two Vec3 objects contain same values */
-#define CHECK_VECREAL_EQUAL( EXP, ACT) check_equal_Vec3( (EXP), (ACT), #EXP, #ACT, __LINE__, __FILE__ )
+#define CHECK_VECREAL_EQUAL( EXP, ACT) check_equal_Vec3( (EXP), (ACT), #EXP, #ACT, __LINE__, __FILE__)
+
+/** Check that two Vec3 objects contain same values */
+#define CHECK_VECREAL_EQUAL_TOL( EXP, ACT, TOL) check_equal_Vec3( (EXP), (ACT), #EXP, #ACT, __LINE__, __FILE__, (TOL))
 
 /** Check that two vfloat4 objects contain same values */
 #define CHECK_VFLOATREAL_EQUAL( EXP, ACT) check_equal_vfloat4( (EXP), (ACT), #EXP, #ACT, __LINE__, __FILE__ ) 
@@ -237,10 +240,10 @@ void check_true( bool cond, const char* str, int line, const char* file )
 }
 
 template<typename T>
-void check_equal_Vec3( const Vec3<T>& A,
-		       const Vec3<T>& B,
-		       const char* sA, const char* sB, 
-		       int line, const char* file )
+inline void check_equal_Vec3( const Vec3<T>& A,
+			      const Vec3<T>& B,
+			      const char* sA, const char* sB, 
+			      int line, const char* file)
 {
   check_equal<T>( A.length(), B.length(), (T)0.0, sA, sB, line, file);
 
@@ -259,14 +262,15 @@ void check_equal_Vec3( const Vec3<T>& A,
   flag_error(); 
 }
 
-void check_equal_Vec3( const Vec3fa& A,
-		       const Vec3fa& B,
-		       const char* sA, const char* sB, 
-		       int line, const char* file )
+inline void check_equal_Vec3( const Vec3fa& A,
+			      const Vec3fa& B,
+			      const char* sA, const char* sB, 
+			      int line, const char* file,
+			      float tol = 0.0)
 {
-  check_equal( A.length(), B.length(), 0.0f, sA, sB, line, file);
+  check_equal( A.length(), B.length(), tol, sA, sB, line, file);
 
-  if( (A[0] == B[0]) && (A[1] == B[1]) && (A[2] == B[2]) )
+  if( fabs(A[0] - B[0]) <= tol && fabs(A[1] - B[1]) <= tol && fabs(A[2] - B[2]) <= tol )
     return;
   
   std::cout << "Equality Test Failed: " << sA << " == " << sB << std::endl;
@@ -281,14 +285,15 @@ void check_equal_Vec3( const Vec3fa& A,
   flag_error(); 
 }
 
-void check_equal_Vec3( const Vec3da& A,
-		       const Vec3da& B,
-		       const char* sA, const char* sB, 
-		       int line, const char* file )
+inline void check_equal_Vec3( const Vec3da& A,
+			      const Vec3da& B, 
+			      const char* sA, const char* sB, 
+			      int line, const char* file,
+			      double tol = 0.0)
 {
-  check_equal( A.length(), B.length(), 0.0, sA, sB, line, file);
+  check_equal( A.length(), B.length(), tol, sA, sB, line, file);
 
-  if( (A[0] == B[0]) && (A[1] == B[1]) && (A[2] == B[2]) )
+  if( fabs(A[0] - B[0]) <= tol && fabs(A[1] - B[1]) <= tol && fabs(A[2] - B[2]) <= tol )
     return;
   
   std::cout << "Equality Test Failed: " << sA << " == " << sB << std::endl;
@@ -302,7 +307,6 @@ void check_equal_Vec3( const Vec3da& A,
   
   flag_error(); 
 }
-
 
 void check_equal_vfloat4( const vfloat4& A,
 		       const vfloat4& B,
