@@ -155,6 +155,35 @@ void ray_intersection_tests() {
   ray.dir = Vec3fa(-1.0f, 0.0f, 0.0f);
   ray.tfar = inf;
 
+  // check ray toward box intersects
+  CHECK(ray_intersection(box, ray));
+
+  // reverse ray direction
+  ray.dir = -ray.dir;
+
+  // check ray away from box does not intersect
+  CHECK(!ray_intersection(box, ray));
+
+  // move ray origin into box
+  ray.org.x = 2.0f;
+
+  // check for intersection
+  CHECK(ray_intersection(box, ray));
+
+  // move ray origin just outside of the box
+  ray.org.x = 3.0001f;
+
+  // check for no intersection
+  CHECK(!ray_intersection(box, ray));
+
+  //align ray origin with the edge
+  ray.org.x = 2.9f;
+
+  // fire ray along box edge
+  ray.dir = Vec3fa(0.0f, 1.0f, 0.0f);
+
+  // check that the ray intersects the box
   CHECK(ray_intersection(box, ray));
   
+  return;
 }

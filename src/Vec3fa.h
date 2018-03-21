@@ -42,7 +42,11 @@ struct __aligned(16) Vec3fa {
   __forceinline Vec3fa normalize() { float len = length();
     len = len < min_rcp_input ? min_rcp_input : len;
     x /= len; y /= len; z/= len; }
-  
+
+    __forceinline Vec3fa normalized() const { float len = length();
+    len = len < min_rcp_input ? min_rcp_input : len;
+    return Vec3fa(x/ len, y/len, z/len); }
+
 };
 
 
@@ -105,11 +109,7 @@ __forceinline Vec3fa operator +( const Vec3fa &a ) { return Vec3fa(+a.x, +a.y, +
 __forceinline Vec3fa operator -( const Vec3fa &a ) { return Vec3fa(-a.x, -a.y, -a.z); }
 
 __forceinline float dot( const Vec3fa& a, const Vec3fa& b ) { return reduce_add(a*b); }
-
-
-
+  
 __forceinline std::ostream& operator <<(std::ostream &os, Vec3fa  const& v) {
   return os << '[' << v[0] << ' ' << v[1] << ' ' << v[2] << ' ' << v.a << ']';
 }
-
-
