@@ -4,7 +4,7 @@
 #include "Vec3.h"
 #include "Vec3fa.h"
 #include "Ray.h"
-#include "mat3.h"
+#include "mat3.h"             
 
 // Oriented Bounding Box Tree
 struct OBB {
@@ -141,10 +141,10 @@ template<typename V, typename P, typename I>
   if(dist_sq > max_diagsq) return false;
 
   //get transpose of the axes
-  Matrix3 B = Matrix3(box.ax0, box.ax1, box.ax2, true).transpose();
+  Matrix3 B = Matrix3(box.ax0.normalized(), box.ax1.normalized(), box.ax2.normalized(), true).transpose();
 
   // transform ray to box coordinate system
-  Vec3fa par_pos = B * -cx;
+  Vec3fa par_pos = B * (ray.org - box.cen);
   Vec3fa par_dir = B * ray.dir;
 
   // (ax0.length() is half of box width along axis 0)
