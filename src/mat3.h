@@ -247,16 +247,16 @@ namespace Matrix{
 	  // are negative of one another (.707,.707,0) and (-.707,-.707,0). This can
 	  // reek havoc in hyperstreamline/other stuff. We will select the most
 	  // positive eigenvector.
-	  int ceil_half_n = (3 >> 1) + (3 & 1);
-	  for (j=0; j<3; j++) {
-	    for (numPos=0, i=0; i<3; i++) {
-	      if ( v[i][j] >= 0.0 ) { numPos++; }
-	    }
-	//    if ( numPos < ceil(float(n)/float(2.0)) )
-	    if ( numPos < ceil_half_n) {
-	      for(i=0; i<3; i++) { v[i][j] *= -1.0; }
-	    }
-	  }
+	/*   int ceil_half_n = (3 >> 1) + (3 & 1); */
+	/*   for (j=0; j<3; j++) { */
+	/*     for (numPos=0, i=0; i<3; i++) { */
+	/*       if ( v[i][j] >= 0.0 ) { numPos++; } */
+	/*     } */
+	/* //    if ( numPos < ceil(float(n)/float(2.0)) ) */
+	/*     if ( numPos < ceil_half_n) { */
+	/*       for(i=0; i<3; i++) { v[i][j] *= -1.0; } */
+	/*     } */
+	/*   } */
 	}
 } //namespace Matrix
 
