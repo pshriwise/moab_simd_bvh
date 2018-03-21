@@ -52,7 +52,7 @@ struct OBB {
 
   __forceinline Vec3fa center2() { return 2.0f * cen; }
   
-  __forceinline Vec3fa size() const { return Vec3fa(ax0.length(), ax1.length(), ax2.length()); }
+  __forceinline Vec3fa size() const { return 2.0f * Vec3fa(ax0.length(), ax1.length(), ax2.length()); }
 
   __forceinline float inner_radius() const { return std::min(ax0.length(), std::min(ax1.length(), ax2.length())); }
 
