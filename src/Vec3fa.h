@@ -47,6 +47,16 @@ struct __aligned(16) Vec3fa {
     len = len < min_rcp_input ? min_rcp_input : len;
     return Vec3fa(x/ len, y/len, z/len); }
 
+    __forceinline Vec3fa operator +=(const Vec3fa& v) { x+v.x; y+v.y; z+v.z; }
+
+    __forceinline Vec3fa operator -=(const Vec3fa& v) { x-v.x; y-v.y; z-v.z; }
+
+    __forceinline Vec3fa operator *=(const Vec3fa& v) { x*v.x; y*v.y; z*v.z; }
+
+    __forceinline Vec3fa operator /=(const Vec3fa& v) { x/v.x; y/v.y; z/v.z; }
+    
+
+    
 };
 
 
