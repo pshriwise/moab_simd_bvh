@@ -42,16 +42,55 @@ struct OBB {
       v -= cen;
       m += outer_product(v,v);
     }
-      
+
+    float l[3];
+    Matrix::EigenDecomp(m, l, ax0, ax1, ax2);
+
+    // ensure axes are the correct length
+    ax0.normalize(); 
+    ax1.normalize();
+    ax2.normalize();
+
+    // create the true box from the axes
+    Vec3fa min(inf), max(neg_inf);
+    for(size_t i = 0; i < num_pnts; i++) {
+      // construct vec
+      Vec3fa pnt(x[i], y[i], z[i]);
+
+      // find perpindicular point on each oriented axes
+      float t;
+      t = dot(ax0, (pnt - cen)) / dot(ax0,ax0);
+      if ( t < min[0] ) min[0] = t;
+      if ( t > max[0] ) max[0] = t;
+      t = dot(ax1, (pnt - cen)) / dot(ax1,ax1);
+      if ( t < min[1] ) min[1] = t;
+      if ( t > max[1] ) max[1] = t;
+      t = dot(ax2, (pnt - cen)) / dot(ax2,ax2);
+      if ( t < min[2] ) min[2] = t;
+      if ( t > max[2] ) max[2] = t;
+    }
+
+    // update the center value
+    const Vec3fa mid = 0.5 * (min + max);
+    cen = mid[0] * ax0 + mid[1] * ax1 + mid[2] * ax2;
+
+    // scale axes
+    const Vec3fa size = 0.5 * (max - min);
+    const float bump = 5e-03;
+    ax0 * (size[0] + bump);
+    ax1 * (size[1] + bump);
+    ax2 * (size[2] + bump);
+
+    return;
   }
   
   // copy constructor
-    __forceinline OBB ( const OBB& other ) {
-      cen = other.cen;
-      ax0 = other.ax0;
-      ax1 = other.ax1;
-      ax2 = other.ax2;
-    }
+  __forceinline OBB ( const OBB& other ) {
+    cen = other.cen;
+    ax0 = other.ax0;
+    ax1 = other.ax1;
+    ax2 = other.ax2;
+  }
   
   // assignment operator
   __forceinline OBB& operator=( const OBB& other ) {

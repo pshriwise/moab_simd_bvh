@@ -258,6 +258,21 @@ namespace Matrix{
 	/*     } */
 	/*   } */
 	}
+
+	template<typename Matrix, typename Vector>
+	  void EigenDecomp( const Matrix & _a,
+			    float w[3],
+			    Vector &v0,
+			    Vector &v1,
+			    Vector &v2)
+	{
+	  Vector temp[3];
+	  EigenDecomp(_a, w, temp);
+	  v0 = temp[0];
+	  v1 = temp[1];
+	  v2 = temp[2];
+	}
+			   
 } //namespace Matrix
 
 class Matrix3  {

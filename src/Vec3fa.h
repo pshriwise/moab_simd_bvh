@@ -54,9 +54,7 @@ struct __aligned(16) Vec3fa {
     __forceinline Vec3fa operator *=(const Vec3fa& v) { x*v.x; y*v.y; z*v.z; }
 
     __forceinline Vec3fa operator /=(const Vec3fa& v) { x/v.x; y/v.y; z/v.z; }
-    
 
-    
 };
 
 
@@ -119,7 +117,13 @@ __forceinline Vec3fa operator +( const Vec3fa &a ) { return Vec3fa(+a.x, +a.y, +
 __forceinline Vec3fa operator -( const Vec3fa &a ) { return Vec3fa(-a.x, -a.y, -a.z); }
 
 __forceinline float dot( const Vec3fa& a, const Vec3fa& b ) { return reduce_add(a*b); }
-  
+
+__forceinline Vec3fa cross( const Vec3fa& a, const Vec3fa& b ) { return Vec3fa( a[1] * b[2] - a[2] * b[1],
+										a[2] * b[0] - a[0] * b[2],
+										a[0] * b[1] - a[1] * b[0] ); }
+
+
+
 __forceinline std::ostream& operator <<(std::ostream &os, Vec3fa  const& v) {
   return os << '[' << v[0] << ' ' << v[1] << ' ' << v[2] << ' ' << v.a << ']';
 }

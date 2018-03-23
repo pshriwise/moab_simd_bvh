@@ -10,6 +10,7 @@ void constructor_tests();
 void point_contain_tests();
 void property_tests();
 void ray_intersection_tests();
+void construction_tests();
 
 int main( int argc, char** argv) {
 
@@ -21,6 +22,8 @@ int main( int argc, char** argv) {
   property_tests();
   // test intersections with box
   ray_intersection_tests();
+  // test proper construction
+  construction_tests();
   
   return 0;
 }
@@ -184,6 +187,31 @@ void ray_intersection_tests() {
 
   // check that the ray intersects the box
   CHECK(ray_intersection(box, ray));
+  
+  return;
+}
+
+float nrandf() { return (float) (rand()/RAND_MAX); }
+
+void construction_tests() {
+  // generate a random set of points
+  std::vector<float> x, y, z;
+
+  int num_pnts = 100;
+  
+  for(int i = 0; i < num_pnts; i ++){
+    x.push_back(nrandf());
+    y.push_back(nrandf());
+    z.push_back(nrandf());
+  }
+
+  OBB box(&x.front(), &y.front(), &z.front(), num_pnts);
+
+  for(int i = 0; i < num_pnts; i++) {
+    Vec3fa pnt(x[i], y[i], z[i]);
+    CHECK(box.point_in_box(pnt));
+  }
+  
   
   return;
 }
