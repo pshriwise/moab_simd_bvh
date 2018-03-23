@@ -26,6 +26,25 @@ struct OBB {
                     ax1(ax1),
                     ax2(ax2) { }    
 
+  __forceinline OBB( float *x, float *y, float *z, size_t num_pnts) : cen(zero), ax0(zero), ax1(zero), ax2(zero) {
+
+    // calculate the center of the box
+    for( size_t i = 0; i < num_pnts; i++) {
+      cen += Vec3fa(x[i], y[i], z[i]);
+    }
+    cen /= num_pnts;
+
+    Matrix3 m(0.0);
+    Vec3fa v;
+    // compute the covariance matrix
+    for( size_t i = 0; i < num_pnts; i++) {
+      v.x = x[i]; v.y = y[i]; v.z = z[i];
+      v -= cen;
+      m += outer_product(v,v);
+    }
+      
+  }
+  
   // copy constructor
     __forceinline OBB ( const OBB& other ) {
       cen = other.cen;
@@ -218,4 +237,3 @@ template<typename V, typename P, typename I>
 
   return false;
 }
-
