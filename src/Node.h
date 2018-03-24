@@ -195,7 +195,7 @@ struct OBBLeaf {
   OBB *box;
   NodeRef leaf;
 
-  OBBLeaf(OBB box, NodeRef leaf) : box(&box), leaf(leaf) {}
+  OBBLeaf(OBB* box, NodeRef leaf) : box(box), leaf(leaf) {}
   
 };
   

@@ -610,7 +610,7 @@ class BVH {
       if ((size_t)position & 8 )  std::cout << "Uh-oh" << std::endl;
 
       //create an OBB
-      OBB box(&xs.front(), &ys.front(), &zs.front(), current.size());
+      OBB* box = new OBB(&xs.front(), &ys.front(), &zs.front(), current.size());
 
       NodeRef* ret_node = current.size() ? (NodeRef*) createLeaf(position, current.size()) : new NodeRef();
 
@@ -801,7 +801,12 @@ class BVH {
 
 	  // if this is an OBB leaf, update the current NodeRef and continue
 	  if ( cur.isOBBLeaf() ) {
-	    cur = cur.obbNode()->leaf;
+	    OBBLeaf* obbLeaf = cur.obbNode();
+	    cur = obbLeaf->leaf;
+	    if (ray_intersection(*(obbLeaf->box), ray)) {
+	      goto check;
+	    }
+	    continue;
 	  }
 
 	  if (cur.isSetLeaf() ) {
@@ -821,9 +826,9 @@ class BVH {
 	    continue;
 	  }
 
+	check:
 	  size_t numPrims;
-	  P* primIDs = (P*)cur.leaf(numPrims);
-	  
+	  P* primIDs = (P*)cur.leaf(numPrims); 
 	  for (size_t i = 0; i < numPrims; i++) {
 	    P t = primIDs[i];
 	    t.intersect(vray, ray, filter, (void*)MDAM);

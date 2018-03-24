@@ -176,6 +176,43 @@ inline bool check_ray_limits(const float  normal_par_pos,
   return false;
 }
 
+inline bool check_ray_limits(const double  normal_par_pos,
+                             const double  normal_par_dir,
+                             const double  half_extent,
+                             const double* nonneg_ray_len,
+                             const double* neg_ray_len ) {
+
+  const double extent_pos_diff = half_extent - normal_par_pos;
+
+  // limit in positive direction
+  if(nonneg_ray_len) { // should be 0 <= t <= nonneg_ray_len
+    assert(0 <= *nonneg_ray_len);
+    if       (normal_par_dir>0) { // if/else if needed for pos/neg divisor
+      if(*nonneg_ray_len*normal_par_dir>=extent_pos_diff && extent_pos_diff>=0) return true;
+    } else if(normal_par_dir<0) {
+      if(*nonneg_ray_len*normal_par_dir<=extent_pos_diff && extent_pos_diff<=0) return true;
+    }
+  } else {            // should be 0 <= t
+    if       (normal_par_dir>0) { // if/else if needed for pos/neg divisor
+      if(extent_pos_diff>=0) return true;
+    } else if(normal_par_dir<0) {
+      if(extent_pos_diff<=0) return true;
+    }
+  }
+
+  // limit in negative direction
+  if(neg_ray_len) {   // should be neg_ray_len <= t < 0
+    assert(0 >= *neg_ray_len);
+    if       (normal_par_dir>0) { // if/else if needed for pos/neg divisor
+      if(*neg_ray_len*normal_par_dir<=extent_pos_diff && extent_pos_diff<0) return true;
+    } else if(normal_par_dir<0) {
+      if(*neg_ray_len*normal_par_dir>=extent_pos_diff && extent_pos_diff>0) return true;
+    }
+  }
+
+  return false;
+}
+
 template<typename V, typename P, typename I>
   bool ray_intersection( const OBB& box, const RayT<V,P,I> &ray ) {
 
