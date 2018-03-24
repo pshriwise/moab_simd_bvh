@@ -57,7 +57,7 @@ namespace Matrix{
 	}
 
 	template< typename Matrix>
-	inline bool positive_definite( const Matrix & d, 
+	__forceinline bool positive_definite( const Matrix & d, 
 				       float& det ){
 	        float subdet6 = d(1)*d(5)-d(2)*d(4);
 	        float subdet7 = d(2)*d(3)-d(0)*d(5);
@@ -66,13 +66,13 @@ namespace Matrix{
 	        return d(0) > 0 && subdet8 > 0 && det > 0;
 	}
 	template< typename Matrix>
-	inline Matrix transpose( const Matrix & d){
+	__forceinline Matrix transpose( const Matrix & d){
 	      return Matrix( d(0), d(3), d(6),
 	                     d(1), d(4), d(7),
 	                     d(2), d(5), d(8) );
 	}
 	template< typename Matrix>
-	inline Matrix mmult3( const Matrix& a, const Matrix& b ) {
+	__forceinline Matrix mmult3( const Matrix& a, const Matrix& b ) {
 	  return Matrix( a(0,0) * b(0,0) + a(0,1) * b(1,0) + a(0,2) * b(2,0),
 	                 a(0,0) * b(0,1) + a(0,1) * b(1,1) + a(0,2) * b(2,1),
 	                 a(0,0) * b(0,2) + a(0,1) * b(1,2) + a(0,2) * b(2,2),
@@ -85,7 +85,7 @@ namespace Matrix{
 	}
 
 	template< typename Vector, typename Matrix>
-	inline Matrix outer_product( const Vector & u,
+	__forceinline Matrix outer_product( const Vector & u,
 	                              const Vector & v,
 				      Matrix & m ) {
 	  	m = Matrix( u[0] * v[0], u[0] * v[1], u[0] * v[2],
@@ -94,7 +94,7 @@ namespace Matrix{
 		return m;
 	}
 	template< typename Matrix>
-	inline float determinant3( const Matrix & d){
+	__forceinline float determinant3( const Matrix & d){
 		return (d(0) * d(4) * d(8) 
 		     + d(1) * d(5) * d(6)
 		     + d(2) * d(3) * d(7)
@@ -104,20 +104,20 @@ namespace Matrix{
 	}
 	
 	template< typename Matrix>
-	inline const Matrix inverse( const Matrix & d){
+	__forceinline const Matrix inverse( const Matrix & d){
 		const float det = 1.0/determinant3( d);
 		return inverse( d, det);
 	}
 	
 	template< typename Vector, typename Matrix>
-	inline Vector vector_matrix( const Vector& v, const Matrix& m ) {
+	__forceinline Vector vector_matrix( const Vector& v, const Matrix& m ) {
 	  return Vector( v[0] * m(0,0) + v[1] * m(1,0) + v[2] * m(2,0),
 	                 v[0] * m(0,1) + v[1] * m(1,1) + v[2] * m(2,1),
 	                 v[0] * m(0,2) + v[1] * m(1,2) + v[2] * m(2,2) );
 	}
 	
 	template< typename Vector, typename Matrix>
-	inline Vector matrix_vector( const Matrix& m, const Vector& v ){
+	__forceinline Vector matrix_vector( const Matrix& m, const Vector& v ){
 	   Vector res = v;
 	   res[ 0] = v[0] * m(0,0) + v[1] * m(0,1) + v[2] * m(0,2);
 	   res[ 1] = v[0] * m(1,0) + v[1] * m(1,1) + v[2] * m(1,2);
@@ -139,7 +139,7 @@ namespace Matrix{
 	//TODO: Refactor this method into subroutines
 	//use a namespace { }  with no name to
 	//contain subroutines so that the compiler
-	//automatically inlines them.
+	//automatically __forceinlines them.
 
 	template< typename Matrix, typename Vector>
 	void EigenDecomp( const Matrix & _a,
@@ -281,17 +281,17 @@ class Matrix3  {
 
 public:
   //Default Constructor
-  inline Matrix3(){
+  __forceinline Matrix3(){
 	for(int i = 0; i < 9; ++i){ d[ i] = 0; }
   }
   //TODO: Deprecate this.
   //Then we can go from three Constructors to one. 
-  inline Matrix3( float diagonal ){ 
+  __forceinline Matrix3( float diagonal ){ 
       d[0] = d[4] = d[8] = diagonal;
       d[1] = d[2] = d[3] = 0.0;
       d[5] = d[6] = d[7] = 0.0;
   }
-  inline Matrix3( const Vec3fa & diagonal ){ 
+  __forceinline Matrix3( const Vec3fa & diagonal ){ 
       d[0] = diagonal[0];
       d[4] = diagonal[1],
       d[8] = diagonal[2];
@@ -304,7 +304,7 @@ public:
   //*but* it doesn't really matter anything else
   //will fail to compile.
   template< typename T> 
-  inline Matrix3( const std::vector< T> & diagonal ){ 
+  __forceinline Matrix3( const std::vector< T> & diagonal ){ 
       d[0] = diagonal[0];
       d[4] = diagonal[1],
       d[8] = diagonal[2];
@@ -312,7 +312,7 @@ public:
       d[5] = d[6] = d[7] = 0.0;
   }
 
-inline Matrix3( float v00, float v01, float v02,
+__forceinline Matrix3( float v00, float v01, float v02,
                 float v10, float v11, float v12,
                 float v20, float v21, float v22 ){
     d[0] = v00; d[1] = v01; d[2] = v02;
@@ -326,7 +326,7 @@ inline Matrix3( float v00, float v01, float v02,
   }
   //Weird constructors 
   template< typename Vector> 
-  inline Matrix3(   const Vector & row0,
+  __forceinline Matrix3(   const Vector & row0,
                     const Vector & row1,
                     const Vector & row2,
 		    bool as_cols = false) {
@@ -346,107 +346,107 @@ inline Matrix3( float v00, float v01, float v02,
     }
   }
   
-  inline Matrix3( const float* v ){ 
+  __forceinline Matrix3( const float* v ){ 
       d[0] = v[0]; d[1] = v[1]; d[2] = v[2];
       d[3] = v[3]; d[4] = v[4]; d[5] = v[5]; 
       d[6] = v[6]; d[7] = v[7]; d[8] = v[8];
   }
   
-  inline Matrix3& operator=( const Matrix3& m ){
+  __forceinline Matrix3& operator=( const Matrix3& m ){
       d[0] = m.d[0]; d[1] = m.d[1]; d[2] = m.d[2];
       d[3] = m.d[3]; d[4] = m.d[4]; d[5] = m.d[5];
       d[6] = m.d[6]; d[7] = m.d[7]; d[8] = m.d[8];
       return *this;
   }
   
-  inline Matrix3& operator=( const float* v ){ 
+  __forceinline Matrix3& operator=( const float* v ){ 
       d[0] = v[0]; d[1] = v[1]; d[2] = v[2];
       d[3] = v[3]; d[4] = v[4]; d[5] = v[5]; 
       d[6] = v[6]; d[7] = v[7]; d[8] = v[8];
       return *this;
  }
 
-  inline float* operator[]( unsigned i ){ return d + 3*i; }
-  inline const float* operator[]( unsigned i ) const{ return d + 3*i; }
-  inline float& operator()(unsigned r, unsigned c) { return d[3*r+c]; }
-  inline float operator()(unsigned r, unsigned c) const { return d[3*r+c]; }
-  inline float& operator()(unsigned i) { return d[i]; }
-  inline float operator()(unsigned i) const { return d[i]; }
+  __forceinline float* operator[]( size_t i ){ return d + 3*i; }
+  __forceinline const float* operator[]( size_t i ) const{ return d + 3*i; }
+  __forceinline float& operator()(size_t r, size_t c) { return d[3*r+c]; }
+  __forceinline float operator()(size_t r, size_t c) const { return d[3*r+c]; }
+  __forceinline float& operator()(size_t i) { return d[i]; }
+  __forceinline float operator()(size_t i) const { return d[i]; }
   
     // get pointer to array of nine floats
-  inline float* array()
+  __forceinline float* array()
       { return d; }
-  inline const float* array() const
+  __forceinline const float* array() const
       { return d; }
 
   // get row from matrix
-  inline       Vec3fa row(const unsigned& i)       { return Vec3fa(d[3*i+0],d[3*i+1],d[3*i+2]); } 
+  __forceinline       Vec3fa row(const size_t& i)       { return Vec3fa(d[3*i+0],d[3*i+1],d[3*i+2]); } 
   // get row from matrix
-  inline const Vec3fa row(const unsigned& i) const { return Vec3fa(d[3*i+0],d[3*i+1],d[3*i+2]); } 
+  __forceinline const Vec3fa row(const size_t& i) const { return Vec3fa(d[3*i+0],d[3*i+1],d[3*i+2]); } 
   
   // get row from matrix
-  inline       Vec3fa col(const unsigned& i)       { return Vec3fa(d[i],d[3+i],d[6+i]); } 
+  __forceinline       Vec3fa col(const size_t& i)       { return Vec3fa(d[i],d[3+i],d[6+i]); } 
 
   // get row from matrix
-  inline const Vec3fa col(const unsigned& i) const { return Vec3fa(d[i],d[3+i],d[6+i]); } 
+  __forceinline const Vec3fa col(const size_t& i) const { return Vec3fa(d[i],d[3+i],d[6+i]); } 
 
-  inline Matrix3& operator+=( const Matrix3& m ){
+  __forceinline Matrix3& operator+=( const Matrix3& m ){
       d[0] += m.d[0]; d[1] += m.d[1]; d[2] += m.d[2];
       d[3] += m.d[3]; d[4] += m.d[4]; d[5] += m.d[5];
       d[6] += m.d[6]; d[7] += m.d[7]; d[8] += m.d[8];
       return *this;
   }
   
-  inline Matrix3& operator-=( const Matrix3& m ){
+  __forceinline Matrix3& operator-=( const Matrix3& m ){
       d[0] -= m.d[0]; d[1] -= m.d[1]; d[2] -= m.d[2];
       d[3] -= m.d[3]; d[4] -= m.d[4]; d[5] -= m.d[5];
       d[6] -= m.d[6]; d[7] -= m.d[7]; d[8] -= m.d[8];
       return *this;
   }
   
-  inline Matrix3& operator*=( float s ){
+  __forceinline Matrix3& operator*=( float s ){
       d[0] *= s; d[1] *= s; d[2] *= s;
       d[3] *= s; d[4] *= s; d[5] *= s;
       d[6] *= s; d[7] *= s; d[8] *= s;
       return *this;
  }
   
-  inline Matrix3& operator/=( float s ){
+  __forceinline Matrix3& operator/=( float s ){
       d[0] /= s; d[1] /= s; d[2] /= s;
       d[3] /= s; d[4] /= s; d[5] /= s;
       d[6] /= s; d[7] /= s; d[8] /= s;
       return *this;
   }
  
-  inline Matrix3& operator*=( const Matrix3& m ){
+  __forceinline Matrix3& operator*=( const Matrix3& m ){
 	(*this) = Matrix::mmult3((*this),m); 
 	return *this;
   }
   
-  inline float determinant() const{
+  __forceinline float determinant() const{
   	return Matrix::determinant3( *this);
   }
  
-  inline Matrix3 inverse() const { 
+  __forceinline Matrix3 inverse() const { 
 	const float i = 1.0/determinant();
 	return Matrix::inverse( *this, i); 
   }
-  inline Matrix3 inverse( float i ) const {
+  __forceinline Matrix3 inverse( float i ) const {
   	return Matrix::inverse( *this, i); 
   }
   
-  inline bool positive_definite() const{
+  __forceinline bool positive_definite() const{
   	float tmp;
   	return positive_definite( tmp);
   }
   
-  inline bool positive_definite( float& det ) const{
+  __forceinline bool positive_definite( float& det ) const{
 	  return Matrix::positive_definite( *this, det);
   }
   
-  inline Matrix3 transpose() const{ return Matrix::transpose( *this); }
+  __forceinline Matrix3 transpose() const{ return Matrix::transpose( *this); }
   
-  inline bool invert() {
+  __forceinline bool invert() {
     float i = 1.0 / determinant();
     if (!finite(i) || fabs(i) < std::numeric_limits<float>::epsilon())
       return false;
@@ -455,7 +455,7 @@ inline Matrix3( float v00, float v01, float v02,
   }
     // Calculate determinant of 2x2 submatrix composed of the
     // elements not in the passed row or column.
-  inline float subdet( int r, int c ) const{
+  __forceinline float subdet( int r, int c ) const{
 	const int r1 = (r+1)%3, r2 = (r+2)%3;
 	const int c1 = (c+1)%3, c2 = (c+2)%3;
 	assert(r >= 0 && c >= 0);
@@ -464,19 +464,19 @@ inline Matrix3( float v00, float v01, float v02,
   }
 }; //class Matrix3
 
-inline Matrix3 operator+( const Matrix3& a, const Matrix3& b ){ 
+__forceinline Matrix3 operator+( const Matrix3& a, const Matrix3& b ){ 
 	return Matrix3(a) += b; 
 }
-inline Matrix3 operator-( const Matrix3& a, const Matrix3& b ){ 
+__forceinline Matrix3 operator-( const Matrix3& a, const Matrix3& b ){ 
 	return Matrix3(a) -= b; 
 }
 
-inline Matrix3 operator*( const Matrix3& a, const Matrix3& b ) {
+__forceinline Matrix3 operator*( const Matrix3& a, const Matrix3& b ) {
 	return Matrix::mmult3( a, b);
 }
 
 template< typename Vector>
-inline Matrix3 outer_product( const Vector & u,
+__forceinline Matrix3 outer_product( const Vector & u,
                               const Vector & v ) {
   return Matrix3( u[0] * v[0], u[0] * v[1], u[0] * v[2],
                   u[1] * v[0], u[1] * v[1], u[1] * v[2],
@@ -484,31 +484,28 @@ inline Matrix3 outer_product( const Vector & u,
 }
 
 template< typename T>
-inline std::vector< T> operator*( const Matrix3&m, const std::vector< T> & v){
+__forceinline std::vector< T> operator*( const Matrix3&m, const std::vector< T> & v){
 		return Matrix::matrix_vector( m, v);
 }
 
 template< typename T>
-inline std::vector< T> operator*( const std::vector< T>& v, const Matrix3&m){
+__forceinline std::vector< T> operator*( const std::vector< T>& v, const Matrix3&m){
 		return Matrix::vector_matrix( v, m);
 }
 
-inline Vec3fa operator*( const Matrix3&m,  const Vec3fa& v){
+__forceinline Vec3fa operator*( const Matrix3&m,  const Vec3fa& v){
 		return Matrix::matrix_vector( m, v);
 }
 
-inline Vec3fa operator*( const Vec3fa& v, const Matrix3& m){
+__forceinline Vec3fa operator*( const Vec3fa& v, const Matrix3& m){
 		return Matrix::vector_matrix( v, m);
 }
 
 
-#ifndef MOAB_MATRIX3_OPERATORLESS
-#define MOAB_MATRIX3_OPERATORLESS
 inline std::ostream& operator<<( std::ostream& s, const Matrix3& m ){
   return s <<  "| " << m(0,0) << " " << m(0,1) << " " << m(0,2) 
            << " | " << m(1,0) << " " << m(1,1) << " " << m(1,2) 
            << " | " << m(2,0) << " " << m(2,1) << " " << m(2,2) 
            << " |" ;
 }
-#endif//MOAB_MATRIX3_OPERATORLESS
 
