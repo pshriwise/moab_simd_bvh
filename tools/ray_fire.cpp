@@ -66,31 +66,31 @@ int main(int argc, char** argv) {
   po.addOpt<void>("trav-stats,S",  "Track and print BVH traversal statistics", &trav_stats);
 
   int vol_gid = 1;
-  po.addOpt<int>("i",              "Specify the volume upon which to test ray intersections (default 1)", &vol_gid);
+  po.addOpt<int>("vol-id,i",              "Specify the volume upon which to test ray intersections (default 1)", &vol_gid);
 
   int num_rand_rays = 1000;
-  po.addOpt<int>("n",              "Specify the number of random rays to fire (default 1000)", &num_rand_rays);
+  po.addOpt<int>("num_rays,n",              "Specify the number of random rays to fire (default 1000)", &num_rand_rays);
 
   double rand_ray_center[3] = {0.0, 0.0, 0.0};
-  po.addOpt<double>("x",   "Specify the x-value of random ray generation (default is zero)", rand_ray_center);
-  po.addOpt<double>("y",   "Specify the y-value of random ray generation (default is zero)", rand_ray_center+1);
-  po.addOpt<double>("z",   "Specify the z-value of random ray generation (default is zero)", rand_ray_center+2);
+  po.addOpt<double>("rand_ray_x,rx",   "Specify the x-value of random ray generation (default is zero)", rand_ray_center);
+  po.addOpt<double>("rand_ray_y,ry",   "Specify the y-value of random ray generation (default is zero)", rand_ray_center+1);
+  po.addOpt<double>("rand_ray_z,rz",   "Specify the z-value of random ray generation (default is zero)", rand_ray_center+2);
 
   double rand_ray_radius = 0.0;
-  po.addOpt<double>("r",   "Random ray radius. Random rays will begin at a distance r from the center of the random ray origin", &rand_ray_radius);
+  po.addOpt<double>("ray_radius,r",   "Random ray radius. Random rays will begin at a distance r from the center of the random ray origin", &rand_ray_radius);
 
   std::string ray_file; // gets set later
-  po.addOpt<std::string>("rf", "If provided, read rays from the provided csv file (x,y,z,u,v,w)");
+  po.addOpt<std::string>("csv_file,cf", "If provided, read rays from the provided csv file (x,y,z,u,v,w)");
 
   double ray_center[3]; // gets set later
-  po.addOpt<double>("cx",  "Specify the x-value of single ray generation");
-  po.addOpt<double>("cy",  "Specify the y-value of single ray generation");
-  po.addOpt<double>("cz",  "Specify the z-value of single ray generation");
+  po.addOpt<double>("org_x,x",  "Specify the x-value of single ray generation");
+  po.addOpt<double>("org_y,y",  "Specify the y-value of single ray generation");
+  po.addOpt<double>("org_z,z",  "Specify the z-value of single ray generation");
 
   double ray_dir[3];  // gets set later
-  po.addOpt<double>("cu",  "Specify the x-direction of single ray generation");
-  po.addOpt<double>("cv",  "Specify the y-direction of single ray generation");
-  po.addOpt<double>("cw",  "Specify the z-direction of single ray generation");
+  po.addOpt<double>("dir_x,u",  "Specify the x-direction of single ray generation");
+  po.addOpt<double>("dir_y,v",  "Specify the y-direction of single ray generation");
+  po.addOpt<double>("dir_z,w",  "Specify the z-direction of single ray generation");
 
   std::string python_dict;
   po.addOpt<std::string>("p", "if present, save parameters and results to a python dictionary file", &python_dict);
@@ -123,8 +123,8 @@ int main(int argc, char** argv) {
   double duration = 0.0;
 
   // fire specified ray, if any
-  if( po.getOpt("cx", ray_center)   && po.getOpt("cy", ray_center+1) && po.getOpt("cz", ray_center+2) &&
-      po.getOpt("cu", ray_dir)      && po.getOpt("cv", ray_dir+1)    && po.getOpt("cw", ray_dir+2) ) {
+  if( po.getOpt("org_x", ray_center)   && po.getOpt("org_y", ray_center+1) && po.getOpt("org_z", ray_center+2) &&
+      po.getOpt("dir_x", ray_dir)      && po.getOpt("dir_y", ray_dir+1)    && po.getOpt("dir_z", ray_dir+2) ) {
 
     // construct ray
     MBRay ray(ray_center, ray_dir);
@@ -147,7 +147,7 @@ int main(int argc, char** argv) {
   }
   // if the user provided a ray file,
   // then fire the rays from there and exit
-  else if ( po.getOpt("rf", &ray_file) ) {
+  else if ( po.getOpt("csv_file", &ray_file) ) {
 
     // delimiter we're searching for in the CSV file
     std::string comma = ",";
