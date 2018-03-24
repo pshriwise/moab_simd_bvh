@@ -88,6 +88,14 @@ class BVH {
   
   inline void makeSetNode(NodeRef* node, I setID, I fwd = 0, I rev = 0) {
 
+    // if this is an OBB leaf, delete OBB and return typical node
+    if(node->isOBBLeaf()) {
+      OBBLeaf* obbLeaf = node->obbNode();
+      node->setPtr(obbLeaf->leaf.pointer());
+      /* delete obbLeaf->box; */
+      /* delete obbLeaf; */
+    }
+      
     //make sure this isn't already a set node
     assert(!node->isSetLeaf());
     
@@ -583,11 +591,16 @@ class BVH {
 
       P* position = &(*(leaf_sequence_storage.begin()+num_stored));
 
+      std::vector<float> xs, ys, zs;
+      
       for( size_t i = 0; i < current.size(); i++) {
 	
 	P t = P((I*)MDAM->conn + (current.prims[i].primID()*MDAM->element_stride), (I)current.prims[i].primitivePtr);
 	leaf_sequence_storage[num_stored+i] = t;
-	
+
+	xs.push_back(MDAM->xPtr[t.i1]); xs.push_back(MDAM->xPtr[t.i2]); xs.push_back(MDAM->xPtr[t.i3]);
+	ys.push_back(MDAM->xPtr[t.i1]); ys.push_back(MDAM->xPtr[t.i2]); ys.push_back(MDAM->xPtr[t.i3]);
+	zs.push_back(MDAM->xPtr[t.i1]); zs.push_back(MDAM->xPtr[t.i2]); zs.push_back(MDAM->xPtr[t.i3]);
       }
       
       num_stored += (int)current.size();
@@ -595,8 +608,18 @@ class BVH {
       if(num_stored > leaf_sequence_storage.size()) { std::cout << "FAILURE: too many primitives have been stored" << std::endl; assert(false); }
       
       if ((size_t)position & 8 )  std::cout << "Uh-oh" << std::endl;
+
+      //create an OBB
+      OBB box(&xs.front(), &ys.front(), &zs.front(), current.size());
+
+      NodeRef* ret_node = current.size() ? (NodeRef*) createLeaf(position, current.size()) : new NodeRef();
+
+      OBBLeaf* leaf = new OBBLeaf(box, *ret_node);
+
+      ret_node->setPtr((size_t)leaf | obbLeafAlign);
       
-      return current.size() ? (NodeRef*) createLeaf(position, current.size()) : new NodeRef();
+      return ret_node;
+      
     }
 
     
@@ -703,7 +726,7 @@ class BVH {
 
 
   static inline bool intersect(NodeRef& node, const TravRay& ray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& dist, size_t& mask) {
-    if(node.isLeaf() || node.isSetLeaf() ) return false;
+    if(node.isLeaf() || node.isSetLeaf() || node.isOBBLeaf() ) return false;
     mask = intersectBox<I>(*node.node(),ray,tnear,tfar,dist);
     return true;
   }
@@ -714,7 +737,7 @@ class BVH {
     return;
   }
   
-  inline void intersectRay (NodeRef root, Ray &ray, TravRay &vray) {
+  inline void intersectRay(NodeRef root, Ray &ray, TravRay &vray) {
     /* initialiez stack state */
     StackItemT<NodeRef> stack[stackSize];
     StackItemT<NodeRef>* stackPtr = stack+1;
@@ -775,24 +798,29 @@ class BVH {
 
 	if ( !cur.isEmpty() ) {
 	  // leaf (set distance to nearest/farthest box intersection for now)
-	
-	if (cur.isSetLeaf() ) {
-	  // update the geom id of the travray
-	  SetNode* snode = (SetNode*)cur.snode();
-	  vray.setID = snode->setID;
-	  if(snode->fwdID == ray.instID) {
-	    vray.sense = 0;
+
+	  // if this is an OBB leaf, update the current NodeRef and continue
+	  if ( cur.isOBBLeaf() ) {
+	    cur = cur.obbNode()->leaf;
 	  }
-	  else {
-	    //	    assert(snode->revID == ray.instID);
-	    vray.sense = 1;
+
+	  if (cur.isSetLeaf() ) {
+	    // update the geom id of the travray
+	    SetNode* snode = (SetNode*)cur.snode();
+	    vray.setID = snode->setID;
+	    if(snode->fwdID == ray.instID) {
+	      vray.sense = 0;
+	    }
+	    else {
+	      //	    assert(snode->revID == ray.instID);
+	      vray.sense = 1;
+	    }
+	    // WILL ALSO SET SENSE HERE AT SOME POINT
+	    NodeRef setNode = cur.setLeaf();
+	    intersectRay(setNode, ray, vray);
+	    continue;
 	  }
-	  // WILL ALSO SET SENSE HERE AT SOME POINT
-	  NodeRef setNode = cur.setLeaf();
-	  intersectRay(setNode, ray, vray);
-	  continue;
-	}
-	
+
 	  size_t numPrims;
 	  P* primIDs = (P*)cur.leaf(numPrims);
 	  
@@ -803,13 +831,13 @@ class BVH {
 	}
 	
       }
-
+    
     return;
   }
 
 
     static inline bool intersectNearest(NodeRef& node, const TravRay& ray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& dist, size_t& mask) {
-    if(node.isLeaf() || node.isSetLeaf() ) return false;
+      if(node.isLeaf() || node.isSetLeaf() || node.isOBBLeaf() ) return false;
     mask = nearestOnBox<I>(*node.node(),ray,tnear,tfar,dist);
     return true;
   }
@@ -860,6 +888,12 @@ class BVH {
 
     	if ( !cur.isEmpty() ) {
 	  // leaf (set distance to nearest/farthest box intersection for now)
+
+
+	  // if this is an OBB leaf, update the current NodeRef and continue
+	  if ( cur.isOBBLeaf() ) {
+	    cur = cur.obbNode()->leaf;
+	  }
 	  
 	  if (cur.isSetLeaf() ) {
 	    // update the geom id of the travray

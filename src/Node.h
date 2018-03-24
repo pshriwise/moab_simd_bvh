@@ -2,6 +2,7 @@
 
 #include "Vec3.h"
 #include "AABB.h"
+#include "OBB.h"
 #include "constants.h"
 #include "vfloat.h"
 #include "Primitive.h"
@@ -10,13 +11,15 @@
 
 static const size_t emptyNode = 8;
 static const size_t tyLeaf = 8;
-static const size_t setLeafAlign = 3;
+static const size_t setLeafAlign = 2;
+static const size_t obbLeafAlign = 1;
 
 static const size_t items_mask = 15;
 static const size_t align_mask = 15;
 
 // forward declarations
 struct AANode;
+struct OBBLeaf;
 struct Node;
  
 struct NodeRef {
@@ -33,8 +36,13 @@ struct NodeRef {
 
   __forceinline size_t isSetLeaf() const { return !(isLeaf()) && (ptr & setLeafAlign); }
 
+  __forceinline size_t isOBBLeaf() const { return !(isLeaf()) && (ptr & obbLeafAlign); }
+
   __forceinline bool isEmpty() const { return ptr == emptyNode; }
 
+  __forceinline       OBBLeaf* obbNode()       { return (OBBLeaf*)(ptr & ~(size_t)obbLeafAlign); }
+  __forceinline const OBBLeaf* obbNode() const { return (const OBBLeaf*)(ptr & ~(size_t)obbLeafAlign); }
+  
   __forceinline       AANode* node()       { return (AANode*)ptr; }
   __forceinline const AANode* node() const { return (const AANode*)ptr; }
 
@@ -183,6 +191,14 @@ struct __aligned(16) AANode : public Node
   
 };
 
+struct OBBLeaf {
+  OBB *box;
+  NodeRef leaf;
+
+  OBBLeaf(OBB box, NodeRef leaf) : box(&box), leaf(leaf) {}
+  
+};
+  
 template<typename I>
 struct SetNodeT : public AANode {
 
