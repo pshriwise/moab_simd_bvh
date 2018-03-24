@@ -379,6 +379,17 @@ inline Matrix3( float v00, float v01, float v02,
   inline const float* array() const
       { return d; }
 
+  // get row from matrix
+  inline       Vec3fa row(const unsigned& i)       { return Vec3fa(d[3*i+0],d[3*i+1],d[3*i+2]); } 
+  // get row from matrix
+  inline const Vec3fa row(const unsigned& i) const { return Vec3fa(d[3*i+0],d[3*i+1],d[3*i+2]); } 
+  
+  // get row from matrix
+  inline       Vec3fa col(const unsigned& i)       { return Vec3fa(d[i],d[3+i],d[6+i]); } 
+
+  // get row from matrix
+  inline const Vec3fa col(const unsigned& i) const { return Vec3fa(d[i],d[3+i],d[6+i]); } 
+
   inline Matrix3& operator+=( const Matrix3& m ){
       d[0] += m.d[0]; d[1] += m.d[1]; d[2] += m.d[2];
       d[3] += m.d[3]; d[4] += m.d[4]; d[5] += m.d[5];

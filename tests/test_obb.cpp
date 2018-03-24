@@ -41,9 +41,9 @@ void constructor_tests() {
 
   // test that values are correct
   CHECK_VECREAL_EQUAL(center, box.center());
-  CHECK_VECREAL_EQUAL(ax0, box.ax0);
-  CHECK_VECREAL_EQUAL(ax1, box.ax1);
-  CHECK_VECREAL_EQUAL(ax2, box.ax2);
+  CHECK_VECREAL_EQUAL(ax0, box.transform.row(0));
+  CHECK_VECREAL_EQUAL(ax1, box.transform.row(1));
+  CHECK_VECREAL_EQUAL(ax2, box.transform.row(2));
 
   // test empty constructor
   OBB empty = OBB();
