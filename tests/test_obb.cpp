@@ -32,15 +32,15 @@ void constructor_tests() {
   
   //test-box values
   Vec3fa center(1.0f, 1.0f, 1.0f);
-  Vec3fa ax0(0.0f, 2.0f, 0.0f);
-  Vec3fa ax1(2.0f, 0.0f, 0.0f);
-  Vec3fa ax2(0.0f, 0.0f, 2.0f);
-  
+  Vec3fa ax0(0.0f, 1.0f, 0.0f);
+  Vec3fa ax1(1.0f, 0.0f, 0.0f);
+  Vec3fa ax2(0.0f, 0.0f, 1.0f);
+  Vec3fa size(2.0f);
   // create AABB using an array
-  OBB box = OBB(center, ax0, ax1, ax2);
+  OBB box = OBB(center, size, ax0, ax1, ax2);
 
   // test that values are correct
-  CHECK_VECREAL_EQUAL(center, box.cen);
+  CHECK_VECREAL_EQUAL(center, box.center());
   CHECK_VECREAL_EQUAL(ax0, box.ax0);
   CHECK_VECREAL_EQUAL(ax1, box.ax1);
   CHECK_VECREAL_EQUAL(ax2, box.ax2);
@@ -66,9 +66,10 @@ void point_contain_tests() {
   Vec3fa ax0 ( (x_max - x_min) / 2.0f, 0.0f, 0.0f );
   Vec3fa ax1 ( 0.0f, (y_max - y_min) / 2.0f, 0.0f );
   Vec3fa ax2 ( 0.0f, 0.0f, (z_max - z_min) / 2.0f );
-  
+  Vec3fa size( x_max - x_min, y_max - y_min, z_max - z_min);
+    
   // create test box
-  OBB box = OBB(center, ax0, ax1, ax2);
+  OBB box = OBB(center, size, ax0, ax1, ax2);
   
   //  AABB box = AABB(x_min, y_min, z_min, x_max, y_max, z_max);
 
@@ -107,8 +108,9 @@ void property_tests() {
   Vec3fa ax0 ( (x_max - x_min) / 2.0f, 0.0f, 0.0f );
   Vec3fa ax1 ( 0.0f, (y_max - y_min) / 2.0f, 0.0f );
   Vec3fa ax2 ( 0.0f, 0.0f, (z_max - z_min) / 2.0f );
+  Vec3fa size( x_max - x_min, y_max - y_min, z_max - z_min);
 
-  OBB box = OBB(center, ax0, ax1, ax2);
+  OBB box = OBB(center, size, ax0, ax1, ax2);
   
   // check center
   Vec3fa expected_center(1.5, 2.5, 3.5);
@@ -148,9 +150,10 @@ void ray_intersection_tests() {
   Vec3fa ax0 ( (x_max - x_min) / 2.0f, 0.0f, 0.0f );
   Vec3fa ax1 ( 0.0f, (y_max - y_min) / 2.0f, 0.0f );
   Vec3fa ax2 ( 0.0f, 0.0f, (z_max - z_min) / 2.0f );
+  Vec3fa size( x_max - x_min, y_max - y_min, z_max - z_min);
 
   // create test box
-  OBB box = OBB(center, ax0, ax1, ax2);
+  OBB box = OBB(center, size, ax0, ax1, ax2);
 
   // create test ray
   RayT<Vec3fa,float,int> ray;
