@@ -13,12 +13,10 @@ struct OBB {
   // member variables
   AABB bbox;
   Matrix3 transform;
-  
-  Vec3fa ax0, ax1, ax2;
-  
+    
   // constructors
 
-  __forceinline OBB() : bbox(AABB()), ax0(zero), ax1(zero), ax2(zero) { }
+  __forceinline OBB() : bbox(AABB()) { }
 
   __forceinline OBB( const Vec3fa& center,
 		     const Vec3fa& size,
@@ -28,12 +26,9 @@ struct OBB {
 
     bbox = AABB(center-(0.5*size),center+(0.5*size));
     transform = Matrix3(axis0.normalized(), axis1.normalized(), axis2.normalized());
-    ax0 = axis0; ax0.normalize();
-    ax1 = axis1; ax1.normalize();
-    ax2 = axis2; ax2.normalize();
   }
 		    
-  __forceinline OBB( float *x, float *y, float *z, size_t num_pnts) : bbox(AABB()), ax0(zero), ax1(zero), ax2(zero) {
+  __forceinline OBB( float *x, float *y, float *z, size_t num_pnts) : bbox(AABB()) {
 
     // calculate the center of the box
     for( size_t i = 0; i < num_pnts; i++) {
@@ -51,6 +46,7 @@ struct OBB {
     }
 
     float l[3];
+    Vec3fa ax0, ax1, ax2;
     Matrix::EigenDecomp(m, l, ax0, ax1, ax2);
 
     // ensure axes are the correct length
@@ -90,18 +86,12 @@ struct OBB {
   // copy constructor
   __forceinline OBB ( const OBB& other ) {
     bbox = other.bbox;
-    ax0 = other.ax0;
-    ax1 = other.ax1;
-    ax2 = other.ax2;
     transform = other.transform;
   }
   
   // assignment operator
   __forceinline OBB& operator=( const OBB& other ) {
     bbox = other.bbox;
-    ax0 = other.ax0;
-    ax1 = other.ax1;
-    ax2 = other.ax2;
     transform = other.transform;
     return *this;
   }
@@ -127,9 +117,9 @@ struct OBB {
     Vec3fa from_center = point - bbox.center();
  
     Vec3fa len = halfSize();
-    if(fabs(dot(from_center, ax0)) > len[0]) return false;
-    if(fabs(dot(from_center, ax1)) > len[1]) return false;
-    if(fabs(dot(from_center, ax2)) > len[2]) return false;
+    if(fabs(dot(from_center, transform.row(0))) > len[0]) return false;
+    if(fabs(dot(from_center, transform.row(1))) > len[1]) return false;
+    if(fabs(dot(from_center, transform.row(2))) > len[2]) return false;
     
     return true;
   }
@@ -201,7 +191,7 @@ template<typename V, typename P, typename I>
   if(dist_sq > max_diagsq) return false;
 
   //get transpose of the axes
-  Matrix3 B = Matrix3(box.ax0.normalized(), box.ax1.normalized(), box.ax2.normalized(), true).transpose();
+  Matrix3 B = box.transform;
 
   // transform ray to box coordinate system
   Vec3fa par_pos = B * (ray.org - box.center());
