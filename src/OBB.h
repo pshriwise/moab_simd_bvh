@@ -4,35 +4,42 @@
 #include "Vec3.h"
 #include "Vec3fa.h"
 #include "Ray.h"
+#include "AABB.h"
 #include "mat3.h"             
 
 // Oriented Bounding Box Tree
 struct OBB {
 
   // member variables
-  Vec3fa cen;
+  AABB bbox;
+  Matrix3 transform;
+  
   Vec3fa ax0, ax1, ax2;
   
   // constructors
 
-  __forceinline OBB() : cen(zero), ax0(zero), ax1(zero), ax2(zero) { }
+  __forceinline OBB() : bbox(AABB()), ax0(zero), ax1(zero), ax2(zero) { }
 
-  __forceinline OBB(const Vec3fa cen,
-		    const Vec3fa& ax0,
-		    const Vec3fa& ax1,
-		    const Vec3fa& ax2)
-                   :cen(cen),
-                    ax0(ax0),
-                    ax1(ax1),
-                    ax2(ax2) { }    
+  __forceinline OBB( const Vec3fa& center,
+		     const Vec3fa& size,
+		     const Vec3fa& axis0,
+		     const Vec3fa& axis1,
+		     const Vec3fa& axis2) {
 
-  __forceinline OBB( float *x, float *y, float *z, size_t num_pnts) : cen(zero), ax0(zero), ax1(zero), ax2(zero) {
+    bbox = AABB(center-(0.5*size),center+(0.5*size));
+    transform = Matrix3(axis0, axis1, axis2);
+    ax0 = axis0; ax0.normalize();
+    ax1 = axis1; ax1.normalize();
+    ax2 = axis2; ax2.normalize();
+  }
+		    
+  __forceinline OBB( float *x, float *y, float *z, size_t num_pnts) : bbox(AABB()), ax0(zero), ax1(zero), ax2(zero) {
 
     // calculate the center of the box
     for( size_t i = 0; i < num_pnts; i++) {
-      cen += Vec3fa(x[i], y[i], z[i]);
+      bbox.update(x[i], y[i], z[i]);
     }
-    cen /= num_pnts;
+    Vec3fa cen = bbox.center();
 
     Matrix3 m(0.0);
     Vec3fa v;
@@ -51,6 +58,9 @@ struct OBB {
     ax1.normalize();
     ax2.normalize();
 
+    // set point/ray transform matrix
+    transform = Matrix3(ax0, ax1, ax2);
+    
     // create the true box from the axes
     Vec3fa min(inf), max(neg_inf);
     for(size_t i = 0; i < num_pnts; i++) {
@@ -70,64 +80,56 @@ struct OBB {
       if ( t > max[2] ) max[2] = t;
     }
 
-    // update the center value
-    const Vec3fa mid = 0.5 * (min + max);
-    cen = mid[0] * ax0 + mid[1] * ax1 + mid[2] * ax2;
-
-    // scale axes
-    const Vec3fa size = 0.5 * (max - min);
+    // upate the bounding box min/max
     const float bump = 5e-03;
-    ax0 * (size[0] + bump);
-    ax1 * (size[1] + bump);
-    ax2 * (size[2] + bump);
-
+    bbox = AABB(min-bump, max+bump);
+       
     return;
   }
   
   // copy constructor
   __forceinline OBB ( const OBB& other ) {
-    cen = other.cen;
+    bbox = other.bbox;
     ax0 = other.ax0;
     ax1 = other.ax1;
     ax2 = other.ax2;
+    transform = other.transform;
   }
   
   // assignment operator
   __forceinline OBB& operator=( const OBB& other ) {
-    cen = other.cen;
+    bbox = other.bbox;
     ax0 = other.ax0;
     ax1 = other.ax1;
     ax2 = other.ax2;
+    transform = other.transform;
     return *this;
   }
     
   __forceinline bool isValid() {
-    return ax0.length() + ax0.length() + ax2.length() > 0;
+    return bbox.isValid();
   }
 
   // property methods
-  __forceinline Vec3fa center() { return cen; }
+  __forceinline       Vec3fa center()       { return bbox.center(); }
+  __forceinline const Vec3fa center() const { return bbox.center(); }
 
-  __forceinline Vec3fa center2() { return 2.0f * cen; }
+  __forceinline Vec3fa center2() { return bbox.center2(); }
   
-  __forceinline Vec3fa size() const { return 2.0f * Vec3fa(ax0.length(), ax1.length(), ax2.length()); }
+  __forceinline Vec3fa size() const { return bbox.size(); }
+  __forceinline Vec3fa halfSize() const { return 0.5f * bbox.size(); }
 
-  __forceinline float inner_radius() const { return std::min(ax0.length(), std::min(ax1.length(), ax2.length())); }
+  __forceinline float inner_radius() const { return reduce_min(size()); }
 
-  __forceinline float outer_radius() const { return std::max(ax0.length(), std::max(ax1.length(), ax2.length())); }
+  __forceinline float outer_radius() const { return reduce_max(size()); }
 
   __forceinline bool point_in_box( const Vec3fa& point ) const {
-    Vec3fa from_center = point - cen;
-
-  
-    float lensq;
-
-    lensq = ax0.length_sqr();
-    if(fabs(dot(from_center, ax0)) > lensq) return false;
-    lensq = ax1.length_sqr();
-    if(fabs(dot(from_center, ax1)) > lensq) return false;
-    lensq = ax2.length_sqr();
-    if(fabs(dot(from_center, ax2)) > lensq) return false;
+    Vec3fa from_center = point - bbox.center();
+ 
+    Vec3fa len = halfSize();
+    if(fabs(dot(from_center, ax0)) > len[0]) return false;
+    if(fabs(dot(from_center, ax1)) > len[1]) return false;
+    if(fabs(dot(from_center, ax2)) > len[2]) return false;
     
     return true;
   }
@@ -144,7 +146,7 @@ __forceinline float volume( const OBB& box) { return reduce_mul(box.size()); }
 
 __forceinline float halfArea( const OBB& box ) { return halfArea(box.size()); }
 
-__forceinline float area(const OBB& box) { return 2.0f * halfArea(box); }
+__forceinline float area(const OBB& box) { return 2.0f * halfArea(box.size()); }
 
 
 inline bool check_ray_limits(const float  normal_par_pos,
@@ -187,7 +189,7 @@ inline bool check_ray_limits(const float  normal_par_pos,
 template<typename V, typename P, typename I>
   bool ray_intersection( const OBB& box, const RayT<V,P,I> &ray ) {
 
-  const Vec3fa cx = box.cen - ray.org;
+  const Vec3fa cx = box.center() - ray.org;
   const float  dist_s = dot(cx,ray.dir);
   const float dist_sq = dot(cx,cx) - (dist_s*dist_s);
   const float max_diagsq = box.outer_radius()*box.outer_radius();
@@ -202,13 +204,14 @@ template<typename V, typename P, typename I>
   Matrix3 B = Matrix3(box.ax0.normalized(), box.ax1.normalized(), box.ax2.normalized(), true).transpose();
 
   // transform ray to box coordinate system
-  Vec3fa par_pos = B * (ray.org - box.cen);
+  Vec3fa par_pos = B * (ray.org - box.center());
   Vec3fa par_dir = B * ray.dir;
 
   // (ax0.length() is half of box width along axis 0)
-  const float half_x = box.ax0.length();
-  const float half_y = box.ax1.length();
-  const float half_z = box.ax2.length();
+  const Vec3fa half_size = box.halfSize();
+  const float half_x = half_size[0];
+  const float half_y = half_size[1];
+  const float half_z = half_size[2];
 
   // test if ray_origin is inside box
   if (par_pos[0] <= half_x && par_pos[0] >= -half_x &&
