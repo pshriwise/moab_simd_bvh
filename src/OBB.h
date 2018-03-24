@@ -27,7 +27,7 @@ struct OBB {
 		     const Vec3fa& axis2) {
 
     bbox = AABB(center-(0.5*size),center+(0.5*size));
-    transform = Matrix3(axis0, axis1, axis2);
+    transform = Matrix3(axis0.normalized(), axis1.normalized(), axis2.normalized());
     ax0 = axis0; ax0.normalize();
     ax1 = axis1; ax1.normalize();
     ax2 = axis2; ax2.normalize();
