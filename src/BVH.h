@@ -62,7 +62,7 @@ class BVH {
 
   MOABDirectAccessManager* MDAM;
   
-  static const size_t stackSize = 1+(N-1)*BVH_MAX_DEPTH;
+  static const size_t stackSize = 1+N*BVH_MAX_DEPTH;
 
  public:
 
