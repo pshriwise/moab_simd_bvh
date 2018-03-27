@@ -4,6 +4,17 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 INCLUDE_DIRECTORIES("/usr/include/eigen3")
 
+
+OPTION(TEST_COVERAGE "Enable test coverage reporting" OFF)
+
+IF(NOT CMAKE_BUILD_TYPE)
+  SET(CMAKE_BUILD_TYPE "Release" CACHE STRING "Default build is release" FORCE)
+ENDIF()
+
+IF(TEST_COVERAGE)
+  SET(CMAKE_BUILD_TYPE "Coverage" CACHE STRING "Coverage" FORCE)
+ENDIF()
+
 # Allow use of find_package(HDF5), find_package(MOAB), etc.
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_LIST_DIR}/cmake)
 SET(CMAKE_CXX_STANDARD 11)
@@ -32,9 +43,6 @@ SET(TEST_FILES_DIR CACHE INTERNAL "Test File Location" FORCE)
 INCLUDE_DIRECTORIES(${MOAB_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES("/usr/include/eigen3/")
 
-ADD_SUBDIRECTORY(src)
-ADD_SUBDIRECTORY(common)
-ADD_SUBDIRECTORY(tools)
 
 # A list of all unittests
 # test files are named test_<test_name>
@@ -60,39 +68,18 @@ LIST(APPEND TEST_FILES "moab_mesh")
 LIST(APPEND TEST_FILES "moab_old")
 LIST(APPEND TEST_FILES "MBVH")
 
-
+ADD_SUBDIRECTORY(src)
+ADD_SUBDIRECTORY(common)
+ADD_SUBDIRECTORY(tools)
 ADD_SUBDIRECTORY(tests)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-IF(CMAKE_COMPILER_IS_GNUCXX)
-  include(CodeCoverage)
-  FOREACH(TEST_NAME IN LISTS TEST_FILES)
-    ADD_TEST(NAME ${TEST_NAME}_test COMMAND test_${TEST_NAME})
-    setup_target_for_coverage( NAME test_${TEST_NAME}_coverage EXECUTABLE test_${TEST_NAME} )
-    LIST(APPEND TEST_NAMES test_${TEST_NAME}_coverage)
-    LIST(APPEND LCOV_MERGE_NAMES -a test_${TEST_NAME}_coverage.info)
-  ENDFOREACH()
-ENDIF()
 
 #setup_target_for_coverage( NAME test_moab_mesh_coverage EXECUTABLE test_moab_mesh )
 #LIST(APPEND TEST_NAMES test_moab_mesh_coverage)
 #LIST(APPEND LCOV_MERGE_NAMES -a test_moab_mesh_coverage.info)
 
-IF(CMAKE_BUILD_TYPE STREQUAL "Coverage")
-  ADD_CUSTOM_TARGET(test_coverage DEPENDS ${TEST_NAMES})
-ADD_CUSTOM_COMMAND(
-  TARGET
-    test_coverage
-  COMMAND
-    ${LCOV_PATH} ${LCOV_MERGE_NAMES} --output test_coverage.info
-  COMMAND
-    ${GENHTML_PATH} test_coverage.info -o test_coverage
-  VERBATIM
-  )
-ENDIF()
-
 ENABLE_TESTING()
-
 
 ADD_LIBRARY(MBVH SHARED ${HEADERS} ${CMAKE_SOURCE_DIR}/src/MBVHManager.cpp)
 SET_TARGET_PROPERTIES(MBVH PROPERTIES LINKER_LANGUAGE CXX)
