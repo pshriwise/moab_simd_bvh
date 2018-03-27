@@ -1,6 +1,9 @@
 
 #pragma once
 
+
+#include "space.h"
+
 #include "Vec3.h"
 #include "Vec3fa.h"
 #include "Ray.h"
