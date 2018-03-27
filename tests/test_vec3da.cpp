@@ -106,7 +106,39 @@ void unary_op_tests() {
   Vec3da expected_pos_result(1.0, 2.0, 3.0);
 
   CHECK_VECREAL_EQUAL(expected_pos_result, +a);
+
+  double mult_val = 2.0;
   
+  Vec3da expected_mult_result(2.0, 4.0, 6.0);
+
+  a *= mult_val;
+  CHECK_VECREAL_EQUAL(expected_mult_result, a);
+  a /= mult_val;
+
+  double div_val = 2.0;
+
+  Vec3da expected_div_result(0.5, 1.0, 1.5);
+
+  a /= div_val;
+  CHECK_VECREAL_EQUAL(expected_div_result, a);
+  a *= div_val;
+
+  double add_val = 2.0;
+  
+  Vec3da expected_add_result(3.0, 4.0, 5.0);
+
+  a += add_val;
+  CHECK_VECREAL_EQUAL(expected_add_result, a);
+  a -= add_val;
+
+  double sub_val = 2.0;
+  
+  Vec3da expected_sub_result(-1.0, 0.0, 1.0);
+
+  a -= sub_val;
+  CHECK_VECREAL_EQUAL(expected_sub_result, a);
+  a += sub_val;
+
 }
 
 void binary_op_tests() {
