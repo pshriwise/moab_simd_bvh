@@ -41,8 +41,6 @@ SET(TEST_DIR ${CMAKE_INSTALL_PREFIX}/tests)
 SET(TEST_FILES_DIR CACHE INTERNAL "Test File Location" FORCE)
 
 INCLUDE_DIRECTORIES(${MOAB_INCLUDE_DIRS})
-INCLUDE_DIRECTORIES("/usr/include/eigen3/")
-
 
 # A list of all unittests
 # test files are named test_<test_name>
