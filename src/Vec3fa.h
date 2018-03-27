@@ -57,6 +57,9 @@ struct __aligned(16) Vec3fa {
 
 };
 
+__forceinline Vec3fa operator +( const Vec3fa &a ) { return Vec3fa(+a.x, +a.y, +a.z); }
+
+__forceinline Vec3fa operator -( const Vec3fa &a ) { return Vec3fa(-a.x, -a.y, -a.z); }
 
 __forceinline Vec3fa operator +( const Vec3fa& b, const Vec3fa& c ) { return Vec3fa(b.x+c.x, b.y+c.y, b.z+c.z, b.a+c.a); }
 __forceinline Vec3fa operator -( const Vec3fa& b, const Vec3fa& c ) { return Vec3fa(b.x-c.x, b.y-c.y, b.z-c.z, b.a-c.a); }
@@ -67,11 +70,8 @@ __forceinline Vec3fa operator /( const Vec3fa& b, const Vec3fa& c ) { return Vec
 __forceinline Vec3fa operator /( const float& pa, const Vec3fa& c ) { return Vec3fa(pa) / c; }
 __forceinline Vec3fa operator /( const Vec3fa& c, const float& pa ) { return c / Vec3fa(pa); }
 
-
-__forceinline bool operator ==( const Vec3fa& b, const Vec3fa& c) { return b.x == c.x &&
-							            b.y == c.y &&
-							            b.z == c.z;
-                                                           }
+__forceinline bool operator ==( const Vec3fa& b, const Vec3fa& c) { return b.x == c.x && b.y == c.y && b.z == c.z; }
+__forceinline bool operator !=( const Vec3fa& b, const Vec3fa& c) { return b.x != c.x || b.y != c.y || b.z != c.z; }
 
 __forceinline const Vec3fa min( const Vec3fa& b, const Vec3fa& c ) { return Vec3fa(std::min(b.x,c.x),std::min(b.y,c.y),
 									   std::min(b.z,c.z),std::min(b.a,c.a)); }
@@ -80,6 +80,16 @@ __forceinline const Vec3fa max( const Vec3fa& b, const Vec3fa& c ) { return Vec3
 
 __forceinline const Vec3ba ge_mask( const Vec3fa& b, const Vec3fa& c ) { return Vec3ba(b.x >= c.x,b.y >= c.y,b.z >= c.z,b.a >= c.a); }
 __forceinline const Vec3ba le_mask( const Vec3fa& b, const Vec3fa& c ) { return Vec3ba(b.x <= c.x,b.y <= c.y,b.z <= c.z,b.a <= c.a); }
+
+__forceinline const Vec3fa madd  (const Vec3fa& a, const Vec3fa& b, const Vec3fa& c) { return a*b+c; }
+__forceinline const Vec3fa msub  (const Vec3fa& a, const Vec3fa& b, const Vec3fa& c) { return a*b-c; }
+__forceinline const Vec3fa nmadd (const Vec3fa& a, const Vec3fa& b, const Vec3fa& c) { return -a*b+c; }
+__forceinline const Vec3fa nmsub (const Vec3fa& a, const Vec3fa& b, const Vec3fa& c) { return -a*b-c; }
+
+__forceinline const Vec3fa madd(const float a, const Vec3fa& b, const Vec3fa& c) { return madd(Vec3fa(a), b, c); }
+__forceinline const Vec3fa nmadd(const float a, const Vec3fa& b, const Vec3fa& c) { return nmadd(Vec3fa(a), b, c); }
+__forceinline const Vec3fa msub(const float a, const Vec3fa& b, const Vec3fa& c) { return msub(Vec3fa(a), b, c); }
+__forceinline const Vec3fa nmsub(const float a, const Vec3fa& b, const Vec3fa& c) { return nmsub(Vec3fa(a), b, c); }
 
 __forceinline float reduce_add( const Vec3fa &v ) { return v.x + v.y + v.z; }
 
@@ -112,9 +122,6 @@ __forceinline const Vec3fa rcp(const Vec3fa& v ) { return Vec3fa(1.0f/v.x,
 
 __forceinline const Vec3fa rcp_safe(const Vec3fa& a) { return rcp(zero_fix(a)); }
 
-__forceinline Vec3fa operator +( const Vec3fa &a ) { return Vec3fa(+a.x, +a.y, +a.z); }
-
-__forceinline Vec3fa operator -( const Vec3fa &a ) { return Vec3fa(-a.x, -a.y, -a.z); }
 
 __forceinline float dot( const Vec3fa& a, const Vec3fa& b ) { return reduce_add(a*b); }
 
