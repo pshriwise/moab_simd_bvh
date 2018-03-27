@@ -106,6 +106,38 @@ void unary_op_tests() {
   Vec3fa expected_pos_result(1.0, 2.0, 3.0);
 
   CHECK_VECREAL_EQUAL(expected_pos_result, +a);
+
+  float mult_val = 2.0;
+  
+  Vec3fa expected_mult_result(2.0, 4.0, 6.0);
+
+  a *= mult_val;
+  CHECK_VECREAL_EQUAL(expected_mult_result, a);
+  a /= mult_val;
+
+  float div_val = 2.0;
+
+  Vec3fa expected_div_result(0.5, 1.0, 1.5);
+
+  a /= div_val;
+  CHECK_VECREAL_EQUAL(expected_div_result, a);
+  a *= div_val;
+
+  float add_val = 2.0;
+  
+  Vec3fa expected_add_result(3.0, 4.0, 5.0);
+
+  a += add_val;
+  CHECK_VECREAL_EQUAL(expected_add_result, a);
+  a -= add_val;
+
+  float sub_val = 2.0;
+  
+  Vec3fa expected_sub_result(-1.0, 0.0, 1.0);
+
+  a -= sub_val;
+  CHECK_VECREAL_EQUAL(expected_sub_result, a);
+  a += sub_val;
   
 }
 

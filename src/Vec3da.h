@@ -38,6 +38,14 @@ struct Vec3da {
   __forceinline Vec3da normalize() { double len = length();
     len = len < min_rcp_input ? min_rcp_input : len;
     x /= len; y /= len; z/= len; }
+
+    __forceinline Vec3da operator +=(const Vec3da& v) { x = x + v.x; y = y +v.y; z = z + v.z; return *this; }
+
+    __forceinline Vec3da operator -=(const Vec3da& v) { x = x - v.x; y = y -v.y; z = z - v.z; return *this; }
+
+    __forceinline Vec3da operator *=(const Vec3da& v) { x = x * v.x; y = y *v.y; z = z * v.z; return *this; }
+
+    __forceinline Vec3da operator /=(const Vec3da& v) { x = x / v.x; y = y /v.y; z = z / v.z; return *this; }
   
 };
 

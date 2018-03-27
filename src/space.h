@@ -18,7 +18,7 @@ struct LinSpace {
   __forceinline LinSpace ( const float &val00, const float &val01, const float &val02,
 			   const float &val10, const float &val11, const float &val12,
 			   const float &val20, const float &val21, const float &val22 )
-    : vx(val00, val10, val20), vy(val01, val11, val21), vz(val20, val21, val22) {}
+    : vx(val00, val10, val20), vy(val01, val11, val21), vz(val02, val12, val22) {}
 
   /// LINEAR ALGEBRA OPERATIONS ///
   __forceinline const LinSpace transpose() const { return LinSpace(vx.x, vx.y, vx.z, vy.x, vy.y, vy.z, vz.x, vz.y, vz.z); }
@@ -30,16 +30,23 @@ struct LinSpace {
   __forceinline const LinSpace inverse() const { return adjoint()/det(); }
 
   /// ACCESS METHODS ///
-  __forceinline const Vec3fa row0() { return Vec3fa(vx.x, vy.x, vz.x); }
+  __forceinline const Vec3fa row0() const { return Vec3fa(vx.x, vy.x, vz.x); }
+  __forceinline       Vec3fa row0()       { return Vec3fa(vx.x, vy.x, vz.x); }
 
-  __forceinline const Vec3fa row1() { return Vec3fa(vx.y, vy.y, vz.y); }
+  __forceinline const Vec3fa row1() const { return Vec3fa(vx.y, vy.y, vz.y); }
+  __forceinline Vec3fa row1() { return Vec3fa(vx.y, vy.y, vz.y); }
 
-  __forceinline const Vec3fa row2() { return Vec3fa(vx.z, vy.z, vz.z); }
+  __forceinline const Vec3fa row2() const { return Vec3fa(vx.z, vy.z, vz.z); }
+  __forceinline       Vec3fa row2()       { return Vec3fa(vx.z, vy.z, vz.z); }
 
   /// OPERATORS ///
   __forceinline       LinSpace operator /(const float& v)       { return LinSpace(vx/v, vy/v, vz/v); }
   
   __forceinline const LinSpace operator /(const float& v) const { return LinSpace(vx/v, vy/v, vz/v); }
+
+  __forceinline LinSpace operator *=(const float& v) { vx = vx * v; vy = vy * v; vz = vz * v; return *this; }
+
+  __forceinline LinSpace operator /=(const float& v) { vx = vx / v; vy = vy / v; vz = vz / v; return *this; }
 
   /* column vectors of the matrix */
   Vec3fa vx, vy, vz;

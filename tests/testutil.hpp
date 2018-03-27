@@ -208,6 +208,10 @@ template<typename T>
 void check_equal( T A, T B, T eps, const char* sA, const char* sB, int line, const char* file )
      {  EQUAL_TEST_IMPL( std::abs(A - B) <= eps, f ) }
 
+template<typename T>
+void check_equal( T A, T B, const char* sA, const char* sB, int line, const char* file )
+{  EQUAL_TEST_IMPL( A==B, f ) }
+
 /*
 void check_equal( moab::EntityHandle A, moab::EntityHandle B, const char* sA, const char* sB, int line, const char* file )
 {
