@@ -15,6 +15,9 @@ struct OBB {
 
   // member variables
   AABB bbox;
+  Vec3fa alignedCenter;
+  size_t num_points;
+  Matrix3 covariance;
   LinSpace transform;
     
   // constructors
@@ -30,63 +33,84 @@ struct OBB {
     bbox = AABB(center-(0.5*size),center+(0.5*size));
     transform = LinSpace(axis0.normalized(), axis1.normalized(), axis2.normalized()).transpose();
   }
-		    
-  __forceinline OBB( float *x, float *y, float *z, size_t num_pnts) : bbox(AABB()) {
 
-    // calculate the center of the box
-    for( size_t i = 0; i < num_pnts; i++) {
-      bbox.update(x[i], y[i], z[i]);
-    }
-    Vec3fa cen = bbox.center();
-
-    Matrix3 m(0.0);
-    Vec3fa v;
-    // compute the covariance matrix
-    for( size_t i = 0; i < num_pnts; i++) {
-      v.x = x[i]; v.y = y[i]; v.z = z[i];
-      v -= cen;
-      m += outer_product(v,v);
+  __forceinline OBB( float *x, float *y, float *z, size_t num_pnts) : bbox(AABB()), num_points(0), covariance(0.0f), transform(zero), alignedCenter(zero) {
+    // set the covariance matrix for all points
+    for(int i = 0; i < num_pnts; i++) {
+      update_covariance(x[i], y[i], z[i]);
     }
 
+    // update the box's oriented axes
+    update_axes();
+    
+    // update the box's extents
+    for(int i = 0; i < num_pnts; i++) {
+      update_extents(x[i], y[i], z[i]);
+    }
+    
+    return;
+  }
+  
+  __forceinline void update(const float& x, const float& y, const float& z) {
+    Vec3fa point(z,y,z);
+    update(point);
+    return;
+  }
+
+  __forceinline void update(const Vec3fa& pnt) {
+    update_covariance(pnt);
+    update_axes();
+    return;
+  }
+
+  __forceinline void update_covariance(const float& x, const float& y, const float& z) {
+    Vec3fa point(x,y,z);
+    update_covariance(point);
+    return;
+  }
+
+  __forceinline void update_covariance(const Vec3fa& pnt) {
+    
+    // update axis-aligned center
+    alignedCenter = (num_points * alignedCenter);
+    alignedCenter += pnt;
+    num_points++;
+    alignedCenter = alignedCenter / num_points;
+    
+    // update the covariance matrix
+    Vec3fa v = pnt - alignedCenter;
+    covariance += outer_product(v,v);
+    
+    return;
+  }
+
+  __forceinline void update_axes() {
+    
+    // perform the Eigenvalue decomposition to determine the oriented axes
     float l[3];
     Vec3fa ax0, ax1, ax2;
-    Matrix::EigenDecomp(m, l, ax0, ax1, ax2);
+    Matrix::EigenDecomp(covariance, l, ax0, ax1, ax2);
 
-    // ensure axes are the correct length
-    ax0.normalize(); 
-    ax1.normalize();
-    ax2.normalize();
-
-    // set point/ray transform matrix
-    Matrix3 mat(ax0, ax1, ax2);
+    // normalize axes, extents are stored separately
+    ax0.normalize(); ax1.normalize(); ax2.normalize();
     
-
-    // create the true box from the axes
-    Vec3fa min(inf), max(neg_inf);
-    for(size_t i = 0; i < num_pnts; i++) {
-      // construct vec
-      Vec3fa pnt(x[i], y[i], z[i]);
-
-      // find perpindicular point on each oriented axes
-      float t;
-      t = dot(ax0, (pnt - cen)) / dot(ax0,ax0);
-      if ( t < min[0] ) min[0] = t;
-      if ( t > max[0] ) max[0] = t;
-      t = dot(ax1, (pnt - cen)) / dot(ax1,ax1);
-      if ( t < min[1] ) min[1] = t;
-      if ( t > max[1] ) max[1] = t;
-      t = dot(ax2, (pnt - cen)) / dot(ax2,ax2);
-      if ( t < min[2] ) min[2] = t;
-      if ( t > max[2] ) max[2] = t;
-    }
-
-    // upate the bounding box min/max
-    const float bump = 5e-03;
-    bbox = AABB(min-bump, max+bump);
-    // set the box transform
     transform = LinSpace(ax0, ax1, ax2).transpose();
     
     return;
+  }
+
+  __forceinline void update_extents(const float& x, const float& y, const float& z) {
+    Vec3fa point(x,y,z);
+    update_extents(point);
+    return;
+  }
+  
+  __forceinline void update_extents(const Vec3fa& pnt) {
+    
+    bbox.update(pnt.x, pnt.y, pnt.z);
+    const float bump = 5e-03;
+    bbox.lower -= bump; bbox.upper += bump;
+    
   }
   
   // copy constructor
@@ -123,9 +147,9 @@ struct OBB {
     Vec3fa from_center = point - bbox.center();
  
     Vec3fa len = halfSize();
-    if(fabs(dot(from_center, transform.row0())) > len[0]) return false;
-    if(fabs(dot(from_center, transform.row1())) > len[1]) return false;
-    if(fabs(dot(from_center, transform.row2())) > len[2]) return false;
+    if(std::abs(dot(from_center, transform.row0())) > len[0]) return false;
+    if(std::abs(dot(from_center, transform.row1())) > len[1]) return false;
+    if(std::abs(dot(from_center, transform.row2())) > len[2]) return false;
     
     return true;
   }

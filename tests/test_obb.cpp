@@ -71,8 +71,6 @@ void point_contain_tests() {
   // create test box
   OBB box = OBB(center, size, ax0, ax1, ax2);
   
-  //  AABB box = AABB(x_min, y_min, z_min, x_max, y_max, z_max);
-
   //create test point inside box
   Vec3fa p(1.5,2.0, 4.0);
   CHECK(inside(box,p));
@@ -162,6 +160,7 @@ void ray_intersection_tests() {
   ray.tfar = inf;
 
   // check ray toward box intersects
+
   CHECK(ray_intersection(box, ray));
 
   // reverse ray direction
@@ -194,7 +193,7 @@ void ray_intersection_tests() {
   return;
 }
 
-float nrandf() { return (float) (rand()/RAND_MAX); }
+float nrandf() { return ((float)rand()/(float)RAND_MAX); }
 
 void construction_tests() {
   // generate a random set of points
@@ -202,19 +201,35 @@ void construction_tests() {
 
   int num_pnts = 100;
   
-  for(int i = 0; i < num_pnts; i ++){
+  for(int i = 0; i < num_pnts; i++){
+    std::cout << nrandf() << std::endl;
     x.push_back(nrandf());
-    y.push_back(nrandf());
-    z.push_back(nrandf());
+    y.push_back(0.0);
+    z.push_back(0.0);
   }
 
   OBB box(&x.front(), &y.front(), &z.front(), num_pnts);
 
   for(int i = 0; i < num_pnts; i++) {
     Vec3fa pnt(x[i], y[i], z[i]);
+    bool val = box.point_in_box(pnt);
     CHECK(box.point_in_box(pnt));
   }
   
+  // clear out storage vectors
+  x.clear(); y.clear(); z.clear();
+  
+  x.push_back( 0.0); y.push_back( 0.0); z.push_back( 0.0);
+  x.push_back(10.0); y.push_back(10.0); z.push_back( 0.0);
+  x.push_back( 0.0); y.push_back(10.0); z.push_back( 0.0);
+  x.push_back( 0.0); y.push_back( 0.0); z.push_back(10.0);
+  x.push_back(10.0); y.push_back(10.0); z.push_back(10.0);
+  x.push_back( 0.0); y.push_back(10.0); z.push_back(10.0);
+
+  OBB box1(&x.front(), &y.front(), &z.front(), num_pnts);
+
+  Vec3fa test_pnt(5.0);
+  CHECK(box1.point_in_box(test_pnt));
   
   return;
 }
