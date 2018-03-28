@@ -15,7 +15,7 @@ struct OBB {
 
   // member variables
   AABB bbox;
-  Matrix3 transform;
+  LinSpace transform;
     
   // constructors
 
@@ -28,7 +28,7 @@ struct OBB {
 		     const Vec3fa& axis2) {
 
     bbox = AABB(center-(0.5*size),center+(0.5*size));
-    transform = Matrix3(axis0.normalized(), axis1.normalized(), axis2.normalized());
+    transform = LinSpace(axis0.normalized(), axis1.normalized(), axis2.normalized()).transpose();
   }
 		    
   __forceinline OBB( float *x, float *y, float *z, size_t num_pnts) : bbox(AABB()) {
@@ -58,8 +58,9 @@ struct OBB {
     ax2.normalize();
 
     // set point/ray transform matrix
-    transform = Matrix3(ax0, ax1, ax2);
+    Matrix3 mat(ax0, ax1, ax2);
     
+
     // create the true box from the axes
     Vec3fa min(inf), max(neg_inf);
     for(size_t i = 0; i < num_pnts; i++) {
@@ -82,7 +83,9 @@ struct OBB {
     // upate the bounding box min/max
     const float bump = 5e-03;
     bbox = AABB(min-bump, max+bump);
-       
+    // set the box transform
+    transform = LinSpace(ax0, ax1, ax2).transpose();
+    
     return;
   }
   
@@ -120,9 +123,9 @@ struct OBB {
     Vec3fa from_center = point - bbox.center();
  
     Vec3fa len = halfSize();
-    if(fabs(dot(from_center, transform.row(0))) > len[0]) return false;
-    if(fabs(dot(from_center, transform.row(1))) > len[1]) return false;
-    if(fabs(dot(from_center, transform.row(2))) > len[2]) return false;
+    if(fabs(dot(from_center, transform.row0())) > len[0]) return false;
+    if(fabs(dot(from_center, transform.row1())) > len[1]) return false;
+    if(fabs(dot(from_center, transform.row2())) > len[2]) return false;
     
     return true;
   }
@@ -194,11 +197,10 @@ template<typename V, typename P, typename I>
   if(dist_sq > max_diagsq) return false;
 
   //get transpose of the axes
-  Matrix3 B = box.transform;
 
   // transform ray to box coordinate system
-  Vec3fa par_pos = B * (ray.org - box.center());
-  Vec3fa par_dir = B * ray.dir;
+  Vec3fa par_pos = box.transform * (ray.org - box.center());
+  Vec3fa par_dir = box.transform * ray.dir;
 
   // (ax0.length() is half of box width along axis 0)
   const Vec3fa half_size = box.halfSize();
