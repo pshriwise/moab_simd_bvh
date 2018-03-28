@@ -20,6 +20,8 @@ struct LinSpace {
 			   const float &val20, const float &val21, const float &val22 )
     : vx(val00, val10, val20), vy(val01, val11, val21), vz(val02, val12, val22) {}
 
+  __forceinline LinSpace (const float& val) : vx(val), vy(val), vz(val) {}
+  
   /// LINEAR ALGEBRA OPERATIONS ///
   __forceinline const LinSpace transpose() const { return LinSpace(vx.x, vx.y, vx.z, vy.x, vy.y, vy.z, vz.x, vz.y, vz.z); }
   
