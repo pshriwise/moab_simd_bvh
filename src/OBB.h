@@ -29,9 +29,9 @@ struct OBB {
 		     const Vec3fa& axis0,
 		     const Vec3fa& axis1,
 		     const Vec3fa& axis2) {
-
     bbox = AABB(center-(0.5*size),center+(0.5*size));
     transform = LinSpace(axis0.normalized(), axis1.normalized(), axis2.normalized()).transpose();
+    num_points = -1; // indicates that there is no history for this OBB
   }
 
   __forceinline OBB( float *x, float *y, float *z, size_t num_pnts) : bbox(AABB()), num_points(0), covariance(0.0f), transform(zero), alignedCenter(zero) {
@@ -60,6 +60,7 @@ struct OBB {
   __forceinline void update(const Vec3fa& pnt) {
     update_covariance(pnt);
     update_axes();
+    update_extents(pnt);
     return;
   }
 
@@ -94,7 +95,8 @@ struct OBB {
     // normalize axes, extents are stored separately
     ax0.normalize(); ax1.normalize(); ax2.normalize();
     
-    transform = LinSpace(ax0, ax1, ax2).transpose();
+    transform = LinSpace(ax0, ax1, ax2);
+    transform = transform.transpose();
     
     return;
   }
@@ -106,11 +108,8 @@ struct OBB {
   }
   
   __forceinline void update_extents(const Vec3fa& pnt) {
-    
-    bbox.update(pnt.x, pnt.y, pnt.z);
-    const float bump = 5e-03;
-    bbox.lower -= bump; bbox.upper += bump;
-    
+    Vec3fa p = xfmPnt(transform, pnt);
+    bbox.update(p.x, p.y, p.z);    
   }
   
   // copy constructor
@@ -144,14 +143,8 @@ struct OBB {
   __forceinline float outer_radius() const { return reduce_max(size()); }
 
   __forceinline bool point_in_box( const Vec3fa& point ) const {
-    Vec3fa from_center = point - bbox.center();
- 
-    Vec3fa len = halfSize();
-    if(std::abs(dot(from_center, transform.row0())) > len[0]) return false;
-    if(std::abs(dot(from_center, transform.row1())) > len[1]) return false;
-    if(std::abs(dot(from_center, transform.row2())) > len[2]) return false;
-    
-    return true;
+    Vec3fa xpnt = xfmPnt(transform, point);
+    return inside(bbox, xpnt);
   }
 
   

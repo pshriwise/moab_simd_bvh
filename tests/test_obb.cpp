@@ -11,6 +11,7 @@ void point_contain_tests();
 void property_tests();
 void ray_intersection_tests();
 void construction_tests();
+void update_obb_tests();
 
 int main( int argc, char** argv) {
 
@@ -24,6 +25,8 @@ int main( int argc, char** argv) {
   ray_intersection_tests();
   // test proper construction
   construction_tests();
+  // update tests
+  update_obb_tests();
   
   return 0;
 }
@@ -204,32 +207,45 @@ void construction_tests() {
   for(int i = 0; i < num_pnts; i++){
     std::cout << nrandf() << std::endl;
     x.push_back(nrandf());
-    y.push_back(0.0);
-    z.push_back(0.0);
+    y.push_back(nrandf());
+    z.push_back(nrandf());
   }
 
-  OBB box(&x.front(), &y.front(), &z.front(), num_pnts);
+  OBB box(&x.front(), &y.front(), &z.front(), x.size());
 
   for(int i = 0; i < num_pnts; i++) {
     Vec3fa pnt(x[i], y[i], z[i]);
     bool val = box.point_in_box(pnt);
     CHECK(box.point_in_box(pnt));
   }
+      
+  return;
+}
+
+void update_obb_tests() {
+
+  // generate a controlled box
   
-  // clear out storage vectors
-  x.clear(); y.clear(); z.clear();
-  
+  std::vector<float> x, y, z;
+
   x.push_back( 0.0); y.push_back( 0.0); z.push_back( 0.0);
+  x.push_back(10.0); y.push_back( 0.0); z.push_back( 0.0);
   x.push_back(10.0); y.push_back(10.0); z.push_back( 0.0);
   x.push_back( 0.0); y.push_back(10.0); z.push_back( 0.0);
   x.push_back( 0.0); y.push_back( 0.0); z.push_back(10.0);
+  x.push_back(10.0); y.push_back( 0.0); z.push_back(10.0);
   x.push_back(10.0); y.push_back(10.0); z.push_back(10.0);
   x.push_back( 0.0); y.push_back(10.0); z.push_back(10.0);
 
-  OBB box1(&x.front(), &y.front(), &z.front(), num_pnts);
+  OBB box(&x.front(), &y.front(), &z.front(), x.size());
 
   Vec3fa test_pnt(5.0);
-  CHECK(box1.point_in_box(test_pnt));
+  CHECK(box.point_in_box(test_pnt));
+
+  // update with a new point that is outside of the box
+  test_pnt = Vec3fa(15.0);
+
+  box.update(test_pnt);
+  CHECK(box.point_in_box(test_pnt));
   
-  return;
 }
