@@ -278,11 +278,12 @@ template <typename T> class BVHBuilder {
 			 tempNodes[2].box.upper.z,
 			 tempNodes[3].box.upper.z);
 
-    this_node->set(low_x,upp_x,
-		   low_y,upp_y,
-		   low_z,upp_z);
+    float bump = 5e-03;
+    this_node->set(low_x - bump, upp_x + bump,
+		   low_y - bump, upp_y + bump,
+		   low_z - bump, upp_z + bump);
+    
     return;
-  
   }
 
   
