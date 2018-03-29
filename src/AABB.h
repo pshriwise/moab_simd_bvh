@@ -103,6 +103,12 @@ struct AABB {
     upper[2] = std::max(upper[2], xyz[2]);
   }
 
+  __forceinline void bump(const float& bump_val ) {
+    lower -= bump_val;
+    upper += bump_val;
+    return;
+  }
+  
   // clears the box - any update command will set the lower and upper extents of the box
   // note: this intentionally leaves the box in an invalid state
   __forceinline void clear() { lower = inf; upper = neg_inf; }

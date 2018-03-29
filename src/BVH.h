@@ -48,6 +48,8 @@ class BVH {
       std::vector<P> storage_vec(MDAM->num_elements);
       leaf_sequence_storage = storage_vec;
       //      leaf_sequence_storage.resize(MDAM->num_elements);
+
+      box_bump = 5e-03;
     }
      
  private:
@@ -64,6 +66,8 @@ class BVH {
   
   static const size_t stackSize = 1+N*BVH_MAX_DEPTH;
 
+  float box_bump;
+  
  public:
 
   inline void set_filter(typename Filter::FilterFunc ff) { filter = ff; }
@@ -219,7 +223,9 @@ class BVH {
 	P t = primIDs[j];
 	Vec3fa lower, upper;
 	t.get_bounds(lower, upper, MDAM);
-	node_box.update(AABB(lower, upper));
+	AABB box = AABB(lower, upper);
+	box.bump(box_bump);
+	node_box.update(box);
       }
     }
     return node_box;
@@ -379,6 +385,9 @@ class BVH {
       box.update(primitives[i].lower.x, primitives[i].lower.y, primitives[i].lower.z);
       box.update(primitives[i].upper.x, primitives[i].upper.y, primitives[i].upper.z);
     }
+
+    // extend box 
+    box.bump(box_bump);
     
     // increment depth and recur here
     aanode->setBounds(box);
@@ -472,12 +481,15 @@ class BVH {
 		    tempNodes[2].box.upper.z,
 		    tempNodes[3].box.upper.z);
 
-    this_node->set(low_x,upp_x,
-		   low_y,upp_y,
-		   low_z,upp_z);
-    
+    float bump = 5e-03;
+    low_x -= bump; low_y -= bump; low_z -= bump;
+    upp_x += bump; upp_y += bump; upp_z += bump;
+
+    this_node->set(low_x, upp_x,
+		   low_y, upp_y,
+		   low_z, upp_z);
+
     return;
-  
   }
 
   void splitNode(NodeRef* node, size_t split_axis, const PrimRef* primitives, const size_t numPrimitives, TempPrimNode tn[N]) {
@@ -491,6 +503,8 @@ class BVH {
       box.update(primitives[i].upper.x,primitives[i].upper.y,primitives[i].upper.z);
     }
 
+    box.bump(box_bump);
+    
     Vec3fa dxdydz = (box.upper - box.lower) / 4.0f;
 
     //create new child bounds
@@ -652,9 +666,9 @@ class BVH {
 	b.update(primitives[j].lower.x, primitives[j].lower.y, primitives[j].lower.z);
 	b.update(primitives[j].upper.x, primitives[j].upper.y, primitives[j].upper.z);
       }
-      
-      x_min[i] = b.lower.x; y_min[i] = b.lower.y; z_min[i] = b.lower.z;
-      x_max[i] = b.upper.x; y_max[i] = b.upper.y; z_max[i] = b.upper.z;
+
+      x_min[i] = b.lower.x - box_bump; y_min[i] = b.lower.y - box_bump; z_min[i] = b.lower.z - box_bump;
+      x_max[i] = b.upper.x + box_bump; y_max[i] = b.upper.y + box_bump; z_max[i] = b.upper.z + box_bump;
       
     }
     
