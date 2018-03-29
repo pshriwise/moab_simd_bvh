@@ -245,7 +245,11 @@ void update_obb_tests() {
   // update with a new point that is outside of the box
   test_pnt = Vec3fa(15.0);
 
+  CHECK(!box.point_in_box(test_pnt));
   box.update(test_pnt);
   CHECK(box.point_in_box(test_pnt));
+
+  test_pnt = Vec3fa(15.1);
+  CHECK(!box.point_in_box(test_pnt));
   
 }
