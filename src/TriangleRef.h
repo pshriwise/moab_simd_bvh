@@ -114,7 +114,7 @@ struct TriangleRef : public BuildPrimitive {
   long unsigned int eh;
   
 };
-  
+
 template<typename V, typename P, typename I>  
   struct __aligned(16) MBTriangleRefT {
 
@@ -129,6 +129,31 @@ template<typename V, typename P, typename I>
     i3 = *(conn_ptr + 2)-1;
   }
 
+  __forceinline size_t num_points() { return 3; }
+  
+  __forceinline V get_point( size_t i, void* mesh_ptr ) {
+    
+    MOABDirectAccessManager *mdam = (MOABDirectAccessManager*) mesh_ptr;
+    V point;
+
+    switch(i) {
+      
+    case 0:
+      point = V(mdam->xPtr[i1], mdam->yPtr[i1], mdam->zPtr[i1]);
+      break;
+    case 1:
+      point = V(mdam->xPtr[i2], mdam->yPtr[i2], mdam->zPtr[i2]);
+      break;
+    case 2:
+      point = V(mdam->xPtr[i3], mdam->yPtr[i3], mdam->zPtr[i3]);
+      break;
+    default:
+      break;
+    }
+
+    return point;
+  }
+  
   __forceinline void get_bounds(Vec3fa& lower, Vec3fa& upper, void* mesh_ptr = NULL) {
 
     if( !mesh_ptr ) MB_CHK_SET_ERR_RET(moab::MB_FAILURE, "No Mesh Pointer");

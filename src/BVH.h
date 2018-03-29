@@ -382,8 +382,17 @@ class BVH {
     AANode* aanode = new AANode();
     AABB box = AABB((float)inf, (float)neg_inf);
     for(size_t i = 0; i < numPrimitives; i++) {
-      box.update(primitives[i].lower.x, primitives[i].lower.y, primitives[i].lower.z);
-      box.update(primitives[i].upper.x, primitives[i].upper.y, primitives[i].upper.z);
+      
+      P t = P((I*)MDAM->conn + (primitives[i].primID()*MDAM->element_stride), (I)primitives[i].primitivePtr);
+
+      Vec3da pnt;
+      pnt = t.get_point(0, (void*)MDAM);
+      box.update(pnt.x, pnt.y, pnt.z);
+      pnt = t.get_point(1, (void*)MDAM);
+      box.update(pnt.x, pnt.y, pnt.z);
+      pnt = t.get_point(2, (void*)MDAM);
+      box.update(pnt.x, pnt.y, pnt.z);
+      
     }
 
     // extend box 
@@ -499,8 +508,15 @@ class BVH {
     //get the bounds of the node
     AABB box((float)inf,(float)neg_inf);
     for(size_t i=0; i<numPrimitives; i++) {
-      box.update(primitives[i].lower.x,primitives[i].lower.y,primitives[i].lower.z);
-      box.update(primitives[i].upper.x,primitives[i].upper.y,primitives[i].upper.z);
+      P t = P((I*)MDAM->conn + (primitives[i].primID()*MDAM->element_stride), (I)primitives[i].primitivePtr);
+
+      Vec3da pnt;
+      pnt = t.get_point(0, (void*)MDAM);
+      box.update(pnt.x, pnt.y, pnt.z);
+      pnt = t.get_point(1, (void*)MDAM);
+      box.update(pnt.x, pnt.y, pnt.z);
+      pnt = t.get_point(2, (void*)MDAM);
+      box.update(pnt.x, pnt.y, pnt.z);
     }
 
     box.bump(box_bump);
@@ -569,8 +585,17 @@ class BVH {
 	if( inside(boxes[j], p->center()) ){
 	  placed = true;
 	  tn[j].prims.push_back(*p);
-	  tn[j].box.update(p->lower.x, p->lower.y, p->lower.z);
-	  tn[j].box.update(p->upper.x, p->upper.y, p->upper.z);
+
+	  P t = P((I*)MDAM->conn + (p->primID()*MDAM->element_stride), (I)p->primitivePtr);
+
+	  Vec3da pnt;
+	  pnt = t.get_point(0, (void*)MDAM);
+	  tn[j].box.update(pnt.x, pnt.y, pnt.z);
+	  pnt = t.get_point(1, (void*)MDAM);
+	  tn[j].box.update(pnt.x, pnt.y, pnt.z);
+	  pnt = t.get_point(2, (void*)MDAM);
+	  tn[j].box.update(pnt.x, pnt.y, pnt.z);
+
 	  break;
 	}
       }
@@ -663,8 +688,17 @@ class BVH {
       BuildSetT<PrimRef> primitives = tempChildren[i].prims;
       
       for(size_t j = 0; j < primitives.size(); j++) {
-	b.update(primitives[j].lower.x, primitives[j].lower.y, primitives[j].lower.z);
-	b.update(primitives[j].upper.x, primitives[j].upper.y, primitives[j].upper.z);
+
+	P t = P((I*)MDAM->conn + (primitives[j].primID()*MDAM->element_stride), (I)primitives[j].primitivePtr);
+
+	Vec3da pnt;
+	pnt = t.get_point(0, (void*)MDAM);
+	b.update(pnt.x, pnt.y, pnt.z);
+	pnt = t.get_point(1, (void*)MDAM);
+	b.update(pnt.x, pnt.y, pnt.z);
+	pnt = t.get_point(2, (void*)MDAM);
+	b.update(pnt.x, pnt.y, pnt.z);
+	  
       }
 
       x_min[i] = b.lower.x - box_bump; y_min[i] = b.lower.y - box_bump; z_min[i] = b.lower.z - box_bump;
