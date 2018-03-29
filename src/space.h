@@ -1,7 +1,9 @@
 #pragma once
 
 
-#include "Vec3fa.h"
+
+#include "AABB.h"
+#include "ops.h"
 
 struct LinSpace {
 
@@ -97,13 +99,83 @@ __forceinline LinSpace transposed(const LinSpace& ls) { return ls.transpose(); }
 
 __forceinline Vec3fa xfmPnt(const LinSpace& ls, const Vec3fa& pnt) { return madd(Vec3fa(pnt.x), ls.vx, madd(Vec3fa(pnt.y),ls.vy,Vec3fa(pnt.z)*ls.vz)); }
 
-__forceinline Vec3fa xfmVec(const LinSpace& ls, const Vec3fa& vec) { return madd(Vec3fa(vec.x), ls.vx, madd(Vec3fa(vec.y),ls.vy,Vec3fa(vec.z)*ls.vz)); }
+__forceinline Vec3fa xfmVector(const LinSpace& ls, const Vec3fa& vec) { return madd(Vec3fa(vec.x), ls.vx, madd(Vec3fa(vec.y),ls.vy,Vec3fa(vec.z)*ls.vz)); }
 
-__forceinline Vec3fa xfmNorm(const LinSpace& ls, const Vec3fa& norm) { return xfmVec(ls.inverse().transpose(), norm); }
+__forceinline Vec3fa xfmNormal(const LinSpace& ls, const Vec3fa& norm) { return xfmVector(ls.inverse().transpose(), norm); }
 
 
 /// OUTPUT OPERATOR ///
 
 static std::ostream& operator<<(std::ostream& cout, const LinSpace& ls) {
   return cout << "{ vx = " << ls.vx << ", vy = " << ls.vy << ", vz = " << ls.vz << "}";
+}
+
+
+struct AffineSpace {
+
+  __forceinline AffineSpace () {}
+
+  __forceinline AffineSpace ( const AffineSpace& other ) { l = other.l; p = other.p; }
+  
+  __forceinline AffineSpace& operator=( const AffineSpace& other ) { l = other.l; p = other.p; return *this; }
+    
+  __forceinline AffineSpace ( const Vec3fa& vx, const Vec3fa& vy, const Vec3fa& vz, const Vec3fa& p ) : l(vx,vy,vz) , p(p) {}
+
+  __forceinline AffineSpace ( const LinSpace& l, const Vec3fa& p ) : l(l), p(p) {}
+
+  __forceinline AffineSpace ( ZeroTy ) : l(zero), p(zero) {}
+  
+  /* __forceinline AffineSpace ( OneTy )  : l(one),  p(zero)  {} */
+
+  /* __forceinline AffineSpace scale(const Vec3fa& s) { return LinSpace::scale(s); } */
+  
+  /* __forceinline AffineSpace rotat(const float&  r) { return LinSpace::rotate(r); } */
+  
+  LinSpace l;
+  Vec3fa p;
+  
+};
+
+__forceinline bool operator ==( const AffineSpace& a, const AffineSpace& b ) { return a.l == b.l && a.p == b.p; }
+__forceinline bool operator !=( const AffineSpace& a, const AffineSpace& b ) { return a.l != b.l || a.p != b.p; }
+
+__forceinline AffineSpace operator -( const AffineSpace& a ) { return AffineSpace( -a.l, -a.p ); }
+__forceinline AffineSpace operator +( const AffineSpace& a ) { return AffineSpace( +a.l, +a.p ); }
+__forceinline AffineSpace        rcp( const AffineSpace& a ) { LinSpace il = rcp(a.l); return AffineSpace(il, -(il*a.p)); }
+
+__forceinline AffineSpace operator +( const AffineSpace& a, const AffineSpace& b ) { return AffineSpace(a.l + b.l, a.p + b.p); }
+__forceinline AffineSpace operator -( const AffineSpace& a, const AffineSpace& b ) { return AffineSpace(a.l - b.l, a.p - b.p); }
+
+__forceinline AffineSpace operator *( const float&       a, const AffineSpace& b ) { return AffineSpace(a   * b.l, a   * b.p); }
+__forceinline AffineSpace operator *( const AffineSpace& a, const float& b )       { return AffineSpace(b   * a.l, b   * a.p); }
+
+__forceinline AffineSpace operator *( const AffineSpace& a, const AffineSpace& b ) { return AffineSpace(a.l * b.l, a.p * b.p); }
+
+__forceinline AffineSpace operator /( const AffineSpace& a, const AffineSpace& b ) { return a * rcp(b); }
+__forceinline AffineSpace operator /( const AffineSpace& a, const float&       b ) { return a * rcp(b); }
+
+__forceinline AffineSpace& operator *=( AffineSpace& a, const AffineSpace& b ) { return a = a * b; }
+__forceinline AffineSpace& operator *=( AffineSpace& a, const float&       b ) { return a = a * b; }
+__forceinline AffineSpace& operator /=( AffineSpace& a, const AffineSpace& b ) { return a = a / b; }
+__forceinline AffineSpace& operator /=( AffineSpace& a, const float&       b ) { return a = a / b; }
+
+__forceinline const Vec3fa xfmPoint (const AffineSpace& m, const Vec3fa& p) { return madd(Vec3fa(p.x),m.l.vx,madd(Vec3fa(p.y),m.l.vy,madd(Vec3fa(p.z),m.l.vz,m.p))); }
+__forceinline const Vec3fa xfmVector(const AffineSpace& m, const Vec3fa& v) { return xfmVector(m.l,v); }
+__forceinline const Vec3fa xfmNormal(const AffineSpace& m, const Vec3fa& n) { return xfmNormal(m.l,n); }
+
+__forceinline const AABB xfmBounds(const AffineSpace m, AABB b) {
+  AABB dst = AABB(zero);
+  const Vec3fa p0(b.lower.x, b.lower.y, b.lower.z); dst.update(xfmPoint(m, p0));
+  const Vec3fa p1(b.lower.x, b.lower.y, b.upper.z); dst.update(xfmPoint(m, p1));
+  const Vec3fa p2(b.lower.x, b.upper.y, b.lower.z); dst.update(xfmPoint(m, p2));
+  const Vec3fa p3(b.lower.x, b.upper.y, b.upper.z); dst.update(xfmPoint(m, p3));
+  const Vec3fa p4(b.upper.x, b.lower.y, b.lower.z); dst.update(xfmPoint(m, p4));
+  const Vec3fa p5(b.upper.x, b.lower.y, b.upper.z); dst.update(xfmPoint(m, p5));
+  const Vec3fa p6(b.upper.x, b.upper.y, b.lower.z); dst.update(xfmPoint(m, p6));
+  const Vec3fa p7(b.upper.x, b.upper.y, b.upper.z); dst.update(xfmPoint(m, p7));
+  return dst;
+}
+
+static std::ostream& operator<<(std::ostream& cout, const AffineSpace& m){
+  return cout << "{ l = " << m.l << ", p = " << m.p << " }";
 }
