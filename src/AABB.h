@@ -77,6 +77,11 @@ struct AABB {
     upper = other.upper;
   }
 
+  __forceinline void update (const Vec3fa& v) {
+    update(v.x, v.y, v.z);
+    return;
+  }
+  
   // extends the box to ensure containment of the provided box
   __forceinline void update (const AABB& other ) {
     this->update(other.lower.x, other.lower.y, other.lower.z);
