@@ -129,19 +129,19 @@ class BVH {
     // get the current node's bounds
     AABB box = current_node->safeNode()->bounds();
 
-    Vec3fa dxdydz = (box.upper - box.lower) / 4.0f;
+    Vec3fa dxdydz = (box.high() - box.low()) / 4.0f;
 
     //create new child bounds
     vfloat4 bounds[6];
   
-    bounds[0] = vfloat4(box.lower[0]); // lower x
-    bounds[1] = vfloat4(box.upper[0]); // upper x
-    bounds[2] = vfloat4(box.lower[1]); // lower y
-    bounds[3] = vfloat4(box.upper[1]); // upper y
-    bounds[4] = vfloat4(box.lower[2]); // lower z
-    bounds[5] =vfloat4(box.upper[2]); // upper z
+    bounds[0] = vfloat4(box.low()[0]); // lower x
+    bounds[1] = vfloat4(box.high()[0]); // upper x
+    bounds[2] = vfloat4(box.low()[1]); // lower y
+    bounds[3] = vfloat4(box.high()[1]); // upper y
+    bounds[4] = vfloat4(box.low()[2]); // lower z
+    bounds[5] =vfloat4(box.high()[2]); // upper z
 
-    float lb = box.lower[split_dim];
+    float lb = box.low()[split_dim];
     float delta = dxdydz[split_dim];
     bounds[2*split_dim] = vfloat4(lb, lb + delta, lb + 2*delta, lb + 3*delta);
     bounds[2*split_dim+1] = vfloat4(lb + delta, lb + 2*delta, lb + 3*delta, lb + 4*delta);
@@ -465,30 +465,30 @@ class BVH {
       low_y, upp_y,
       low_z, upp_z;
 
-    low_x = vfloat4(tempNodes[0].box.lower.x,
-		    tempNodes[1].box.lower.x,
-		    tempNodes[2].box.lower.x,
-		    tempNodes[3].box.lower.x);
-    low_y = vfloat4(tempNodes[0].box.lower.y,
-		    tempNodes[1].box.lower.y,
-		    tempNodes[2].box.lower.y,
-		    tempNodes[3].box.lower.y);
-    low_z = vfloat4(tempNodes[0].box.lower.z,
-		    tempNodes[1].box.lower.z,
-		    tempNodes[2].box.lower.z,
-		    tempNodes[3].box.lower.z);
-    upp_x = vfloat4(tempNodes[0].box.upper.x,
-		    tempNodes[1].box.upper.x,
-		    tempNodes[2].box.upper.x,
-		    tempNodes[3].box.upper.x);
-    upp_y = vfloat4(tempNodes[0].box.upper.y,
-		    tempNodes[1].box.upper.y,
-		    tempNodes[2].box.upper.y,
-		    tempNodes[3].box.upper.y);
-    upp_z = vfloat4(tempNodes[0].box.upper.z,
-		    tempNodes[1].box.upper.z,
-		    tempNodes[2].box.upper.z,
-		    tempNodes[3].box.upper.z);
+    low_x = vfloat4(tempNodes[0].box.low().x,
+		    tempNodes[1].box.low().x,
+		    tempNodes[2].box.low().x,
+		    tempNodes[3].box.low().x);
+    low_y = vfloat4(tempNodes[0].box.low().y,
+		    tempNodes[1].box.low().y,
+		    tempNodes[2].box.low().y,
+		    tempNodes[3].box.low().y);
+    low_z = vfloat4(tempNodes[0].box.low().z,
+		    tempNodes[1].box.low().z,
+		    tempNodes[2].box.low().z,
+		    tempNodes[3].box.low().z);
+    upp_x = vfloat4(tempNodes[0].box.high().x,
+		    tempNodes[1].box.high().x,
+		    tempNodes[2].box.high().x,
+		    tempNodes[3].box.high().x);
+    upp_y = vfloat4(tempNodes[0].box.high().y,
+		    tempNodes[1].box.high().y,
+		    tempNodes[2].box.high().y,
+		    tempNodes[3].box.high().y);
+    upp_z = vfloat4(tempNodes[0].box.high().z,
+		    tempNodes[1].box.high().z,
+		    tempNodes[2].box.high().z,
+		    tempNodes[3].box.high().z);
 
     float bump = 5e-03;
     low_x -= bump; low_y -= bump; low_z -= bump;
@@ -521,19 +521,19 @@ class BVH {
 
     box.bump(box_bump);
     
-    Vec3fa dxdydz = (box.upper - box.lower) / 4.0f;
+    Vec3fa dxdydz = (box.high() - box.low()) / 4.0f;
 
     //create new child bounds
     vfloat4 bounds[6];
   
-    bounds[0] = vfloat4(box.lower[0]); // lower x
-    bounds[1] = vfloat4(box.upper[0]); // upper x
-    bounds[2] = vfloat4(box.lower[1]); // lower y
-    bounds[3] = vfloat4(box.upper[1]); // upper y
-    bounds[4] = vfloat4(box.lower[2]); // lower z
-    bounds[5] = vfloat4(box.upper[2]); // upper z
+    bounds[0] = vfloat4(box.low()[0]); // lower x
+    bounds[1] = vfloat4(box.high()[0]); // upper x
+    bounds[2] = vfloat4(box.low()[1]); // lower y
+    bounds[3] = vfloat4(box.high()[1]); // upper y
+    bounds[4] = vfloat4(box.low()[2]); // lower z
+    bounds[5] = vfloat4(box.high()[2]); // upper z
 
-    float lb = box.lower[split_axis];
+    float lb = box.low()[split_axis];
     float delta = dxdydz[split_axis];
     bounds[2*split_axis] = vfloat4(lb, lb + delta, lb + 2*delta, lb + 3*delta);
     bounds[2*split_axis+1] = vfloat4(lb + delta, lb + 2*delta, lb + 3*delta, lb + 4*delta);

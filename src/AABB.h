@@ -129,6 +129,10 @@ struct AABB {
     return all(le_mask(lower, upper));
   }
 
+  __forceinline Vec3fa low() { return lower; }
+
+  __forceinline Vec3fa high() { return upper; }
+  
 };
 
 // determines if a point is inside the box
