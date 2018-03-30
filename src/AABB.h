@@ -60,11 +60,6 @@ struct AABB {
     upper = u;
   }
 
-  __forceinline AABB ( const Vec3f &l, const Vec3f &u ) {
-    lower = Vec3fa(l.x,l.y,l.z);
-    upper = Vec3fa(u.x,u.y,u.z);
-  }
-
   __forceinline AABB& operator=( const AABB& other) {
     lower = other.lower;
     upper = other.upper;

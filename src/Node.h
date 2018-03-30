@@ -175,9 +175,9 @@ struct __aligned(16) AANode : public Node
   __forceinline void setBounds(const AABB& bounds) { lower_x = bounds.lower.x; lower_y = bounds.lower.y; lower_z = bounds.lower.z;
                                               upper_x = bounds.upper.x; upper_y = bounds.upper.y; upper_z = bounds.upper.z; }
   
-  __forceinline AABB bounds() const { const Vec3f lower(min(lower_x), min(lower_y),min(lower_z));
-                               const Vec3f upper(max(upper_x), max(upper_y), max(upper_z));
-  			       return AABB(lower, upper); }
+  __forceinline AABB bounds() const { const Vec3fa lower(min(lower_x), min(lower_y),min(lower_z));
+                                      const Vec3fa upper(max(upper_x), max(upper_y), max(upper_z));
+                                      return AABB(lower, upper); }
   
   vfloat4 lower_x, upper_x, lower_y, upper_y, lower_z, upper_z;
   
