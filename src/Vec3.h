@@ -10,25 +10,36 @@
 
 template<typename T> struct Vec3 {
 
+  typedef T Scalar;
+  
   T x,y,z;
   
   __forceinline Vec3() {}
     
-  __forceinline Vec3( const Vec3 &other) { x = other.x;
-                                    y = other.y;
-				    z = other.z; }
+  __forceinline Vec3( const Vec3 &other ) { x = other.x;
+                                           y = other.y;
+					   z = other.z; }
+  
+  __forceinline Vec3( const Vec3fa&other ) : x(T(other.x)), y(T(other.y)), z(T(other.z)) {}
+  __forceinline Vec3( const Vec3da&other ) : x(T(other.x)), y(T(other.y)), z(T(other.z)) {}
 
-  __forceinline Vec3(const Vec3fa&other) : x(T(other.x)), y(T(other.y)), z(T(other.z)) {}
-  __forceinline Vec3(const Vec3da&other) : x(T(other.x)), y(T(other.y)), z(T(other.z)) {}
+  __forceinline Vec3( const Scalar& v ) : x(v), y(v), z(v) {}
+  
+  //  __forceinline Vec3( const float& a, const float& b, const float& c ) { x = T(a); y = T(b); z = T(c); }
+  
+  __forceinline Vec3( const T& a, const T& b, const T& c ) { x = a; y = b; z = c; }
+
+  __forceinline Vec3 ( ZeroTy ) : x(zero), y(zero), z(zero) {}
+  
   
   /* __forceinline Vec3( const Vec3fa& other) { x = other.x; */
   /*                                     y = other.y; */
   /* 				      z = other.z; ) */
   
   __forceinline Vec3& operator =( const Vec3& other ) { x = other.x;
-						 y = other.y;
-						 z = other.z;
-						 return *this; }
+							y = other.y;
+							z = other.z;
+							return *this; }
 
   /* __forceinline Vec3& operator =( const Vec3fa& other ) { x = other.x; */
   /* 						 y = other.y; */
@@ -42,14 +53,8 @@ template<typename T> struct Vec3 {
   __forceinline void normalize() { T len = length();
                             len = len < min_rcp_input ? min_rcp_input : len;
                             x /= len; y /= len; z /= len; }
-
-
-
-  __forceinline Vec3( const T x, const T y, const T z) : x(x), y(y), z(z) {}
   
   __forceinline Vec3( const T v[3] ) : x(v[0]), y(v[1]), z(v[2]) {}
-
-  __forceinline Vec3( const T v ) : x(v), y(v), z(v) {}
 
   __forceinline T length() const { return sqrtf(x*x + y*y + z*z); }
   
@@ -71,10 +76,17 @@ __forceinline Vec3<T> operator -( const Vec3<T> &a, const Vec3<T> &b ) { return 
 
 template<typename T>
 __forceinline Vec3<T> operator *( const Vec3<T>& a, const Vec3<T>& b ) { return Vec3<T>(a.x * b.x, a.y * b.y, a.z * b.z); }
+
+/* template<typename T> */
+/* __forceinline Vec3<T> operator *( const       float& a, const Vec3<T>& b ) { return Vec3<T>(a   * b.x, a   * b.y, a   * b.z); } */
+/* template<typename T> */
+/* __forceinline Vec3<T> operator *( const Vec3<T>& a, const       float& b ) { return Vec3<T>(a.x * b  , a.y * b  , a.z * b  ); } */
+
 template<typename T>
 __forceinline Vec3<T> operator *( const       T& a, const Vec3<T>& b ) { return Vec3<T>(a   * b.x, a   * b.y, a   * b.z); }
 template<typename T>
 __forceinline Vec3<T> operator *( const Vec3<T>& a, const       T& b ) { return Vec3<T>(a.x * b  , a.y * b  , a.z * b  ); }
+
 template<typename T>
 __forceinline Vec3<T> operator /( const Vec3<T>& a, const       T& b ) { return Vec3<T>(a.x / b  , a.y / b  , a.z / b  ); }
 template<typename T>
@@ -82,12 +94,27 @@ __forceinline Vec3<T> operator /( const       T& a, const Vec3<T>& b ) { return 
 template<typename T>
 __forceinline Vec3<T> operator /( const Vec3<T>& a, const Vec3<T>& b ) { return Vec3<T>(a.x / b.x, a.y / b.y, a.z / b.z); }
 
+template<typename T>
+__forceinline const Vec3<T> madd  (const Vec3<T>& a, const Vec3<T>& b, const Vec3<T>& c) { return a*b+c; }
+template<typename T>
+__forceinline const Vec3<T> msub  (const Vec3<T>& a, const Vec3<T>& b, const Vec3<T>& c) { return a*b-c; }
+template<typename T>
+__forceinline const Vec3<T> nmadd (const Vec3<T>& a, const Vec3<T>& b, const Vec3<T>& c) { return -a*b+c; }
+template<typename T>
+__forceinline const Vec3<T> nmsub (const Vec3<T>& a, const Vec3<T>& b, const Vec3<T>& c) { return -a*b-c; }
+
 
 template<typename T>
 __forceinline Vec3<bool> ge_mask( const Vec3<T> &a, const Vec3<T> &b ) { return Vec3<bool>(a.x >= b.x,a.y >= b.y, a.z >= b.z); }
 
 template<typename T>
 __forceinline Vec3<bool> le_mask( const Vec3<T> &a, const Vec3<T> &b) { return Vec3<bool>(a.x <= b.x,a.y <= b.y, a.z <= b.z); }
+
+template<typename T>
+__forceinline bool operator ==(const Vec3<T>& a, const Vec3<T>& b)  { return a.x == b.x && a.y == b.y && a.z == b.z; }
+
+template<typename T>
+__forceinline bool operator !=(const Vec3<T>& a, const Vec3<T>& b)  { return a.x != b.x || a.y != b.y || a.z != b.z; }
 
 template<typename T>
 __forceinline Vec3<T> min(const Vec3<T>& a, const Vec3<T>& b) { return Vec3<T>(std::min(a.x,b.x), std::min(a.y,b.y), std::min(a.z,b.z)); }
@@ -131,10 +158,20 @@ __forceinline Vec3<T> zero_fix( const Vec3<T>& a )
                    fabs(a.z) < min_rcp_input ? T(min_rcp_input) : a.z);
   }
 
+
 /* template<typename T> */
 /* __forceinline const Vec3<T> rcp(const Vec3<T>& v ) { return Vec3<T>(v.x == 0 ? inf : 1.0f/v.x, */
 /* 						v.y == 0 ? inf : 1.0f/v.y, */
 /* 						v.z == 0 ? inf : 1.0f/v.z); } */
+
+template<typename T>
+__forceinline const Vec3<T> cross( const Vec3<T>& a, const Vec3<T>& b ) { return Vec3<T>( a[1] * b[2] - a[2] * b[1],
+											  a[2] * b[0] - a[0] * b[2],
+											  a[0] * b[1] - a[1] * b[0] );}
+
+
+template<typename T>
+__forceinline const T dot( const Vec3<T>& a, const Vec3<T>& b ) { return reduce_add(a*b); }
 
 template<typename T>
 __forceinline const Vec3<T> rcp(const Vec3<T>& v ) { return Vec3<T>(1.0f/v.x,
@@ -143,6 +180,3 @@ __forceinline const Vec3<T> rcp(const Vec3<T>& v ) { return Vec3<T>(1.0f/v.x,
 
 template<typename T>
 __forceinline const Vec3<T> rcp_safe(const Vec3<T>& a) { return rcp(zero_fix(a)); }
-
-
-
