@@ -11,6 +11,7 @@
 
 struct __aligned(16) Vec3fa {
   typedef float Scalar;
+
   enum { n = 3 };
   union{ __m128 v; struct {float x,y,z; int a;}; };
 

@@ -26,14 +26,17 @@ struct vfloat4
 					  f[2] = other.f[2];
 					  f[3] = other.f[3]; }
 
-  __forceinline vfloat4& operator =( const float& a ) { f[0] = a; f[1] = a; f[2] = a; f[3] = a; }
+  __forceinline vfloat4& operator =( const float& a )                                   { f[0] = a; f[1] = a; f[2] = a; f[3] = a; return *this; }
     
-  __forceinline vfloat4( float a )                            { f[0] = a; f[1] = a; f[2] = a; f[3] = a; }
-  __forceinline vfloat4( float a, float b, float c, float d) {  f[0] = a; f[1] = b; f[2] = c; f[3] = d; }
+  __forceinline vfloat4(const float& a )                                                { f[0] = a; f[1] = a; f[2] = a; f[3] = a; }
+  
+  __forceinline vfloat4(const float& a, const float& b, const float& c, const float& d) {  f[0] = a; f[1] = b; f[2] = c; f[3] = d; }
 
   __forceinline const float& operator [](const size_t index) const { assert(index < 4); return f[index]; }
   __forceinline       float& operator [](const size_t index)       { assert(index < 4); return f[index]; }
 
+  __forceinline vfloat4( ZeroTy ) { f[0] = 0.0f; f[1] = 0.0f; f[2] = 0.0f; f[3] = 0.0f; }
+  
 #if defined(__AVX2__)
   static __forceinline vfloat4 load ( const void* const a ) { return _mm_load_ps((float*)a); }
   static __forceinline vfloat4 loadu( const void* const a ) { return _mm_loadu_ps((float*)a); }
@@ -95,29 +98,34 @@ __forceinline vfloat4& operator /=( vfloat4& a, const float&   b ) { return a = 
 
 ////////// Comparators //////////
 __forceinline const vbool4 operator ==( const vfloat4& a, const vfloat4&b ) { return vbool4(a.f[0]==b.f[0],
-										     a.f[1]==b.f[1],
-										     a.f[2]==b.f[2],
-										     a.f[3]==b.f[3]); }
+											    a.f[1]==b.f[1],
+											    a.f[2]==b.f[2],
+											    a.f[3]==b.f[3]); }
+
 __forceinline const vbool4 operator !=( const vfloat4& a, const vfloat4&b ) { return vbool4(a.f[0]!=b.f[0],
-										     a.f[1]!=b.f[1],
-										     a.f[2]!=b.f[2],
-										     a.f[3]!=b.f[3]); }
-__forceinline const vbool4 operator <( const vfloat4& a, const vfloat4&b ) { return vbool4(a.f[0]<b.f[0],
-										     a.f[1]<b.f[1],
-										     a.f[2]<b.f[2],
-										     a.f[3]<b.f[3]); }
+											    a.f[1]!=b.f[1],
+											    a.f[2]!=b.f[2],
+											    a.f[3]!=b.f[3]); }
+
+__forceinline const vbool4 operator <( const vfloat4& a, const vfloat4&b ) { return vbool4( a.f[0]<b.f[0],
+											    a.f[1]<b.f[1],
+											    a.f[2]<b.f[2],
+											    a.f[3]<b.f[3]); }
+
 __forceinline const vbool4 operator >=( const vfloat4& a, const vfloat4&b ) { return vbool4(a.f[0]>=b.f[0],
-										     a.f[1]>=b.f[1],
-										     a.f[2]>=b.f[2],
-										     a.f[3]>=b.f[3]); }
-__forceinline const vbool4 operator >( const vfloat4& a, const vfloat4&b ) { return vbool4(a.f[0]>b.f[0],
-										     a.f[1]>b.f[1],
-										     a.f[2]>b.f[2],
-										     a.f[3]>b.f[3]); }
+											    a.f[1]>=b.f[1],
+											    a.f[2]>=b.f[2],
+											    a.f[3]>=b.f[3]); }
+
+__forceinline const vbool4 operator >( const vfloat4& a, const vfloat4&b ) { return vbool4( a.f[0]>b.f[0],
+											    a.f[1]>b.f[1],
+											    a.f[2]>b.f[2],
+											    a.f[3]>b.f[3]); }
+
 __forceinline const vbool4 operator <=( const vfloat4& a, const vfloat4&b ) { return vbool4(a.f[0]<=b.f[0],
-										     a.f[1]<=b.f[1],
-										     a.f[2]<=b.f[2],
-										     a.f[3]<=b.f[3]); }
+											    a.f[1]<=b.f[1],
+											    a.f[2]<=b.f[2],
+											    a.f[3]<=b.f[3]); }
 
 ////////// Other Common Ops //////////
 #if defined(__AVX2__)
