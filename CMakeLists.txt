@@ -44,7 +44,7 @@ INCLUDE_DIRECTORIES(${MOAB_INCLUDE_DIRS})
 
 # A list of all unittests
 # test files are named test_<test_name>
-LIST(APPEND TEST_FILES "vec3f")
+#LIST(APPEND TEST_FILES "vec3f")
 LIST(APPEND TEST_FILES "vec3fa")
 LIST(APPEND TEST_FILES "vec3da")
 LIST(APPEND TEST_FILES "mat3")
