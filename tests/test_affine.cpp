@@ -4,11 +4,33 @@
 #include "space.h"
 #include "testutil.hpp"
 
-#define EPS 0.0f
-
 void constructor_tests();
 void operator_tests();
 void linear_algebra_tests();
+
+#define CHECK_AFFINESPACE_EQUAL(A, B) check_affinespace_eq( (A), (B) )
+
+
+bool check_affinespace_eq( const AffineSpace& A, const AffineSpace& B ) {
+  
+  // verify vector settings
+  CHECK_VFLOATREAL_EQUAL(A.l.vx.x, B.l.vx.x);
+  CHECK_VFLOATREAL_EQUAL(A.l.vx.y, B.l.vx.y);
+  CHECK_VFLOATREAL_EQUAL(A.l.vx.z, B.l.vx.z);
+
+  CHECK_VFLOATREAL_EQUAL(A.l.vy.x, B.l.vy.x);
+  CHECK_VFLOATREAL_EQUAL(A.l.vy.y, B.l.vy.y);
+  CHECK_VFLOATREAL_EQUAL(A.l.vy.z, B.l.vy.z);
+
+  CHECK_VFLOATREAL_EQUAL(A.l.vz.x, B.l.vz.x);
+  CHECK_VFLOATREAL_EQUAL(A.l.vz.y, B.l.vz.y);
+  CHECK_VFLOATREAL_EQUAL(A.l.vz.z, B.l.vz.z);
+
+  CHECK_VFLOATREAL_EQUAL(A.p.x, B.p.x);
+  CHECK_VFLOATREAL_EQUAL(A.p.y, B.p.y);
+  CHECK_VFLOATREAL_EQUAL(A.p.z, B.p.z);
+
+}
 
 
 int main(int argc, char** argv) {
@@ -176,7 +198,7 @@ void operator_tests() {
   CHECK_VFLOATREAL_EQUAL(pos_one_vec, A.p.z);
 
   // eq operator check
-  CHECK( A == A );
+  CHECK_EQUAL(A,A);
 
   // test mult operator
   float mult_val = 5.0f;
@@ -233,22 +255,135 @@ void operator_tests() {
   vfloat4 one_fifth(1.0/mult_val);
 
   // verify vector settings
-  CHECK_VFLOATREAL_EQUAL_TOL(one_fifth, B.l.vx.x, EPS);
-  CHECK_VFLOATREAL_EQUAL_TOL(zero_vec,  B.l.vx.y, EPS);
-  CHECK_VFLOATREAL_EQUAL_TOL(zero_vec,  B.l.vx.z, EPS);
+  CHECK_VFLOATREAL_EQUAL(one_fifth, B.l.vx.x);
+  CHECK_VFLOATREAL_EQUAL(zero_vec,  B.l.vx.y);
+  CHECK_VFLOATREAL_EQUAL(zero_vec,  B.l.vx.z);
 
-  CHECK_VFLOATREAL_EQUAL_TOL(zero_vec,  B.l.vy.x, EPS);
-  CHECK_VFLOATREAL_EQUAL_TOL(one_fifth, B.l.vy.y, EPS);
-  CHECK_VFLOATREAL_EQUAL_TOL(zero_vec,  B.l.vy.z, EPS);
+  CHECK_VFLOATREAL_EQUAL(zero_vec,  B.l.vy.x);
+  CHECK_VFLOATREAL_EQUAL(one_fifth, B.l.vy.y);
+  CHECK_VFLOATREAL_EQUAL(zero_vec,  B.l.vy.z);
 
-  CHECK_VFLOATREAL_EQUAL_TOL(zero_vec,  B.l.vz.x, EPS);
-  CHECK_VFLOATREAL_EQUAL_TOL(zero_vec,  B.l.vz.y, EPS);
-  CHECK_VFLOATREAL_EQUAL_TOL(one_fifth, B.l.vz.z, EPS);
+  CHECK_VFLOATREAL_EQUAL(zero_vec,  B.l.vz.x);
+  CHECK_VFLOATREAL_EQUAL(zero_vec,  B.l.vz.y);
+  CHECK_VFLOATREAL_EQUAL(one_fifth, B.l.vz.z);
 
-  CHECK_VFLOATREAL_EQUAL_TOL(one_fifth, B.p.x,    EPS);
-  CHECK_VFLOATREAL_EQUAL_TOL(one_fifth, B.p.y,    EPS);
-  CHECK_VFLOATREAL_EQUAL_TOL(one_fifth, B.p.z,    EPS);
+  CHECK_VFLOATREAL_EQUAL(one_fifth, B.p.x);
+  CHECK_VFLOATREAL_EQUAL(one_fifth, B.p.y);
+  CHECK_VFLOATREAL_EQUAL(one_fifth, B.p.z);
 
+  // multiply by this value
+  B *= mult_val;
+
+  // should be the same as A now
+  CHECK_EQUAL(A,B);
+
+  // divide using unary operator
+  B /= mult_val;
+
+  // verify vector settings
+  CHECK_VFLOATREAL_EQUAL(one_fifth, B.l.vx.x);
+  CHECK_VFLOATREAL_EQUAL(zero_vec,  B.l.vx.y);
+  CHECK_VFLOATREAL_EQUAL(zero_vec,  B.l.vx.z);
+
+  CHECK_VFLOATREAL_EQUAL(zero_vec,  B.l.vy.x);
+  CHECK_VFLOATREAL_EQUAL(one_fifth, B.l.vy.y);
+  CHECK_VFLOATREAL_EQUAL(zero_vec,  B.l.vy.z);
+
+  CHECK_VFLOATREAL_EQUAL(zero_vec,  B.l.vz.x);
+  CHECK_VFLOATREAL_EQUAL(zero_vec,  B.l.vz.y);
+  CHECK_VFLOATREAL_EQUAL(one_fifth, B.l.vz.z);
+
+  CHECK_VFLOATREAL_EQUAL(one_fifth, B.p.x);
+  CHECK_VFLOATREAL_EQUAL(one_fifth, B.p.y);
+  CHECK_VFLOATREAL_EQUAL(one_fifth, B.p.z);
+
+
+  AffineSpace C;
+
+  // multiply by identity
+  C = A * B;
+  CHECK_EQUAL(B, C);
+
+  // multiply by self
+  C = B * B;
+
+  // verify vector settings
+  CHECK_VFLOATREAL_EQUAL(one_fifth*one_fifth, C.l.vx.x);
+  CHECK_VFLOATREAL_EQUAL(zero_vec,            C.l.vx.y);
+  CHECK_VFLOATREAL_EQUAL(zero_vec,            C.l.vx.z);
+
+  CHECK_VFLOATREAL_EQUAL(zero_vec,            C.l.vy.x);
+  CHECK_VFLOATREAL_EQUAL(one_fifth*one_fifth, C.l.vy.y);
+  CHECK_VFLOATREAL_EQUAL(zero_vec,            C.l.vy.z);
+
+  CHECK_VFLOATREAL_EQUAL(zero_vec,            C.l.vz.x);
+  CHECK_VFLOATREAL_EQUAL(zero_vec,            C.l.vz.y);
+  CHECK_VFLOATREAL_EQUAL(one_fifth*one_fifth, C.l.vz.z);
+
+  CHECK_VFLOATREAL_EQUAL(one_fifth*one_fifth, C.p.x);
+  CHECK_VFLOATREAL_EQUAL(one_fifth*one_fifth, C.p.y);
+  CHECK_VFLOATREAL_EQUAL(one_fifth*one_fifth, C.p.z);
+
+  // addition op
+  C = A + B;
+  // verify vector settings
+  CHECK_VFLOATREAL_EQUAL(one_fifth+pos_one_vec, C.l.vx.x);
+  CHECK_VFLOATREAL_EQUAL(zero_vec,              C.l.vx.y);
+  CHECK_VFLOATREAL_EQUAL(zero_vec,              C.l.vx.z);
+
+  CHECK_VFLOATREAL_EQUAL(zero_vec,              C.l.vy.x);
+  CHECK_VFLOATREAL_EQUAL(one_fifth+pos_one_vec, C.l.vy.y);
+  CHECK_VFLOATREAL_EQUAL(zero_vec,              C.l.vy.z);
+
+  CHECK_VFLOATREAL_EQUAL(zero_vec,              C.l.vz.x);
+  CHECK_VFLOATREAL_EQUAL(zero_vec,              C.l.vz.y);
+  CHECK_VFLOATREAL_EQUAL(one_fifth+pos_one_vec, C.l.vz.z);
+
+  CHECK_VFLOATREAL_EQUAL(one_fifth+pos_one_vec, C.p.x);
+  CHECK_VFLOATREAL_EQUAL(one_fifth+pos_one_vec, C.p.y);
+  CHECK_VFLOATREAL_EQUAL(one_fifth+pos_one_vec, C.p.z);
+
+  C = B - A;
   
+  // verify vector settings
+  CHECK_VFLOATREAL_EQUAL(one_fifth-pos_one_vec, C.l.vx.x);
+  CHECK_VFLOATREAL_EQUAL(zero_vec,              C.l.vx.y);
+  CHECK_VFLOATREAL_EQUAL(zero_vec,              C.l.vx.z);
+
+  CHECK_VFLOATREAL_EQUAL(zero_vec,              C.l.vy.x);
+  CHECK_VFLOATREAL_EQUAL(one_fifth-pos_one_vec, C.l.vy.y);
+  CHECK_VFLOATREAL_EQUAL(zero_vec,              C.l.vy.z);
+
+  CHECK_VFLOATREAL_EQUAL(zero_vec,              C.l.vz.x);
+  CHECK_VFLOATREAL_EQUAL(zero_vec,              C.l.vz.y);
+  CHECK_VFLOATREAL_EQUAL(one_fifth-pos_one_vec, C.l.vz.z);
+
+  CHECK_VFLOATREAL_EQUAL(one_fifth-pos_one_vec, C.p.x);
+  CHECK_VFLOATREAL_EQUAL(one_fifth-pos_one_vec, C.p.y);
+  CHECK_VFLOATREAL_EQUAL(one_fifth-pos_one_vec, C.p.z);
+
+  // reciprocal operator
+  C = rcp(A);
+
+  LinSpaceV lv = A.l;
+
+  // C's linear space should match the inverse of A's
+  CHECK_EQUAL(lv.inverse(), C.l);
+  // because A's linear space is the identity, it shouldn't have changed
+  CHECK_EQUAL(lv, C.l);
+
+  // the new vector should have flipped signs
+  CHECK_EQUAL(-A.p, C.p);
+
+  // reciprocal operator
+  C = rcp(B);
+
+  lv = B.l;
+
+  CHECK_EQUAL(lv.inverse(), C.l);
+
+  CHECK_EQUAL(-lv.inverse()*B.p, C.p);
   
 }
+ 
+
