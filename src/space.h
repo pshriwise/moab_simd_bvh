@@ -45,7 +45,7 @@ struct LinSpaceT {
   __forceinline       T row0()       { return T(vx.x, vy.x, vz.x); }
 
   __forceinline const T row1() const { return T(vx.y, vy.y, vz.y); }
-  __forceinline T row1() { return T(vx.y, vy.y, vz.y); }
+  __forceinline       T row1()       { return T(vx.y, vy.y, vz.y); }
 
   __forceinline const T row2() const { return T(vx.z, vy.z, vz.z); }
   __forceinline       T row2()       { return T(vx.z, vy.z, vz.z); }

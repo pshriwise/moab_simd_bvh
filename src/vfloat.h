@@ -65,6 +65,8 @@ struct vfloat4
 __forceinline const vfloat4 operator +( const vfloat4& a ) { return a; }
 __forceinline const vfloat4 operator -( const vfloat4& a ) { return vfloat4(-a[0],-a[1],-a[2],-a[3]); }
 
+__forceinline const vfloat4 sqrt(const vfloat4& a) { return vfloat4(sqrtf(a[0]),sqrtf(a[1]),sqrtf(a[2]),sqrtf(a[3])); }
+
 ////////// Binary Ops //////////
 __forceinline const vfloat4 operator +( const vfloat4& a, const vfloat4& b ) { return vfloat4(a[0]+b[0],a[1]+b[1],a[2]+b[2],a[3]+b[3]); }
 __forceinline const vfloat4 operator +( const vfloat4& a, const float& b ) { return a+ vfloat4(b); }
@@ -194,6 +196,15 @@ __forceinline vfloat4 mini(const vfloat4& a, const vfloat4&b, const vfloat4& c) 
 
 __forceinline vfloat4 mini(const vfloat4& a, const vfloat4&b, const vfloat4& c, const vfloat4& d) { return mini(mini(a,b),c,d); }
 
+
+__forceinline vfloat4 select(const vbool4& tf, const vfloat4& t, const vfloat4& f) {
+  vfloat4 ret;
+  ret[0] = tf[0] ? t[0] : f[0];
+  ret[1] = tf[1] ? t[1] : f[1];
+  ret[2] = tf[2] ? t[2] : f[2];
+  ret[3] = tf[3] ? t[3] : f[3];
+  return ret;
+}
 
 
 __forceinline vfloat4 maxi(const vfloat4& a, const vfloat4&b, const vfloat4& c) { return maxi(maxi(a,b),c); }

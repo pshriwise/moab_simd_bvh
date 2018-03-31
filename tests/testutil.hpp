@@ -42,6 +42,7 @@
 
 /** Check that two vfloat4 objects contain same values */
 #define CHECK_VFLOATREAL_EQUAL( EXP, ACT) check_equal_vfloat4( (EXP), (ACT), #EXP, #ACT, __LINE__, __FILE__ ) 
+#define CHECK_VFLOATREAL_EQUAL_TOL( EXP, ACT, TOL ) check_equal_vfloat4( (EXP), (ACT), #EXP, #ACT, __LINE__, __FILE__, (TOL) ) 
 
 /** Check that two vfloat4 objects contain same values */
 #define CHECK_VBOOLREAL_EQUAL( EXP, ACT) check_equal_vbool4( (EXP), (ACT), #EXP, #ACT, __LINE__, __FILE__ ) 
@@ -313,11 +314,15 @@ inline void check_equal_Vec3( const Vec3da& A,
 }
 
 void check_equal_vfloat4( const vfloat4& A,
-		       const vfloat4& B,
-		       const char* sA, const char* sB, 
-		       int line, const char* file )
+			  const vfloat4& B,
+			  const char* sA, const char* sB, 
+			  int line, const char* file,
+			  float tol = 0.0f )
 {
-  if( (A[0] == B[0]) && (A[1] == B[1]) && (A[2] == B[2]) && (A[3] == B[3]) )
+  if( std::abs(A[0] - B[0]) <= tol &&
+      std::abs(A[1] - B[1]) <= tol &&
+      std::abs(A[2] - B[2]) <= tol &&
+      std::abs(A[3] - B[3]) <= tol )
     return;
   
   std::cout << "Equality Test Failed: " << sA << " == " << sB << std::endl;
