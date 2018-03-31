@@ -5,20 +5,21 @@
 
 #define EPS 1e-06
 
-void constructor_tests();
-void operator_tests();
-void linear_algebra_tests();
+void ls_constructor_tests();
+void ls_operator_tests();
+void ls_linear_algebra_tests();
 
 int main(int argc, char** argv) {
 
-  constructor_tests();
-  operator_tests();
-  linear_algebra_tests();
+  // linear
+  ls_constructor_tests();
+  ls_operator_tests();
+  ls_linear_algebra_tests();
   
   return 0;
 }
 
-void constructor_tests() {
+void ls_constructor_tests() {
 
   // column vector constructor
   Vec3fa ax0(0.0f, 1.0f, 0.0f);
@@ -46,7 +47,7 @@ void constructor_tests() {
   CHECK_EQUAL(ls, ls2);
 }
 
-void operator_tests() {
+void ls_operator_tests() {
 
   LinSpace ls( 2, -1,  0,
 	       -1,  2, -1,
@@ -107,7 +108,7 @@ void operator_tests() {
   
 }
 
-void linear_algebra_tests() {
+void ls_linear_algebra_tests() {
 
   // test transpose
   LinSpace ls(3, 2, 3,
@@ -152,4 +153,5 @@ void linear_algebra_tests() {
   CHECK_VECREAL_EQUAL_TOL(expected_adjoint.row2(), ls.adjoint().row2(), EPS);
 
 }
+
 
