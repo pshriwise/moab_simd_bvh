@@ -22,7 +22,7 @@ template<typename T> struct Vec3 {
   
   __forceinline Vec3( const Vec3fa&other ) : x(T(other.x)), y(T(other.y)), z(T(other.z)) {}
   __forceinline Vec3( const Vec3da&other ) : x(T(other.x)), y(T(other.y)), z(T(other.z)) {}
-
+  
   __forceinline Vec3( const Scalar& v ) : x(v), y(v), z(v) {}
   
   //  __forceinline Vec3( const float& a, const float& b, const float& c ) { x = T(a); y = T(b); z = T(c); }
@@ -51,12 +51,30 @@ template<typename T> struct Vec3 {
   __forceinline       T& operator []( const size_t axis)       { assert(axis < 3); return (&x)[axis]; }
 
   __forceinline void normalize() { T len = length();
-                            len = len < min_rcp_input ? min_rcp_input : len;
-                            x /= len; y /= len; z /= len; }
+                                   len = select(len < min_rcp_input, T(min_rcp_input), len);
+				   x /= len; y /= len; z /= len; }
   
   __forceinline Vec3( const T v[3] ) : x(v[0]), y(v[1]), z(v[2]) {}
 
-  __forceinline T length() const { return sqrtf(x*x + y*y + z*z); }
+  __forceinline T length() const { return sqrt(x*x + y*y + z*z); }
+  
+
+  __forceinline Vec3 operator +=(const Vec3& v) { x = x + v.x; y = y + v.y; z = z + v.z; return *this; }
+  
+  __forceinline Vec3 operator -=(const Vec3& v) { x = x - v.x; y = y - v.y; z = z - v.z; return *this; }
+  
+  __forceinline Vec3 operator *=(const Vec3& v) { x = x * v.x; y = y * v.y; z = z * v.z; return *this; }
+  
+  __forceinline Vec3 operator /=(const Vec3& v) { x = x / v.x; y = y / v.y; z = z / v.z; return *this; }
+
+  __forceinline Vec3 operator +=(const float& v) { x = x + v; y = y + v; z = z + v; return *this; }
+  
+  __forceinline Vec3 operator -=(const float& v) { x = x - v; y = y - v; z = z - v; return *this; }
+  
+  __forceinline Vec3 operator *=(const float& v) { x = x * v; y = y * v; z = z * v; return *this; }
+  
+  __forceinline Vec3 operator /=(const float& v) { x = x / v; y = y / v; z = z / v; return *this; }
+
   
   template<typename t>
   friend std::ostream& operator <<(std::ostream &os, Vec3<t> const&v);
@@ -117,10 +135,10 @@ template<typename T>
 __forceinline bool operator !=(const Vec3<T>& a, const Vec3<T>& b)  { return a.x != b.x || a.y != b.y || a.z != b.z; }
 
 template<typename T>
-__forceinline Vec3<T> min(const Vec3<T>& a, const Vec3<T>& b) { return Vec3<T>(std::min(a.x,b.x), std::min(a.y,b.y), std::min(a.z,b.z)); }
+__forceinline Vec3<T> min(const Vec3<T>& a, const Vec3<T>& b) { return Vec3<T>(min(a.x,b.x), min(a.y,b.y), min(a.z,b.z)); }
 
 template<typename T>
-__forceinline Vec3<T> max(const Vec3<T>& a, const Vec3<T>& b) { return Vec3<T>(std::max(a.x,b.x), std::max(a.y,b.y), std::max(a.z,b.z)); }
+__forceinline Vec3<T> max(const Vec3<T>& a, const Vec3<T>& b) { return Vec3<T>(max(a.x,b.x), max(a.y,b.y), max(a.z,b.z)); }
 
 template<typename T>
 __forceinline T reduce_add( const Vec3<T> &v ) { return v.x + v.y + v.z; }
@@ -129,10 +147,10 @@ template<typename T>
 __forceinline T reduce_mul( const Vec3<T>& v ) { return v.x * v.y * v.z; }
 
 template<typename T>
-__forceinline T reduce_min( const Vec3<T>& v ) { return std::min(std::min(v.x, v.y), v.z); }
+__forceinline T reduce_min( const Vec3<T>& v ) { return min(min(v.x, v.y), v.z); }
 
 template<typename T>
-__forceinline T reduce_max( const Vec3<T>& v ) { return std::max(std::max(v.x, v.y), v.z); }
+__forceinline T reduce_max( const Vec3<T>& v ) { return max(max(v.x, v.y), v.z); }
 
 __forceinline bool all(bool b[3]) { return b[0] && b[1] && b[2]; }
 
