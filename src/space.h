@@ -144,7 +144,6 @@ typedef LinSpaceT<Vec3vfa> LinSpaceV;
 #define V typename LinSpaceV::Vector
 
 struct AffineSpace {
-
   
   __forceinline AffineSpace () {}
 
