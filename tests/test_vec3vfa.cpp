@@ -10,6 +10,7 @@ void min_max_tests();
 void unary_op_tests();
 void binary_op_tests();
 void convenience_method_tests();
+void nonuniform_testing();
 
 int main(int argc, char** argv) {
 
@@ -18,6 +19,7 @@ int main(int argc, char** argv) {
   unary_op_tests();
   binary_op_tests();
   convenience_method_tests();
+  nonuniform_testing();
   
   return 0;
 }
@@ -236,4 +238,47 @@ void convenience_method_tests() {
   expected_length = 1.0;
   expected_length_vec = vfloat4(expected_length);
   CHECK_VFLOATREAL_EQUAL_TOL(expected_length_vec, test_vec.length(), ulp);  
+}
+
+void nonuniform_testing() {
+
+  vfloat4 xvec( 1.0,  2.0,  3.0,  4.0);
+  vfloat4 yvec(-1.0, -2.0, -3.0, -4.0);
+  vfloat4 zvec( 5.0,  6.0,  7.0,  8.0);
+  
+  Vec3vfa a = Vec3vfa(xvec, yvec, zvec);
+
+  CHECK_VFLOATREAL_EQUAL(xvec, a.x);
+  CHECK_VFLOATREAL_EQUAL(yvec, a.y);
+  CHECK_VFLOATREAL_EQUAL(zvec, a.z);
+
+  a *= a;
+
+  CHECK_VFLOATREAL_EQUAL(vfloat4( 1.0,  4.0,  9.0, 16.0), a.x);
+  CHECK_VFLOATREAL_EQUAL(vfloat4( 1.0,  4.0,  9.0, 16.0), a.y);
+  CHECK_VFLOATREAL_EQUAL(vfloat4(25.0, 36.0, 49.0, 64.0), a.z);
+  
+
+  a /= a;
+  a /= a;
+
+  CHECK_VFLOATREAL_EQUAL(vfloat4( 1.0,  1.0,  1.0, 1.0), a.x);
+  CHECK_VFLOATREAL_EQUAL(vfloat4( 1.0,  1.0,  1.0, 1.0), a.y);
+  CHECK_VFLOATREAL_EQUAL(vfloat4( 1.0,  1.0,  1.0, 1.0), a.z);
+
+  a = Vec3vfa(xvec, yvec, zvec);
+
+  a += a;
+
+  CHECK_VFLOATREAL_EQUAL(vfloat4( 2.0,  4.0,  6.0,  8.0), a.x);
+  CHECK_VFLOATREAL_EQUAL(vfloat4(-2.0, -4.0, -6.0, -8.0), a.y);
+  CHECK_VFLOATREAL_EQUAL(vfloat4(10.0, 12.0, 14.0, 16.0), a.z);
+
+  a -= a;
+  
+  CHECK_VFLOATREAL_EQUAL(vfloat4(0.0), a.x);
+  CHECK_VFLOATREAL_EQUAL(vfloat4(0.0), a.y);
+  CHECK_VFLOATREAL_EQUAL(vfloat4(0.0), a.z);
+  
+  return;
 }
