@@ -2,6 +2,7 @@
 
 #include "Vec3.h"
 #include "AABB.h"
+#include "OBB.h"
 #include "constants.h"
 #include "vfloat.h"
 #include "Primitive.h"
@@ -17,6 +18,7 @@ static const size_t align_mask = 15;
 
 // forward declarations
 struct AANode;
+struct UANode;
 struct Node;
  
 struct NodeRef {
@@ -40,7 +42,13 @@ struct NodeRef {
 
   __forceinline       AANode* safeNode()        { return isSetLeaf() ? (AANode*)setLeafPtr() : node(); }
   __forceinline const AANode* safeNode() const  { return isSetLeaf() ? (AANode*)setLeafPtr() : node(); }
-      
+
+  __forceinline       UANode* uanode()       { return (UANode*)ptr; }
+  __forceinline const UANode* uanode() const { return (const UANode*)ptr; }
+
+  __forceinline       UANode* uasafeNode()        { return isSetLeaf() ? (UANode*)setLeafPtr() : uanode(); }
+  __forceinline const UANode* uasafeNode() const  { return isSetLeaf() ? (UANode*)setLeafPtr() : uanode(); }
+
   __forceinline       void* snode()       { return (void*)setLeafPtr(); }
   __forceinline const void* snode() const { return (const void*)setLeafPtr(); }
   
@@ -288,4 +296,59 @@ __forceinline size_t nearestOnBox(const AANode &node, const TravRayT<I> &ray, co
 
   // we claim to "intersect" all boxes
   return 15;
+};
+
+// unaligned node
+struct __aligned(16) UANode : public Node {
+  
+  using::Node::children;
+
+  struct Set {
+    __forceinline void operator() (NodeRef node, size_t i, NodeRef child, const OBB& obb) const {
+      node.uanode()->setRef(i, child);
+      node.uanode()->setBound(i, obb);
+    }
+  };
+
+  __forceinline void clear() {
+    obb.l.vx = Vec3fa(zero);
+    obb.l.vy = Vec3fa(zero);
+    obb.l.vz = Vec3fa(zero);
+  }
+
+  __forceinline void setBound(size_t i, const OBB& bounds) {
+    assert(i < N);
+
+    AffineSpace3fa space = bounds.transform;
+    space.p -= bounds.bbox.lower;
+
+    space = AffineSpace3fa::scale(1.0f/ max(Vec3fa(1E-19f), bounds.bbox.upper - bounds.bbox.lower)) * space;
+
+    obb.l.vx.x[i] = space.l.vx.x;
+    obb.l.vx.y[i] = space.l.vx.y;
+    obb.l.vx.z[i] = space.l.vx.z;
+
+    obb.l.vy.x[i] = space.l.vy.x;
+    obb.l.vy.y[i] = space.l.vy.y;
+    obb.l.vy.z[i] = space.l.vy.z;
+
+    obb.l.vz.x[i] = space.l.vz.x;
+    obb.l.vz.y[i] = space.l.vz.y;
+    obb.l.vz.z[i] = space.l.vz.z;
+
+    obb.p.x[i] = space.p.x;
+    obb.p.y[i] = space.p.y;
+    obb.p.z[i] = space.p.z;
+
+    return;
+  }
+
+  __forceinline void setRef(size_t i, const NodeRef& ref) {
+    assert(i < N);
+    children[i] = ref;
+  }
+
+ public:
+  AffineSpace obb;
+  
 };
