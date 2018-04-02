@@ -355,3 +355,52 @@ struct __aligned(16) UANode : public Node {
   AffineSpaceV obb;
   
 };
+
+
+template<typename I>
+__forceinline size_t intersectBox(const UANode& node, const TravRayT<I>& ray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& dist) {
+
+  const Vec3vf dir   = xfmVector(node.obb, ray.dir);
+
+  const Vec3vf nrdir = Vec3vf(vfloat4(1.0f)) * rcp_safe(dir);
+  const Vec3vf org   = xfmPoint(node.obb, ray.org);
+  const Vec3vf tLowerXYZ = org * nrdir;
+  const Vec3vf tUpperXYZ = tLowerXYZ - nrdir;
+  
+  const vfloat4 tNearX = mini(tLowerXYZ.x,tUpperXYZ.x);
+  const vfloat4 tNearY = mini(tLowerXYZ.y,tUpperXYZ.y);
+  const vfloat4 tNearZ = mini(tLowerXYZ.z,tUpperXYZ.z);
+  const vfloat4 tFarX  = maxi(tLowerXYZ.x,tUpperXYZ.x);
+  const vfloat4 tFarY  = maxi(tLowerXYZ.y,tUpperXYZ.y);
+  const vfloat4 tFarZ  = maxi(tLowerXYZ.z,tUpperXYZ.z);
+  const vfloat4 tNear  = max(tnear, tNearX,tNearY,tNearZ);
+  const vfloat4 tFar   = min(tfar,  tFarX ,tFarY ,tFarZ );
+  const vbool4 vmask = tNear <= tFar;
+  dist = tNear;
+  return movemask(vmask);  
+}
+
+
+template<typename I>
+__forceinline size_t nearestOnBox(const UANode& node, const TravRayT<I>& ray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& dist) {
+  
+  const Vec3vf dir   = xfmVector(node.obb, ray.dir);
+
+  const Vec3vf nrdir = Vec3vf(vfloat4(1.0f)) * rcp_safe(dir);
+  const Vec3vf org   = xfmPoint(node.obb, ray.org);
+  const Vec3vf tLowerXYZ = org * nrdir;
+  const Vec3vf tUpperXYZ = tLowerXYZ - nrdir;
+
+  const vfloat4 tNearX = mini(tLowerXYZ.x,tUpperXYZ.x);
+  const vfloat4 tNearY = mini(tLowerXYZ.y,tUpperXYZ.y);
+  const vfloat4 tNearZ = mini(tLowerXYZ.z,tUpperXYZ.z);
+  const vfloat4 tFarX  = maxi(tLowerXYZ.x,tUpperXYZ.x);
+  const vfloat4 tFarY  = maxi(tLowerXYZ.y,tUpperXYZ.y);
+  const vfloat4 tFarZ  = maxi(tLowerXYZ.z,tUpperXYZ.z);
+  const vfloat4 tNear  = max(tnear, tNearX,tNearY,tNearZ);
+  const vfloat4 tFar   = min(tfar,  tFarX ,tFarY ,tFarZ );
+  const vbool4 vmask = tNear <= tFar;
+  dist = max(tNear,tFar);
+  
+  return 15;
+}
