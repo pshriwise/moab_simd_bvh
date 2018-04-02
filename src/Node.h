@@ -117,8 +117,6 @@ struct Node {
   
 };
 
-
-
 struct __aligned(16) AANode : public Node
 {
 
@@ -349,6 +347,6 @@ struct __aligned(16) UANode : public Node {
   }
 
  public:
-  AffineSpace obb;
+  AffineSpaceV obb;
   
 };

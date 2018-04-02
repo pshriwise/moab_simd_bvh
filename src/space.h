@@ -251,4 +251,4 @@ static std::ostream& operator<<(std::ostream& cout, const AffineSpaceT<L>& m){
 }
 
 typedef AffineSpaceT<LinSpace> AffineSpace3fa;
-typedef AffineSpaceT<LinSpaceV> AffineSpace;
+typedef AffineSpaceT<LinSpaceV> AffineSpaceV;
