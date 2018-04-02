@@ -654,7 +654,7 @@ class BVH {
     } while (numChildren < N);
 
     /* get children bounds */
-    vfloat4 x_min, y_min, z_min, x_max, y_max, z_max;
+    AANode* aanode = new AANode();
     
     for (size_t i = 0; i < numChildren; i++) {
       AABB b;
@@ -674,13 +674,13 @@ class BVH {
 	  
       }
 
-      x_min[i] = b.lower.x - box_bump; y_min[i] = b.lower.y - box_bump; z_min[i] = b.lower.z - box_bump;
-      x_max[i] = b.upper.x + box_bump; y_max[i] = b.upper.y + box_bump; z_max[i] = b.upper.z + box_bump;
+
+      b.bump(box_bump);
+      
+      aanode->setBound(i, b);
       
     }
     
-    /* create node */
-    AANode* aanode = new AANode(x_min, x_max, y_min, y_max, z_min, z_max);
     NodeRef* node = new NodeRef((size_t)aanode);
 
     
@@ -702,7 +702,7 @@ class BVH {
 
   }
 
-
+  
   void splitFallback(const BuildState& current, BuildState& left, BuildState& right) {
     const size_t begin_id = current.prims.prims.front().primID();
     const size_t end_id = current.prims.prims.back().primID();
