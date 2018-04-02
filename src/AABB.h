@@ -129,10 +129,6 @@ struct AABB {
     return all(le_mask(lower, upper));
   }
 
-  __forceinline Vec3fa low() { return lower; }
-
-  __forceinline Vec3fa high() { return upper; }
-
   __forceinline AABB splitBox(const size_t& axis, const float& t_start, const float& t_end ) {
     assert( axis < 3 );
     
