@@ -132,6 +132,22 @@ struct AABB {
   __forceinline Vec3fa low() { return lower; }
 
   __forceinline Vec3fa high() { return upper; }
+
+  __forceinline AABB splitBox(const size_t& axis, const float& t_start, const float& t_end ) {
+    assert( axis < 3 );
+    
+    AABB ret_box = *this;
+    
+    Vec3fa box_size;
+
+    box_size = size();
+    ret_box.lower[axis] = lower[axis] + (box_size[axis] * t_start);
+
+    box_size = size();
+    ret_box.upper[axis] = lower[axis] + (box_size[axis] * t_end);
+
+    return ret_box;
+  }
   
 };
 

@@ -480,74 +480,21 @@ class BVH {
 
     //get the bounds of the node
     AABB box((float)inf,(float)neg_inf);
-    for(size_t i=0; i<numPrimitives; i++) {
-      P t = P((I*)MDAM->conn + (primitives[i].primID()*MDAM->element_stride), (I)primitives[i].primitivePtr);
 
-      Vec3da pnt;
-      pnt = t.get_point(0, (void*)MDAM);
-      box.update(pnt.x, pnt.y, pnt.z);
-      pnt = t.get_point(1, (void*)MDAM);
-      box.update(pnt.x, pnt.y, pnt.z);
-      pnt = t.get_point(2, (void*)MDAM);
-      box.update(pnt.x, pnt.y, pnt.z);
-    }
-
-    box.bump(box_bump);
-    
-    Vec3fa dxdydz = (box.high() - box.low()) / 4.0f;
-
+    box = node->node()->bounds();
+        
     //create new child bounds
-    vfloat4 bounds[6];
-  
-    bounds[0] = vfloat4(box.low()[0]); // lower x
-    bounds[1] = vfloat4(box.high()[0]); // upper x
-    bounds[2] = vfloat4(box.low()[1]); // lower y
-    bounds[3] = vfloat4(box.high()[1]); // upper y
-    bounds[4] = vfloat4(box.low()[2]); // lower z
-    bounds[5] = vfloat4(box.high()[2]); // upper z
-
-    float lb = box.low()[split_axis];
-    float delta = dxdydz[split_axis];
-    bounds[2*split_axis] = vfloat4(lb, lb + delta, lb + 2*delta, lb + 3*delta);
-    bounds[2*split_axis+1] = vfloat4(lb + delta, lb + 2*delta, lb + 3*delta, lb + 4*delta);
-
     AABB boxes[N];
 
-	 
-    boxes[0] = AABB(bounds[0][0],
-		    bounds[2][0],
-		    bounds[4][0],
-		    bounds[1][0],
-		    bounds[3][0],
-		    bounds[5][0]);
-    boxes[1] = AABB(bounds[0][1],
-		    bounds[2][1],
-		    bounds[4][1],
-		    bounds[1][1],
-		    bounds[3][1],
-		    bounds[5][1]);
-    boxes[2] = AABB(bounds[0][2],
-		    bounds[2][2],
-		    bounds[4][2],
-		    bounds[1][2],
-		    bounds[3][2],
-		    bounds[5][2]);
-    boxes[3] = AABB(bounds[0][3],
-		    bounds[2][3],
-		    bounds[4][3],
-		    bounds[1][3],
-		    bounds[3][3],
-		    bounds[5][3]);
-
+    boxes[0] = box.splitBox(split_axis, 0.00,  0.25);
+    boxes[1] = box.splitBox(split_axis, 0.25,  0.50);
+    boxes[2] = box.splitBox(split_axis, 0.50,  0.75);
+    boxes[3] = box.splitBox(split_axis, 0.75,  1.00);
+    
     tn[0].clear(); tn[0].prims.shrink_to_fit();
     tn[1].clear(); tn[1].prims.shrink_to_fit();
     tn[2].clear(); tn[2].prims.shrink_to_fit();
     tn[3].clear(); tn[3].prims.shrink_to_fit();
-
-    /* new (&tn[0]) TempNode<T>(); */
-    /* new (&tn[1]) TempNode<T>(); */
-    /* new (&tn[2]) TempNode<T>(); */
-    /* new (&tn[3]) TempNode<T>(); */
   
     // sort primitives into boxes by their centroid
     for(size_t i = 0; i < numPrimitives; i++) {
