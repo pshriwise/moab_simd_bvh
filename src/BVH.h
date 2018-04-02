@@ -129,56 +129,18 @@ class BVH {
     // get the current node's bounds
     AABB box = current_node->safeNode()->bounds();
 
-    Vec3fa dxdydz = (box.high() - box.low()) / 4.0f;
-
     //create new child bounds
-    vfloat4 bounds[6];
-  
-    bounds[0] = vfloat4(box.low()[0]); // lower x
-    bounds[1] = vfloat4(box.high()[0]); // upper x
-    bounds[2] = vfloat4(box.low()[1]); // lower y
-    bounds[3] = vfloat4(box.high()[1]); // upper y
-    bounds[4] = vfloat4(box.low()[2]); // lower z
-    bounds[5] =vfloat4(box.high()[2]); // upper z
-
-    float lb = box.low()[split_dim];
-    float delta = dxdydz[split_dim];
-    bounds[2*split_dim] = vfloat4(lb, lb + delta, lb + 2*delta, lb + 3*delta);
-    bounds[2*split_dim+1] = vfloat4(lb + delta, lb + 2*delta, lb + 3*delta, lb + 4*delta);
-
     AABB boxes[N];
 
-	 
-    boxes[0] = AABB(bounds[0][0],
-		    bounds[2][0],
-		    bounds[4][0],
-		    bounds[1][0],
-		    bounds[3][0],
-		    bounds[5][0]);
-    boxes[1] = AABB(bounds[0][1],
-		    bounds[2][1],
-		    bounds[4][1],
-		    bounds[1][1],
-		    bounds[3][1],
-		    bounds[5][1]);
-    boxes[2] = AABB(bounds[0][2],
-		    bounds[2][2],
-		    bounds[4][2],
-		    bounds[1][2],
-		    bounds[3][2],
-		    bounds[5][2]);
-    boxes[3] = AABB(bounds[0][3],
-		    bounds[2][3],
-		    bounds[4][3],
-		    bounds[1][3],
-		    bounds[3][3],
-		    bounds[5][3]);
+    boxes[0] = box.splitBox(split_dim, 0.00,  0.25);
+    boxes[1] = box.splitBox(split_dim, 0.25,  0.50);
+    boxes[2] = box.splitBox(split_dim, 0.50,  0.75);
+    boxes[3] = box.splitBox(split_dim, 0.75,  1.00);
 
     child_nodes[0].clear();
     child_nodes[1].clear();
     child_nodes[2].clear();
     child_nodes[3].clear();
-	
 
     for(size_t i = 0; i < numNodes; i ++) {
       AANode* aanode = nodesPtr[i]->safeNode();
