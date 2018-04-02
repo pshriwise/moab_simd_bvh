@@ -461,43 +461,16 @@ class BVH {
 
     splitNode(node, best_dim, primitives, numPrimitives, tempNodes);
 
-    vfloat4 low_x, upp_x,
-      low_y, upp_y,
-      low_z, upp_z;
+    tempNodes[0].box.bump(box_bump);
+    tempNodes[1].box.bump(box_bump);
+    tempNodes[2].box.bump(box_bump);
+    tempNodes[3].box.bump(box_bump);
 
-    low_x = vfloat4(tempNodes[0].box.low().x,
-		    tempNodes[1].box.low().x,
-		    tempNodes[2].box.low().x,
-		    tempNodes[3].box.low().x);
-    low_y = vfloat4(tempNodes[0].box.low().y,
-		    tempNodes[1].box.low().y,
-		    tempNodes[2].box.low().y,
-		    tempNodes[3].box.low().y);
-    low_z = vfloat4(tempNodes[0].box.low().z,
-		    tempNodes[1].box.low().z,
-		    tempNodes[2].box.low().z,
-		    tempNodes[3].box.low().z);
-    upp_x = vfloat4(tempNodes[0].box.high().x,
-		    tempNodes[1].box.high().x,
-		    tempNodes[2].box.high().x,
-		    tempNodes[3].box.high().x);
-    upp_y = vfloat4(tempNodes[0].box.high().y,
-		    tempNodes[1].box.high().y,
-		    tempNodes[2].box.high().y,
-		    tempNodes[3].box.high().y);
-    upp_z = vfloat4(tempNodes[0].box.high().z,
-		    tempNodes[1].box.high().z,
-		    tempNodes[2].box.high().z,
-		    tempNodes[3].box.high().z);
-
-    float bump = 5e-03;
-    low_x -= bump; low_y -= bump; low_z -= bump;
-    upp_x += bump; upp_y += bump; upp_z += bump;
-
-    this_node->set(low_x, upp_x,
-		   low_y, upp_y,
-		   low_z, upp_z);
-
+    this_node->setBound(0, tempNodes[0].box);
+    this_node->setBound(1, tempNodes[1].box);
+    this_node->setBound(2, tempNodes[2].box);
+    this_node->setBound(3, tempNodes[3].box);
+    
     return;
   }
 
