@@ -11,7 +11,7 @@ void linear_algebra_tests();
 #define CHECK_AFFINESPACE_EQUAL(A, B) check_affinespace_eq( (A), (B) )
 
 
-bool check_affinespace_eq( const AffineSpace& A, const AffineSpace& B ) {
+bool check_affinespace_eq( const AffineSpaceV& A, const AffineSpaceV& B ) {
   
   // verify vector settings
   CHECK_VFLOATREAL_EQUAL(A.l.vx.x, B.l.vx.x);
@@ -44,11 +44,11 @@ int main(int argc, char** argv) {
 void constructor_tests() {
 
   // empty consttructor
-  AffineSpace A;
-  A = AffineSpace();
+  AffineSpaceV A;
+  A = AffineSpaceV();
   
   // zero constructor
-  A = AffineSpace(zero);
+  A = AffineSpaceV(zero);
     
   // expected vector
   vfloat4 zero_vec(zero);
@@ -71,7 +71,7 @@ void constructor_tests() {
   CHECK_VFLOATREAL_EQUAL(zero_vec, A.p.z);
 
   // vector constructor
-  A = AffineSpace(Vec3vfa(1.0, 0.0, 0.0),
+  A = AffineSpaceV(Vec3vfa(1.0, 0.0, 0.0),
 		  Vec3vfa(0.0, 1.0, 0.0),
 		  Vec3vfa(0.0, 0.0, 1.0),
 		  Vec3fa(1.0, 1.0, 1.0));
@@ -95,7 +95,7 @@ void constructor_tests() {
   CHECK_VFLOATREAL_EQUAL(one_vec, A.p.y);
   CHECK_VFLOATREAL_EQUAL(one_vec, A.p.z);
 
-  AffineSpace B = A;
+  AffineSpaceV B = A;
   
   // verify vector settings
   CHECK_VFLOATREAL_EQUAL(one_vec,  B.l.vx.x);
@@ -115,7 +115,7 @@ void constructor_tests() {
   CHECK_VFLOATREAL_EQUAL(one_vec, B.p.z);
 
   // another copy constructor
-  B = AffineSpace(A);
+  B = AffineSpaceV(A);
   
   // verify vector settings
   CHECK_VFLOATREAL_EQUAL(one_vec,  B.l.vx.x);
@@ -142,7 +142,7 @@ void constructor_tests() {
 
   Vec3vfa v(10.0, 10.0, 10.0);
 
-  A = AffineSpace(ls, v);
+  A = AffineSpaceV(ls, v);
 
   vfloat4 pos_two_vec( 2.0);
   vfloat4 neg_one_vec(-1.0);
@@ -171,7 +171,7 @@ void constructor_tests() {
 void operator_tests() {
 
   // vector constructor
-  AffineSpace A = AffineSpace(Vec3vfa(1.0, 0.0, 0.0),
+  AffineSpaceV A = AffineSpaceV(Vec3vfa(1.0, 0.0, 0.0),
 			      Vec3vfa(0.0, 1.0, 0.0),
 			      Vec3vfa(0.0, 0.0, 1.0),
 			      Vec3fa(1.0, 1.0, 1.0));
@@ -202,7 +202,7 @@ void operator_tests() {
 
   // test mult operator
   float mult_val = 5.0f;
-  AffineSpace B = mult_val * A;
+  AffineSpaceV B = mult_val * A;
 
   vfloat4 pos_five_vec(5.0f);
 
@@ -298,7 +298,7 @@ void operator_tests() {
   CHECK_VFLOATREAL_EQUAL(one_fifth, B.p.z);
 
 
-  AffineSpace C;
+  AffineSpaceV C;
 
   // multiply by identity
   C = A * B;
@@ -382,8 +382,7 @@ void operator_tests() {
 
   CHECK_EQUAL(lv.inverse(), C.l);
 
-  CHECK_EQUAL(-lv.inverse()*B.p, C.p);
-  
+  CHECK_EQUAL(-lv.inverse()*B.p, C.p);  
 }
  
 
