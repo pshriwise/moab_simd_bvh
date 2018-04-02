@@ -17,7 +17,7 @@
 
 #define MAX_LEAF_SIZE 8
 
-template <typename V, typename T, typename I>
+template <typename V, typename T, typename I, typename NODE, typename BBOX>
 class BVH {
 
   typedef BVHSettingsT<PrimRef> BVHSettings;
@@ -96,8 +96,8 @@ class BVH {
     assert(!node->isSetLeaf());
     
     // replace this normal root node with a set node
-    AANode *aanode = new AANode();
-    AABB node_box = box_from_node(node);
+    NODE *aanode = new NODE();
+    BBOX node_box = box_from_node(node);
     aanode->setBounds(node_box);
     SetNode* snode = new SetNode(*aanode, setID, fwd, rev);
         
@@ -127,10 +127,10 @@ class BVH {
   inline void split_sets(NodeRef* current_node, size_t split_dim, NodeRef** nodesPtr, size_t numNodes, TempSetNode child_nodes[N]) {
 
     // get the current node's bounds
-    AABB box = current_node->safeNode()->bounds();
+    BBOX box = current_node->safeNode()->bounds();
 
     //create new child bounds
-    AABB boxes[N];
+    BBOX boxes[N];
 
     boxes[0] = box.splitBox(split_dim, 0.00,  0.25);
     boxes[1] = box.splitBox(split_dim, 0.25,  0.50);
@@ -143,11 +143,11 @@ class BVH {
     child_nodes[3].clear();
 
     for(size_t i = 0; i < numNodes; i ++) {
-      AANode* aanode = nodesPtr[i]->safeNode();
+      NODE* aanode = nodesPtr[i]->safeNode();
       bool placed = false;
       
       for(size_t j = 0; j < N; j++){
-	AABB node_box = box_from_node(nodesPtr[i]);
+	BBOX node_box = box_from_node(nodesPtr[i]);
 
 	if( inside( boxes[j], node_box.center() ) ){
 	  placed = true;
@@ -161,8 +161,8 @@ class BVH {
     return;
   }
 
-  inline AABB box_from_nodes(NodeRef** nodesPtr, size_t numNodes) {
-    AABB nodes_box;
+  inline BBOX box_from_nodes(NodeRef** nodesPtr, size_t numNodes) {
+    BBOX nodes_box;
     nodes_box.clear();
     for(size_t i = 0; i < numNodes; i++){
       nodes_box.extend(box_from_node(nodesPtr[i]));
@@ -170,11 +170,11 @@ class BVH {
     return nodes_box;
   }
   
-  inline AABB box_from_node(NodeRef* node) {
+  inline BBOX box_from_node(NodeRef* node) {
     // create a new node that contains all nodes
-    AABB node_box;
+    BBOX node_box;
     if(!node->isLeaf()){
-      AANode* temp_node = node->safeNode();
+      NODE* temp_node = node->safeNode();
       node_box = temp_node->bounds();
     }
     else {
@@ -183,13 +183,19 @@ class BVH {
       P* primIDs = (P*)node->leaf(numPrims);
       for (size_t j = 0; j < numPrims; j++){
 	P t = primIDs[j];
-	Vec3fa lower, upper;
-	t.get_bounds(lower, upper, MDAM);
-	AABB box = AABB(lower, upper);
-	box.bump(box_bump);
-	node_box.update(box);
+		
+	Vec3da pnt;
+	pnt = t.get_point(0, (void*)MDAM);
+	node_box.update(pnt.x, pnt.y, pnt.z);
+	pnt = t.get_point(1, (void*)MDAM);
+	node_box.update(pnt.x, pnt.y, pnt.z);
+	pnt = t.get_point(2, (void*)MDAM);
+	node_box.update(pnt.x, pnt.y, pnt.z);
       }
+      // extend box for safety
+      node_box.bump(box_bump);
     }
+    
     return node_box;
   }
   
@@ -199,7 +205,7 @@ class BVH {
     float best_cost = 1.0;
     float cost;
 
-    AABB node_box = current_node->node()->bounds();
+    BBOX node_box = current_node->node()->bounds();
     // attempt split along each axis
     for(size_t i = 0; i < 3; i++) {
       split_sets(current_node, i, nodesPtr, numNodes, child_nodes);
@@ -233,8 +239,8 @@ class BVH {
       return new NodeRef();
     }
 
-    AANode* aanode = new AANode();
-    AABB box = box_from_nodes(nodesPtr, numNodes);
+    NODE* aanode = new NODE();
+    BBOX box = box_from_nodes(nodesPtr, numNodes);
     aanode->setBounds(box);
     
     NodeRef* this_node = new NodeRef((size_t)aanode);
@@ -266,9 +272,9 @@ class BVH {
 
     for(size_t i = 0; i < N; i++) {
       size_t num_child_prims = child_nodes[i].size();
-      AABB box;
+      BBOX box;
       if(num_child_prims == 0) {
-	box = AABB(0.0f);
+	box = BBOX(0.0f);
       }
       else {
 	for(size_t j = 0; j < num_child_prims; j++) {
@@ -292,7 +298,7 @@ class BVH {
 
     // if no primitives are passed, return a node pointing to emptt leaves
     if(numPrimitives == 0) {
-      AANode *aanode = new AANode();
+      NODE *aanode = new NODE();
       NodeRef* node = new NodeRef((size_t)aanode);
       node->node()->setRef(0,NodeRef());
       node->node()->setRef(1,NodeRef());
@@ -341,8 +347,8 @@ class BVH {
     }
     
     // created a new node and set the bounds
-    AANode* aanode = new AANode();
-    AABB box = AABB((float)inf, (float)neg_inf);
+    NODE* aanode = new NODE();
+    BBOX box = BBOX((float)inf, (float)neg_inf);
     for(size_t i = 0; i < numPrimitives; i++) {
       
       P t = P((I*)MDAM->conn + (primitives[i].primID()*MDAM->element_stride), (I)primitives[i].primitivePtr);
@@ -401,9 +407,9 @@ class BVH {
     int best_dim = -1;
     float cost;
 
-    AANode* this_node = node->node();
+    NODE* this_node = node->node();
 
-    AABB node_box = this_node->bounds();
+    BBOX node_box = this_node->bounds();
 
     size_t np = numPrimitives;
     // split along each axis and get lowest cost
@@ -441,12 +447,12 @@ class BVH {
     assert(split_axis >= 0 && split_axis <= 2);
 
     //get the bounds of the node
-    AABB box((float)inf,(float)neg_inf);
+    BBOX box((float)inf,(float)neg_inf);
 
     box = node->node()->bounds();
         
     //create new child bounds
-    AABB boxes[N];
+    BBOX boxes[N];
 
     boxes[0] = box.splitBox(split_axis, 0.00,  0.25);
     boxes[1] = box.splitBox(split_axis, 0.25,  0.50);
@@ -523,7 +529,7 @@ class BVH {
     
     BuildState tempChildren[N];
     size_t numChildren = 1;
-    AABB bounds = current.prims.bounds();
+    BBOX bounds = current.prims.bounds();
     tempChildren[0] = current;
     for( size_t i = 1; i < numChildren; i++) {
       tempChildren[i] = BuildState(current.depth+1);
@@ -563,10 +569,10 @@ class BVH {
     } while (numChildren < N);
 
     /* get children bounds */
-    AANode* aanode = new AANode();
+    NODE* aanode = new NODE();
     
     for (size_t i = 0; i < numChildren; i++) {
-      AABB b;
+      BBOX b;
       BuildSetT<PrimRef> primitives = tempChildren[i].prims;
       
       for(size_t j = 0; j < primitives.size(); j++) {
@@ -676,7 +682,7 @@ class BVH {
 	    bool nodeIntersected = intersect(cur, vray, ray_near, ray_far, tNear, mask);
 	    
 #ifdef VERBOSE_MODE
-	    AANode* curaa = cur.node();
+	    NODE* curaa = cur.node();
 	    if( !cur.isEmpty() ) std::cout << curaa->bounds() << std::endl;
 	    else std::cout << "EMPTY NODE" << std::endl;
 	    
