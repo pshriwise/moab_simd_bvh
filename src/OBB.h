@@ -21,7 +21,6 @@ struct OBB {
   LinSpace transform;
     
   // constructors
-
   __forceinline OBB() : bbox(AABB()) { }
 
   __forceinline OBB( const Vec3fa& center,
@@ -49,6 +48,18 @@ struct OBB {
     }
     
     return;
+  }
+
+  __forceinline void bump(const float& bump_val) {
+    bbox.bump(bump_val);
+  }
+  
+  __forceinline void clear() {
+    alignedCenter = 0.0;
+    covariance = Matrix3(0.0);
+    transform = LinSpace(zero);
+    num_points = 0; 
+    bbox.clear();
   }
   
   __forceinline void update(const float& x, const float& y, const float& z) {
@@ -117,6 +128,8 @@ struct OBB {
     bbox = other.bbox;
     transform = other.transform;
   }
+
+  
   
   // assignment operator
   __forceinline OBB& operator=( const OBB& other ) {
@@ -147,6 +160,25 @@ struct OBB {
     return inside(bbox, xpnt);
   }
 
+  __forceinline OBB splitBox(const size_t& axis, const float& t_start, const float& t_end ) {
+    OBB ret_box;
+
+    ret_box.bbox = this->bbox;
+
+    ret_box.covariance = Matrix3(0.0);
+    ret_box.num_points = 0;
+    ret_box.alignedCenter = 0.0;
+    
+    Vec3fa box_size;
+
+    box_size = bbox.size();
+    ret_box.bbox.lower[axis] = bbox.lower[axis] + (box_size[axis] * t_start);
+
+    box_size = bbox.size();
+    ret_box.bbox.upper[axis] = bbox.lower[axis] + (box_size[axis] * t_end);
+
+    return ret_box;
+  }
   
 };
 
@@ -160,7 +192,6 @@ __forceinline float volume( const OBB& box) { return reduce_mul(box.size()); }
 __forceinline float halfArea( const OBB& box ) { return halfArea(box.size()); }
 
 __forceinline float area(const OBB& box) { return 2.0f * halfArea(box.size()); }
-
 
 inline bool check_ray_limits(const float  normal_par_pos,
                              const float  normal_par_dir,
