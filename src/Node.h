@@ -319,6 +319,12 @@ struct __aligned(16) UANode : public Node {
     obb.l.vz = Vec3fa(zero);
   }
 
+  __forceinline void setBounds(const OBB& bounds) {
+    for(size_t i = 0; i < N; i++) {
+      setBounds(i, bounds);
+    }
+  }
+  
   __forceinline void setBound(size_t i, const OBB& bounds) {
     assert(i < N);
 
