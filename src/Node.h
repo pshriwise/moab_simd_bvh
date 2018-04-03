@@ -321,7 +321,7 @@ struct __aligned(16) UANode : public Node {
 
   __forceinline void setBounds(const OBB& bounds) {
     for(size_t i = 0; i < N; i++) {
-      setBounds(i, bounds);
+      setBound(i, bounds);
     }
   }
   
