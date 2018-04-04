@@ -207,6 +207,8 @@ __forceinline vfloat4 select(const vbool4& tf, const vfloat4& t, const vfloat4& 
 }
 
 
+__forceinline vfloat4 abs(const vfloat4& a) { return vfloat4( abs(a[0]), abs(a[1]), abs(a[2]), abs(a[3]) ); }
+
 __forceinline vfloat4 maxi(const vfloat4& a, const vfloat4&b, const vfloat4& c) { return maxi(maxi(a,b),c); }
 
 __forceinline vfloat4 maxi(const vfloat4& a, const vfloat4&b, const vfloat4& c, const vfloat4& d) { return maxi(maxi(a,b),c,d); }

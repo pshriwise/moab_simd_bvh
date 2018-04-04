@@ -225,6 +225,8 @@ struct SetNodeT : public AANode {
   
 };
 
+
+
 typedef SetNodeT<unsigned> SetNode;
 
 __forceinline std::ostream& operator<<(std::ostream& cout, const AANode &n) {
@@ -361,6 +363,32 @@ struct __aligned(16) UANode : public Node {
   AffineSpaceV obb;
   
 };
+
+template<typename I>
+struct OSetNodeT : public UANode {
+
+  using::Node::children;
+
+  using::UANode::obb;
+  
+ OSetNodeT(const UANode &uanode,
+	 const I &setid,
+	 const I &fwdID,
+	 const I &revID) :
+  setID(setid),
+    fwdID(fwdID),
+    revID(revID)
+    { obb = uanode.obb;
+      children[0] = uanode.children[0];
+      children[1] = uanode.children[1];
+      children[2] = uanode.children[2];
+      children[3] = uanode.children[3]; }
+  
+  I setID;
+  I fwdID, revID;
+  
+};
+
 
 
 template<typename I>

@@ -36,7 +36,7 @@ struct BuildSettings {
 };
 
 
-typedef TempNodeT <BuildPrimitive> TempNodeBP;
+typedef TempNodeT <BuildPrimitive, AABB> TempNodeBP;
 
 /// leaf encoding ///
 // this function takes in a pointer to
@@ -109,6 +109,8 @@ void* create_leaf(BuildPrimitive* primitives, size_t numPrimitives) {
 
 template <typename T> class BVHBuilder {
 
+  typedef TempNodeT<T, AABB> BuilderTempNode;
+  
  public:
   inline BVHBuilder(createLeafFunc createLeaf = NULL) : maxLeafSize(8), depth(0), maxDepth(BVH_MAX_DEPTH), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0) {}
   
@@ -127,7 +129,7 @@ template <typename T> class BVHBuilder {
   return (void*) encodeLeaf((void*)primitives, numPrimitives - 1);
   }
 
-  void splitNode(NodeRef* node, size_t split_axis, const T* primitives, const size_t numPrimitives, TempNodeT<T> tn[N]) {
+  void splitNode(NodeRef* node, size_t split_axis, const T* primitives, const size_t numPrimitives, BuilderTempNode tn[N]) {
 
     assert(split_axis >= 0 && split_axis <= 2);
 
@@ -213,7 +215,7 @@ template <typename T> class BVHBuilder {
   }
 
 
-  void splitNode(NodeRef* node, const T* primitives, const size_t numPrimitives, TempNodeT<T> tempNodes[N]) {
+  void splitNode(NodeRef* node, const T* primitives, const size_t numPrimitives, BuilderTempNode tempNodes[N]) {
 
     // split node along each axis
     float max_cost = 2.0;
@@ -444,7 +446,7 @@ template <typename T> class BVHBuilder {
     // increment depth and recur here
     aanode->setBounds(box);
     NodeRef* this_node = new NodeRef((size_t)aanode);
-    TempNodeT<T> tempNodes[4];
+    BuilderTempNode tempNodes[4];
     splitNode(this_node, primitives, numPrimitives, tempNodes);
 
 #ifdef VERBOSE_MODE

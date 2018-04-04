@@ -3,14 +3,14 @@
 
 #include "AABB.h"
 
-template <typename T>
+template <typename T, typename BBOX>
 struct TempNodeT {
-  AABB box;
+  BBOX box;
   std::vector<T> prims;
 
-  inline TempNodeT (AABB& b, std::vector<T>& p) : box(b), prims(p) {}
+  inline TempNodeT (BBOX& b, std::vector<T>& p) : box(b), prims(p) {}
   
-  inline TempNodeT() : box(AABB((float)inf,(float)neg_inf)) {}
+  inline TempNodeT() : box(BBOX()) {}
 
   void update_box() {
     box.clear();
