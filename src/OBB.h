@@ -16,7 +16,6 @@ struct OBB {
   // member variables
   AABB bbox;
   Vec3fa box_center;
-  float area;
   Matrix3 covariance;
   LinSpace transform;
     
@@ -62,6 +61,9 @@ struct OBB {
       }
     }
 
+    min -= 1e-06;
+    max += 1e-06;
+    
     Vec3fa mid = 0.5 * (max + min);
     box_center += mid[0] * axes[0] + mid[1] * axes[1] + mid[2] * axes[2];
 
