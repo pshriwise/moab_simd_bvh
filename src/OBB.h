@@ -15,13 +15,13 @@ struct OBB {
 
   // member variables
   AABB bbox;
-  Vec3fa alignedCenter;
-  size_t num_points;
+  Vec3fa box_center;
+  float area;
   Matrix3 covariance;
   LinSpace transform;
     
   // constructors
-  __forceinline OBB() : bbox(AABB()) { }
+  __forceinline OBB() : bbox(AABB()), covariance(0.0), transform(zero) { }
 
   __forceinline OBB( const Vec3fa& center,
 		     const Vec3fa& size,
@@ -30,22 +30,45 @@ struct OBB {
 		     const Vec3fa& axis2) {
     bbox = AABB(center-(0.5*size),center+(0.5*size));
     transform = LinSpace(axis0.normalized(), axis1.normalized(), axis2.normalized()).transpose();
-    num_points = -1; // indicates that there is no history for this OBB
   }
 
-  __forceinline OBB( float *x, float *y, float *z, size_t num_pnts) : bbox(AABB()), num_points(0), covariance(0.0f), transform(zero), alignedCenter(zero) {
+  __forceinline OBB( float *x, float *y, float *z, size_t num_pnts) : bbox(AABB()), covariance(0.0f), transform(zero), box_center(zero) {
     // set the covariance matrix for all points
-    for(int i = 0; i < num_pnts; i++) {
-      update_covariance(x[i], y[i], z[i]);
+    for(size_t i = 0; i < num_pnts; i++) {
+      box_center += Vec3fa(x[i], y[i], z[i]);
+    }
+    box_center /= num_pnts;
+
+    for(size_t i = 0; i < num_pnts; i++) {
+      Vec3fa p = Vec3fa(x[i], y[i], z[i]);
+      p -= box_center;
+      covariance += outer_product(p, p);
     }
 
-    // update the box's oriented axes
-    update_axes();
+    float lambda[3];
+    Vec3fa axes[3];
+    Matrix::EigenDecomp(covariance, lambda, axes);
+
+    axes[0].normalize(); axes[1].normalize(); axes[2].normalize();
     
-    // update the box's extents
-    for(int i = 0; i < num_pnts; i++) {
-      update_extents(x[i], y[i], z[i]);
+    Vec3fa min(inf), max(neg_inf);
+    for(size_t i = 0; i < num_pnts; i++) {
+      Vec3fa p = Vec3fa(x[i],y[i],z[i]);
+      
+      for(size_t j = 0; j < 3; j++) {
+	float t = dot(axes[j], p);
+	if ( t < min[j] ) min[j] = t;
+	if ( t > max[j] ) max[j] = t;
+      }
     }
+
+    Vec3fa mid = 0.5 * (max + min);
+    box_center += mid[0] * axes[0] + mid[1] * axes[1] + mid[2] * axes[2];
+
+    bbox = AABB(min,max);
+    
+    transform = LinSpace(axes[0], axes[1], axes[2]);
+    transform = transform.transpose();
     
     return;
   }
@@ -55,73 +78,72 @@ struct OBB {
   }
   
   __forceinline void clear() {
-    alignedCenter = 0.0;
+    box_center = 0.0;
     covariance = Matrix3(0.0);
     transform = LinSpace(zero);
-    num_points = 0; 
     bbox.clear();
   }
   
-  __forceinline void update(const float& x, const float& y, const float& z) {
-    Vec3fa point(z,y,z);
-    update(point);
-    return;
-  }
+  /* __forceinline void update(const float& x, const float& y, const float& z) { */
+  /*   Vec3fa point(z,y,z); */
+  /*   update(point); */
+  /*   return; */
+  /* } */
 
-  __forceinline void update(const Vec3fa& pnt) {
-    update_covariance(pnt);
-    update_axes();
-    update_extents(pnt);
-    return;
-  }
+  /* __forceinline void update(const Vec3fa& pnt) { */
+  /*   update_covariance(pnt); */
+  /*   update_axes(); */
+  /*   update_extents(pnt); */
+  /*   return; */
+  /* } */
 
-  __forceinline void update_covariance(const float& x, const float& y, const float& z) {
-    Vec3fa point(x,y,z);
-    update_covariance(point);
-    return;
-  }
+  /* __forceinline void update_covariance(const float& x, const float& y, const float& z) { */
+  /*   Vec3fa point(x,y,z); */
+  /*   update_covariance(point); */
+  /*   return; */
+  /* } */
 
-  __forceinline void update_covariance(const Vec3fa& pnt) {
+  /* __forceinline void update_covariance(const Vec3fa& pnt) { */
     
-    // update axis-aligned center
-    alignedCenter = (num_points * alignedCenter);
-    alignedCenter += pnt;
-    num_points++;
-    alignedCenter = alignedCenter / num_points;
+  /*   // update axis-aligned box_center */
+  /*   box_center = ((float)num_points * box_center); */
+  /*   box_center += pnt; */
+  /*   num_points++; */
+  /*   box_center = box_center / (float)num_points; */
     
-    // update the covariance matrix
-    Vec3fa v = pnt - alignedCenter;
-    covariance += outer_product(v,v);
+  /*   // update the covariance matrix */
+  /*   Vec3fa v = pnt - box_center; */
+  /*   covariance += outer_product(v,v); */
     
-    return;
-  }
+  /*   return; */
+  /* } */
 
-  __forceinline void update_axes() {
+  /* __forceinline void update_axes() { */
     
-    // perform the Eigenvalue decomposition to determine the oriented axes
-    float l[3];
-    Vec3fa ax0, ax1, ax2;
-    Matrix::EigenDecomp(covariance, l, ax0, ax1, ax2);
+  /*   // perform the Eigenvalue decomposition to determine the oriented axes */
+  /*   float l[3]; */
+  /*   Vec3fa ax0, ax1, ax2; */
+  /*   Matrix::EigenDecomp(covariance, l, ax0, ax1, ax2); */
 
-    // normalize axes, extents are stored separately
-    ax0.normalize(); ax1.normalize(); ax2.normalize();
+  /*   // normalize axes, extents are stored separately */
+  /*   ax0.normalize(); ax1.normalize(); ax2.normalize(); */
     
-    transform = LinSpace(ax0, ax1, ax2);
-    transform = transform.transpose();
+  /*   transform = LinSpace(ax0, ax1, ax2); */
+  /*   transform = transform.transpose(); */
     
-    return;
-  }
+  /*   return; */
+  /* } */
 
-  __forceinline void update_extents(const float& x, const float& y, const float& z) {
-    Vec3fa point(x,y,z);
-    update_extents(point);
-    return;
-  }
+  /* __forceinline void update_extents(const float& x, const float& y, const float& z) { */
+  /*   Vec3fa point(x,y,z); */
+  /*   update_extents(point); */
+  /*   return; */
+  /* } */
   
-  __forceinline void update_extents(const Vec3fa& pnt) {
-    Vec3fa p = xfmPnt(transform, pnt);
-    bbox.update(p.x, p.y, p.z);    
-  }
+  /* __forceinline void update_extents(const Vec3fa& pnt) { */
+  /*   Vec3fa p = xfmPnt(transform, pnt); */
+  /*   bbox.update(p.x, p.y, p.z);     */
+  /* } */
   
   // copy constructor
   __forceinline OBB ( const OBB& other ) {
@@ -163,11 +185,11 @@ struct OBB {
   __forceinline OBB splitBox(const size_t& axis, const float& t_start, const float& t_end ) {
     OBB ret_box;
 
+    ret_box.transform = this->transform;
     ret_box.bbox = this->bbox;
 
     ret_box.covariance = Matrix3(0.0);
-    ret_box.num_points = 0;
-    ret_box.alignedCenter = 0.0;
+    ret_box.box_center = 0.0;
     
     Vec3fa box_size;
 
@@ -176,7 +198,7 @@ struct OBB {
 
     box_size = bbox.size();
     ret_box.bbox.upper[axis] = bbox.lower[axis] + (box_size[axis] * t_end);
-
+    
     return ret_box;
   }
   

@@ -10,10 +10,12 @@ enum BVH_HEURISTIC { ENTITY_RATIO_HEURISTIC = 0,
 		     SURFACE_AREA_HEURISTIC };
 
 
-template<typename T>
+template<typename T, typename BBOX>
 struct BVHSettingsT {
 
-  float (*evaluate_cost)(TempNodeT<T> tempNodes[N], const AABB &node_box, const size_t &numPrimitives);
+  typedef TempNodeT<T, BBOX> SettingsTempNode;
+  
+  float (*evaluate_cost)(SettingsTempNode tempNodes[N], const BBOX &node_box, const size_t &numPrimitives);
   
   // constructor
   BVHSettingsT() {
@@ -22,7 +24,7 @@ struct BVHSettingsT {
   }
 
   // implementation of the entity ratio heuristic (QUAD TREE ONLY RN)
-  static float entity_ratio_heuristic(TempNodeT<T> tempNodes[N], const AABB &node_box, const size_t &numPrimitives) {
+  static float entity_ratio_heuristic(SettingsTempNode tempNodes[N], const BBOX &node_box, const size_t &numPrimitives) {
     float cost = abs(abs(tempNodes[0].size() - tempNodes[1].size()) - abs(tempNodes[2].size() - tempNodes[3].size()));
     int total = 0;
     for(size_t i = 0; i < N; i++){ total += tempNodes[i].size(); }
@@ -30,7 +32,7 @@ struct BVHSettingsT {
   }
 
   // implementation of the surface area heuristic
-  static float surface_area_heuristic(TempNodeT<T> tempNodes[N], const AABB &node_box, const size_t &numPrimitives) {
+  static float surface_area_heuristic(SettingsTempNode tempNodes[N], const BBOX &node_box, const size_t &numPrimitives) {
     float cost = 0;
     for(size_t i = 0; i < N; i++) {
       cost += tempNodes[i].sah_contribution();

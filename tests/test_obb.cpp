@@ -23,10 +23,12 @@ int main( int argc, char** argv) {
   property_tests();
   // test intersections with box
   ray_intersection_tests();
+
+  update_obb_tests();
   // test proper construction
   construction_tests();
   // update tests
-  update_obb_tests();
+
   
   return 0;
 }
@@ -230,26 +232,26 @@ void update_obb_tests() {
 
   x.push_back( 0.0); y.push_back( 0.0); z.push_back( 0.0);
   x.push_back(10.0); y.push_back( 0.0); z.push_back( 0.0);
-  x.push_back(10.0); y.push_back(10.0); z.push_back( 0.0);
-  x.push_back( 0.0); y.push_back(10.0); z.push_back( 0.0);
-  x.push_back( 0.0); y.push_back( 0.0); z.push_back(10.0);
-  x.push_back(10.0); y.push_back( 0.0); z.push_back(10.0);
-  x.push_back(10.0); y.push_back(10.0); z.push_back(10.0);
-  x.push_back( 0.0); y.push_back(10.0); z.push_back(10.0);
+  x.push_back(10.0); y.push_back(5.0); z.push_back( 0.0);
+  x.push_back( 0.0); y.push_back(5.0); z.push_back( 0.0);
+  x.push_back( 0.0); y.push_back( 0.0); z.push_back(1.0);
+  x.push_back(10.0); y.push_back( 0.0); z.push_back(1.0);
+  x.push_back(10.0); y.push_back(5.0); z.push_back(1.0);
+  x.push_back( 0.0); y.push_back(5.0); z.push_back(1.0);
 
   OBB box(&x.front(), &y.front(), &z.front(), x.size());
 
-  Vec3fa test_pnt(5.0);
+  Vec3fa test_pnt(0.5);
   CHECK(box.point_in_box(test_pnt));
 
-  // update with a new point that is outside of the box
-  test_pnt = Vec3fa(15.0);
+  // // update with a new point that is outside of the box
+  // test_pnt = Vec3fa(15.0);
 
-  CHECK(!box.point_in_box(test_pnt));
-  box.update(test_pnt);
-  CHECK(box.point_in_box(test_pnt));
+  // CHECK(!box.point_in_box(test_pnt));
+  // box.update(test_pnt);
+  // CHECK(box.point_in_box(test_pnt));
 
-  test_pnt = Vec3fa(15.1);
-  CHECK(!box.point_in_box(test_pnt));
+  // test_pnt = Vec3fa(15.1);
+  // CHECK(!box.point_in_box(test_pnt));
   
 }

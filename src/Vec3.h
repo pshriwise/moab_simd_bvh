@@ -171,9 +171,9 @@ __forceinline T halfArea(Vec3<T> v) { return v.x*(v.y+v.z)+(v.y*v.z); }
 template<typename T>
 __forceinline Vec3<T> zero_fix( const Vec3<T>& a )
   {
-    return Vec3<T>(fabs(a.x) < min_rcp_input ? T(min_rcp_input) : a.x,
-                   fabs(a.y) < min_rcp_input ?  T(min_rcp_input) : a.y,
-                   fabs(a.z) < min_rcp_input ? T(min_rcp_input) : a.z);
+    return Vec3<T>( select(abs(a.x) < min_rcp_input, T(min_rcp_input), a.x),
+                    select(abs(a.y) < min_rcp_input, T(min_rcp_input), a.y),
+                    select(abs(a.z) < min_rcp_input, T(min_rcp_input), a.z) );
   }
 
 

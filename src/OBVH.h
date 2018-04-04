@@ -18,15 +18,15 @@
 #define MAX_LEAF_SIZE 8
 
 template <typename V, typename T, typename I>
-class BVH {
+class OBVH {
 
-  typedef BVHSettingsT<PrimRef, AABB> BVHSettings;
-  typedef BVHSettingsT<NodeRef*, AABB> BVHJoinTreeSettings;
+  typedef BVHSettingsT<PrimRef, OBB> BVHSettings;
+  typedef BVHSettingsT<NodeRef*, OBB> BVHJoinTreeSettings;
 
-  typedef SetNodeT<I> SetNode;
+  typedef OSetNodeT<I> SetNode;
   
-  typedef TempNodeT<PrimRef, AABB> TempPrimNode;
-  typedef TempNodeT<NodeRef*, AABB> TempSetNode;
+  typedef TempNodeT<PrimRef, OBB> TempPrimNode;
+  typedef TempNodeT<NodeRef*, OBB> TempSetNode;
 
   typedef BuildStateT<PrimRef> BuildState;
 
@@ -43,12 +43,11 @@ class BVH {
   static void no_filter(Ray &ray, void* mesh_ptr) { return; };
 
  public:
-  inline BVH(MOABDirectAccessManager *mdam) : MDAM(mdam), maxLeafSize(8), depth(0), maxDepth(BVH_MAX_DEPTH), num_stored(0), filter(&no_filter)
+  inline OBVH(MOABDirectAccessManager *mdam) : MDAM(mdam), maxLeafSize(8), depth(0), maxDepth(BVH_MAX_DEPTH), num_stored(0), filter(&no_filter)
     {
       std::vector<P> storage_vec(MDAM->num_elements);
       leaf_sequence_storage = storage_vec;
       //      leaf_sequence_storage.resize(MDAM->num_elements);
-
       box_bump = 5e-03;
     }
      
@@ -90,209 +89,209 @@ class BVH {
     return new NodeRef((size_t)prim_arr | (tyLeaf + num));
   }
   
-  inline void makeSetNode(NodeRef* node, I setID, I fwd = 0, I rev = 0) {
+  /* inline void makeSetNode(NodeRef* node, I setID, I fwd = 0, I rev = 0) { */
 
-    //make sure this isn't already a set node
-    assert(!node->isSetLeaf());
+  /*   //make sure this isn't already a set node */
+  /*   assert(!node->isSetLeaf()); */
     
-    // replace this normal root node with a set node
-    AANode *aanode = new AANode();
-    AABB node_box = box_from_node(node);
-    aanode->setBounds(node_box);
-    SetNode* snode = new SetNode(*aanode, setID, fwd, rev);
+  /*   // replace this normal root node with a set node */
+  /*   UANode *aanode = new UANode(); */
+  /*   OBB node_box = box_from_node(node); */
+  /*   aanode->setBounds(node_box); */
+  /*   SetNode* snode = new SetNode(*aanode, setID, fwd, rev); */
         
-    if( node->isLeaf() ) {
-      snode->setRef(0,*node);
-      snode->setRef(1,NodeRef());
-      snode->setRef(2,NodeRef());
-      snode->setRef(3,NodeRef());
-    }
-    else {
-      snode->setRef(0,node->node()->child(0));
-      snode->setRef(1,node->node()->child(1));
-      snode->setRef(2,node->node()->child(2));
-      snode->setRef(3,node->node()->child(3));
-      delete node->node();
-    }
+  /*   if( node->isLeaf() ) { */
+  /*     snode->setRef(0,*node); */
+  /*     snode->setRef(1,NodeRef()); */
+  /*     snode->setRef(2,NodeRef()); */
+  /*     snode->setRef(3,NodeRef()); */
+  /*   } */
+  /*   else { */
+  /*     snode->setRef(0,node->node()->child(0)); */
+  /*     snode->setRef(1,node->node()->child(1)); */
+  /*     snode->setRef(2,node->node()->child(2)); */
+  /*     snode->setRef(3,node->node()->child(3)); */
+  /*     delete node->node(); */
+  /*   } */
     
-    node->setPtr((size_t)snode | setLeafAlign);
+  /*   node->setPtr((size_t)snode | setLeafAlign); */
 
-    return;
-  }
+  /*   return; */
+  /* } */
   
   inline void* createLeaf(P* primitives, size_t numPrimitives) {
     return (void*) encodeLeaf((void*)primitives, numPrimitives - 1);
   }
 
-  inline void split_sets(NodeRef* current_node, size_t split_dim, NodeRef** nodesPtr, size_t numNodes, TempSetNode child_nodes[N]) {
+  /* inline void split_sets(NodeRef* current_node, size_t split_dim, NodeRef** nodesPtr, size_t numNodes, TempSetNode child_nodes[N]) { */
 
-    // get the current node's bounds
-    AABB box = current_node->safeNode()->bounds();
+  /*   // get the current node's bounds */
+  /*   OBB box = current_node->safeNode()->bounds(); */
 
-    //create new child bounds
-    AABB boxes[N];
+  /*   //create new child bounds */
+  /*   OBB boxes[N]; */
 
-    boxes[0] = box.splitBox(split_dim, 0.00,  0.25);
-    boxes[1] = box.splitBox(split_dim, 0.25,  0.50);
-    boxes[2] = box.splitBox(split_dim, 0.50,  0.75);
-    boxes[3] = box.splitBox(split_dim, 0.75,  1.00);
+  /*   boxes[0] = box.splitBox(split_dim, 0.00,  0.25); */
+  /*   boxes[1] = box.splitBox(split_dim, 0.25,  0.50); */
+  /*   boxes[2] = box.splitBox(split_dim, 0.50,  0.75); */
+  /*   boxes[3] = box.splitBox(split_dim, 0.75,  1.00); */
 
-    child_nodes[0].clear();
-    child_nodes[1].clear();
-    child_nodes[2].clear();
-    child_nodes[3].clear();
+  /*   child_nodes[0].clear(); */
+  /*   child_nodes[1].clear(); */
+  /*   child_nodes[2].clear(); */
+  /*   child_nodes[3].clear(); */
 
-    for(size_t i = 0; i < numNodes; i ++) {
-      AANode* aanode = nodesPtr[i]->safeNode();
-      bool placed = false;
+  /*   for(size_t i = 0; i < numNodes; i ++) { */
+  /*     UANode* aanode = nodesPtr[i]->safeNode(); */
+  /*     bool placed = false; */
       
-      for(size_t j = 0; j < N; j++){
-	AABB node_box = box_from_node(nodesPtr[i]);
+  /*     for(size_t j = 0; j < N; j++){ */
+  /* 	OBB node_box = box_from_node(nodesPtr[i]); */
 
-	if( inside( boxes[j], node_box.center() ) ){
-	  placed = true;
-	  child_nodes[j].push_back(nodesPtr[i]);
-	  break;
-	}
-      }
-      assert(placed);
-    }
+  /* 	if( inside( boxes[j], node_box.center() ) ){ */
+  /* 	  placed = true; */
+  /* 	  child_nodes[j].push_back(nodesPtr[i]); */
+  /* 	  break; */
+  /* 	} */
+  /*     } */
+  /*     assert(placed); */
+  /*   } */
 
-    return;
-  }
+  /*   return; */
+  /* } */
 
-  inline AABB box_from_nodes(NodeRef** nodesPtr, size_t numNodes) {
-    AABB nodes_box;
-    nodes_box.clear();
-    for(size_t i = 0; i < numNodes; i++){
-      nodes_box.extend(box_from_node(nodesPtr[i]));
-    }
-    return nodes_box;
-  }
+  /* inline OBB box_from_nodes(NodeRef** nodesPtr, size_t numNodes) { */
+  /*   OBB nodes_box; */
+  /*   nodes_box.clear(); */
+  /*   for(size_t i = 0; i < numNodes; i++){ */
+  /*     nodes_box.extend(box_from_node(nodesPtr[i])); */
+  /*   } */
+  /*   return nodes_box; */
+  /* } */
   
-  inline AABB box_from_node(NodeRef* node) {
-    // create a new node that contains all nodes
-    AABB node_box;
-    if(!node->isLeaf()){
-      AANode* temp_node = node->safeNode();
-      node_box = temp_node->bounds();
-    }
-    else {
-      // get the primitives
-      size_t numPrims;
-      P* primIDs = (P*)node->leaf(numPrims);
-      for (size_t j = 0; j < numPrims; j++){
-	P t = primIDs[j];
-	Vec3fa lower, upper;
-	t.get_bounds(lower, upper, MDAM);
-	AABB box = AABB(lower, upper);
-	box.bump(box_bump);
-	node_box.update(box);
-      }
-    }
-    return node_box;
-  }
+  /* inline OBB box_from_node(NodeRef* node) { */
+  /*   // create a new node that contains all nodes */
+  /*   OBB node_box; */
+  /*   if(!node->isLeaf()){ */
+  /*     UANode* temp_node = node->safeNode(); */
+  /*     node_box = temp_node->bounds(); */
+  /*   } */
+  /*   else { */
+  /*     // get the primitives */
+  /*     size_t numPrims; */
+  /*     P* primIDs = (P*)node->leaf(numPrims); */
+  /*     for (size_t j = 0; j < numPrims; j++){ */
+  /* 	P t = primIDs[j]; */
+  /* 	Vec3fa lower, upper; */
+  /* 	t.get_bounds(lower, upper, MDAM); */
+  /* 	OBB box = OBB(lower, upper); */
+  /* 	box.bump(box_bump); */
+  /* 	node_box.update(box); */
+  /*     } */
+  /*   } */
+  /*   return node_box; */
+  /* } */
   
-  inline void split_sets(NodeRef* current_node, NodeRef** nodesPtr, size_t numNodes, TempSetNode child_nodes[N], BVHJoinTreeSettings* settings) {
+  /* inline void split_sets(NodeRef* current_node, NodeRef** nodesPtr, size_t numNodes, TempSetNode child_nodes[N], BVHJoinTreeSettings* settings) { */
 
-    int best_dim;
-    float best_cost = 1.0;
-    float cost;
+  /*   int best_dim; */
+  /*   float best_cost = 1.0; */
+  /*   float cost; */
 
-    AABB node_box = current_node->node()->bounds();
-    // attempt split along each axis
-    for(size_t i = 0; i < 3; i++) {
-      split_sets(current_node, i, nodesPtr, numNodes, child_nodes);
-      cost = settings->evaluate_cost(child_nodes, node_box, numNodes);      
-      if ( cost <= best_cost ) {
-	best_cost = cost;
-	best_dim = i;
-      }
-    }
+  /*   OBB node_box = current_node->node()->bounds(); */
+  /*   // attempt split along each axis */
+  /*   for(size_t i = 0; i < 3; i++) { */
+  /*     split_sets(current_node, i, nodesPtr, numNodes, child_nodes); */
+  /*     cost = settings->evaluate_cost(child_nodes, node_box, numNodes);       */
+  /*     if ( cost <= best_cost ) { */
+  /* 	best_cost = cost; */
+  /* 	best_dim = i; */
+  /*     } */
+  /*   } */
 
-    split_sets(current_node, best_dim, nodesPtr, numNodes, child_nodes);
+  /*   split_sets(current_node, best_dim, nodesPtr, numNodes, child_nodes); */
 
-    return;
+  /*   return; */
     
-  }
+  /* } */
 
-  inline NodeRef* join_trees( std::vector<NodeRef*> nodes, BVHJoinTreeSettings* settings = NULL) {
-    if(!settings) settings = new BVHJoinTreeSettings();
-    settings->set_heuristic(ENTITY_RATIO_HEURISTIC);
+  /* inline NodeRef* join_trees( std::vector<NodeRef*> nodes, BVHJoinTreeSettings* settings = NULL) { */
+  /*   if(!settings) settings = new BVHJoinTreeSettings(); */
+  /*   settings->set_heuristic(ENTITY_RATIO_HEURISTIC); */
     
-    return join_trees( &(nodes[0]), (size_t)nodes.size(), settings );
-  }
+  /*   return join_trees( &(nodes[0]), (size_t)nodes.size(), settings ); */
+  /* } */
   
-  inline NodeRef* join_trees(NodeRef** nodesPtr, size_t numNodes, BVHJoinTreeSettings* settings) {
+  /* inline NodeRef* join_trees(NodeRef** nodesPtr, size_t numNodes, BVHJoinTreeSettings* settings) { */
     
-    if (numNodes == 1) {
-      return nodesPtr[0];
-    }
+  /*   if (numNodes == 1) { */
+  /*     return nodesPtr[0]; */
+  /*   } */
 
-    if (numNodes == 0) {
-      return new NodeRef();
-    }
+  /*   if (numNodes == 0) { */
+  /*     return new NodeRef(); */
+  /*   } */
 
-    AANode* aanode = new AANode();
-    AABB box = box_from_nodes(nodesPtr, numNodes);
-    aanode->setBounds(box);
+  /*   UANode* aanode = new UANode(); */
+  /*   OBB box = box_from_nodes(nodesPtr, numNodes); */
+  /*   aanode->setBounds(box); */
     
-    NodeRef* this_node = new NodeRef((size_t)aanode);
+  /*   NodeRef* this_node = new NodeRef((size_t)aanode); */
     
-    TempSetNode child_nodes[N];
-    split_sets(this_node, nodesPtr, numNodes, child_nodes, settings);
+  /*   TempSetNode child_nodes[N]; */
+  /*   split_sets(this_node, nodesPtr, numNodes, child_nodes, settings); */
 
-    // need arbitrary split check here
-    for(size_t i = 0; i < N; i++) {
-      if (child_nodes[i].size() == numNodes) {
-	child_nodes[0].clear();
-	child_nodes[1].clear();
-	child_nodes[2].clear();
-	child_nodes[3].clear();
-	//arb split
-	int i = 0;
-	NodeRef** it = nodesPtr;
-	NodeRef** end = nodesPtr+(numNodes
-				  );
-	while(it != end) {
-	  child_nodes[i].push_back(*it);
-	  i++;
-	  it++;
-	  if (i == N) { i = 0; }
-	}
-	break;
-      }
-    }
+  /*   // need arbitrary split check here */
+  /*   for(size_t i = 0; i < N; i++) { */
+  /*     if (child_nodes[i].size() == numNodes) { */
+  /* 	child_nodes[0].clear(); */
+  /* 	child_nodes[1].clear(); */
+  /* 	child_nodes[2].clear(); */
+  /* 	child_nodes[3].clear(); */
+  /* 	//arb split */
+  /* 	int i = 0; */
+  /* 	NodeRef** it = nodesPtr; */
+  /* 	NodeRef** end = nodesPtr+(numNodes */
+  /* 				  ); */
+  /* 	while(it != end) { */
+  /* 	  child_nodes[i].push_back(*it); */
+  /* 	  i++; */
+  /* 	  it++; */
+  /* 	  if (i == N) { i = 0; } */
+  /* 	} */
+  /* 	break; */
+  /*     } */
+  /*   } */
 
-    for(size_t i = 0; i < N; i++) {
-      size_t num_child_prims = child_nodes[i].size();
-      AABB box;
-      if(num_child_prims == 0) {
-	box = AABB(0.0f);
-      }
-      else {
-	for(size_t j = 0; j < num_child_prims; j++) {
-	  box.update(child_nodes[i].prims[j]->safeNode()->bounds());
-	}
-      }
-      assert(box.isValid());
-      aanode->setBound(i, box);
-    }
+  /*   for(size_t i = 0; i < N; i++) { */
+  /*     size_t num_child_prims = child_nodes[i].size(); */
+  /*     OBB box; */
+  /*     if(num_child_prims == 0) { */
+  /* 	box = OBB(0.0f); */
+  /*     } */
+  /*     else { */
+  /* 	for(size_t j = 0; j < num_child_prims; j++) { */
+  /* 	  box.update(child_nodes[i].prims[j]->safeNode()->bounds()); */
+  /* 	} */
+  /*     } */
+  /*     assert(box.isValid()); */
+  /*     aanode->setBound(i, box); */
+  /*   } */
     
-    for(size_t i = 0; i < N; i++) {
-      NodeRef* child_node = join_trees(child_nodes[i].prims, settings);
-      aanode->setRef(i, *child_node);
-    }
+  /*   for(size_t i = 0; i < N; i++) { */
+  /*     NodeRef* child_node = join_trees(child_nodes[i].prims, settings); */
+  /*     aanode->setRef(i, *child_node); */
+  /*   } */
 
-    return this_node;
-  }
+  /*   return this_node; */
+  /* } */
 
   inline NodeRef* Build(I* id, size_t numPrimitives, BVHSettings* settings = NULL) {
     // create BuildState of PrimitiveReferences
 
     // if no primitives are passed, return a node pointing to emptt leaves
     if(numPrimitives == 0) {
-      AANode *aanode = new AANode();
+      UANode *aanode = new UANode();
       NodeRef* node = new NodeRef((size_t)aanode);
       node->node()->setRef(0,NodeRef());
       node->node()->setRef(1,NodeRef());
@@ -341,21 +340,23 @@ class BVH {
     }
     
     // created a new node and set the bounds
-    AANode* aanode = new AANode();
-    AABB box = AABB((float)inf, (float)neg_inf);
-    for(size_t i = 0; i < numPrimitives; i++) {
+    UANode* aanode = new UANode();
+    
+    std::vector<float> x,y,z;
+    for(size_t i = 0; i < current.size(); i++) {
       
-      P t = P((I*)MDAM->conn + (primitives[i].primID()*MDAM->element_stride), (I)primitives[i].primitivePtr);
-
+      P t = P((I*)MDAM->conn + (current.prims[i].primID()*MDAM->element_stride), (I)current.prims[i].primitivePtr);
+      
       Vec3da pnt;
       pnt = t.get_point(0, (void*)MDAM);
-      box.update(pnt.x, pnt.y, pnt.z);
+      x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
       pnt = t.get_point(1, (void*)MDAM);
-      box.update(pnt.x, pnt.y, pnt.z);
+      x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
       pnt = t.get_point(2, (void*)MDAM);
-      box.update(pnt.x, pnt.y, pnt.z);
-      
+      x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
     }
+    
+    OBB box = OBB(&(x.front()), &(y.front()), &(z.front()), current.size());
 
     // extend box 
     box.bump(box_bump);
@@ -401,9 +402,23 @@ class BVH {
     int best_dim = -1;
     float cost;
 
-    AANode* this_node = node->node();
+    UANode* this_node = node->uanode();
 
-    AABB node_box = this_node->bounds();
+    std::vector<float> x,y,z;
+    for(size_t i = 0; i < numPrimitives; i++) {
+
+      P t = P((I*)MDAM->conn + (primitives[i].primID()*MDAM->element_stride), (I)primitives[i].primitivePtr);
+
+      Vec3da pnt;
+      pnt = t.get_point(0, (void*)MDAM);
+      x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
+      pnt = t.get_point(1, (void*)MDAM);
+      x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
+      pnt = t.get_point(2, (void*)MDAM);
+      x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
+    }
+
+    OBB node_box = OBB(&(x.front()), &(y.front()), &(z.front()), numPrimitives);
 
     size_t np = numPrimitives;
     // split along each axis and get lowest cost
@@ -411,7 +426,7 @@ class BVH {
       splitNode(node, i, primitives, numPrimitives, tempNodes);
       //compute the SAH cost of this node split
       cost = settings->evaluate_cost(tempNodes, node_box, np);
-      assert(cost >= min_cost && cost <= max_cost);
+      //      assert(cost >= min_cost && cost <= max_cost);
       // update cost
       if (cost < best_cost) {
 	best_cost = cost;
@@ -440,13 +455,28 @@ class BVH {
 
     assert(split_axis >= 0 && split_axis <= 2);
 
-    //get the bounds of the node
-    AABB box((float)inf,(float)neg_inf);
+    std::vector<float> x,y,z;
+    for(size_t i = 0; i < numPrimitives; i++) {
 
-    box = node->node()->bounds();
+      
+      P t = P((I*)MDAM->conn + (primitives[i].primID()*MDAM->element_stride), (I)primitives[i].primitivePtr);
+      
+      Vec3da pnt;
+      pnt = t.get_point(0, (void*)MDAM);
+      x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
+      pnt = t.get_point(1, (void*)MDAM);
+      x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
+      pnt = t.get_point(2, (void*)MDAM);
+      x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
+      /* Vec3fa fpnt = primitives[i].center(); */
+      /* x.push_back(fpnt.x); y.push_back(fpnt.y); z.push_back(fpnt.z); */
+    }
+    
+    OBB box = OBB(&(x.front()), &(y.front()), &(z.front()), numPrimitives);
+
         
     //create new child bounds
-    AABB boxes[N];
+    OBB boxes[N];
 
     boxes[0] = box.splitBox(split_axis, 0.00,  0.25);
     boxes[1] = box.splitBox(split_axis, 0.25,  0.50);
@@ -470,20 +500,34 @@ class BVH {
 
 	  P t = P((I*)MDAM->conn + (p->primID()*MDAM->element_stride), (I)p->primitivePtr);
 
-	  Vec3da pnt;
-	  pnt = t.get_point(0, (void*)MDAM);
-	  tn[j].box.update(pnt.x, pnt.y, pnt.z);
-	  pnt = t.get_point(1, (void*)MDAM);
-	  tn[j].box.update(pnt.x, pnt.y, pnt.z);
-	  pnt = t.get_point(2, (void*)MDAM);
-	  tn[j].box.update(pnt.x, pnt.y, pnt.z);
-
 	  break;
 	}
       }
       assert(placed);
     }
 
+
+    for(size_t i = 0; i < N; i++) {
+      TempPrimNode this_temp_node = tn[i];
+
+      std::vector<float> x,y,z;
+      for(size_t j = 0; j < this_temp_node.prims.size(); j++) {
+		
+	P t = P((I*)MDAM->conn + (this_temp_node.prims[j].primID()*MDAM->element_stride), (I)this_temp_node.prims[j].primitivePtr);
+	
+	Vec3da pnt;
+	pnt = t.get_point(0, (void*)MDAM);
+	x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
+	pnt = t.get_point(1, (void*)MDAM);
+	x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
+	pnt = t.get_point(2, (void*)MDAM);
+	x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
+      }
+      
+      tn[i].box = OBB(&(x.front()), &(y.front()), &(z.front()), this_temp_node.prims.size());
+
+    }
+    
     return;
   }
 
@@ -523,7 +567,24 @@ class BVH {
     
     BuildState tempChildren[N];
     size_t numChildren = 1;
-    AABB bounds = current.prims.bounds();
+
+    std::vector<float> x,y,z;
+    for(size_t i = 0; i < current.prims.size(); i++) {
+
+      
+      P t = P((I*)MDAM->conn + (current.prims[i].primID()*MDAM->element_stride), (I)current.prims[i].primitivePtr);
+      
+      Vec3da pnt;
+      pnt = t.get_point(0, (void*)MDAM);
+      x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
+      pnt = t.get_point(1, (void*)MDAM);
+      x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
+      pnt = t.get_point(2, (void*)MDAM);
+      x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
+    }
+    
+    OBB bounds = OBB(&(x.front()), &(y.front()), &(z.front()), current.prims.size());
+
     tempChildren[0] = current;
     for( size_t i = 1; i < numChildren; i++) {
       tempChildren[i] = BuildState(current.depth+1);
@@ -563,26 +624,26 @@ class BVH {
     } while (numChildren < N);
 
     /* get children bounds */
-    AANode* aanode = new AANode();
+    UANode* aanode = new UANode();
     
     for (size_t i = 0; i < numChildren; i++) {
-      AABB b;
       BuildSetT<PrimRef> primitives = tempChildren[i].prims;
-      
-      for(size_t j = 0; j < primitives.size(); j++) {
 
-	P t = P((I*)MDAM->conn + (primitives[j].primID()*MDAM->element_stride), (I)primitives[j].primitivePtr);
-
+      std::vector<float> x,y,z;
+      for(size_t i = 0; i < primitives.size(); i++) {
+	
+	P t = P((I*)MDAM->conn + (primitives[i].primID()*MDAM->element_stride), (I)primitives[i].primitivePtr);
+	
 	Vec3da pnt;
 	pnt = t.get_point(0, (void*)MDAM);
-	b.update(pnt.x, pnt.y, pnt.z);
+	x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
 	pnt = t.get_point(1, (void*)MDAM);
-	b.update(pnt.x, pnt.y, pnt.z);
+	x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
 	pnt = t.get_point(2, (void*)MDAM);
-	b.update(pnt.x, pnt.y, pnt.z);
-	  
+	x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
       }
-
+      
+      OBB b = OBB(&(x.front()), &(y.front()), &(z.front()), current.size());
 
       b.bump(box_bump);
       
@@ -634,7 +695,7 @@ class BVH {
 
   static inline bool intersect(NodeRef& node, const TravRay& ray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& dist, size_t& mask) {
     if(node.isLeaf() || node.isSetLeaf() ) return false;
-    mask = intersectBox<I>(*node.node(),ray,tnear,tfar,dist);
+    mask = intersectBox<I>(*node.uanode(),ray,tnear,tfar,dist);
     return true;
   }
 
@@ -676,7 +737,7 @@ class BVH {
 	    bool nodeIntersected = intersect(cur, vray, ray_near, ray_far, tNear, mask);
 	    
 #ifdef VERBOSE_MODE
-	    AANode* curaa = cur.node();
+	    UANode* curaa = cur.uanode();
 	    if( !cur.isEmpty() ) std::cout << curaa->bounds() << std::endl;
 	    else std::cout << "EMPTY NODE" << std::endl;
 	    
@@ -684,7 +745,7 @@ class BVH {
 	      std::cout << "INTERIOR NODE" << std::endl;
 	      std::cout << std::bitset<4>(mask) << std::endl;
 	      std::cout << "Distances to hit: " << tNear << std::endl;
-	      std::cout << *cur.node() << std::endl;
+	      std::cout << *cur.uanode() << std::endl;
 	    }
 	    else
 	      std::cout << "LEAF NODE" << std::endl;
@@ -740,7 +801,7 @@ class BVH {
 
     static inline bool intersectNearest(NodeRef& node, const TravRay& ray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& dist, size_t& mask) {
     if(node.isLeaf() || node.isSetLeaf() ) return false;
-    mask = nearestOnBox<I>(*node.node(),ray,tnear,tfar,dist);
+    mask = nearestOnBox<I>(*node.uanode(),ray,tnear,tfar,dist);
     return true;
   }
 
