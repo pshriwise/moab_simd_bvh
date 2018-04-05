@@ -31,10 +31,15 @@ struct OBB {
     transform = LinSpace(axis0.normalized(), axis1.normalized(), axis2.normalized()).transpose();
   }
 
-  __forceinline OBB( float *x, float *y, float *z, size_t num_pnts) : bbox(AABB()), covariance(0.0f), transform(zero), box_center(zero) {
+  __forceinline OBB( float *x, float *y, float *z, size_t num_pnts, bool verbose = false) : bbox(AABB()), covariance(0.0f), transform(zero), box_center(zero) {
+
+    if(verbose) std::cout << "Building box around points:" << std::endl;
+    
     // set the covariance matrix for all points
     for(size_t i = 0; i < num_pnts; i++) {
-      box_center += Vec3fa(x[i], y[i], z[i]);
+      Vec3fa pnt(x[i], y[i], z[i]);
+      box_center += pnt;
+      if(verbose) std::cout << "Point " << i << ": " << pnt << std::endl;
     }
     box_center /= num_pnts;
 
@@ -49,28 +54,24 @@ struct OBB {
     Matrix::EigenDecomp(covariance, lambda, axes);
 
     axes[0].normalize(); axes[1].normalize(); axes[2].normalize();
-    
-    Vec3fa min(inf), max(neg_inf);
-    for(size_t i = 0; i < num_pnts; i++) {
-      Vec3fa p = Vec3fa(x[i],y[i],z[i]);
-      
-      for(size_t j = 0; j < 3; j++) {
-	float t = dot(axes[j], p);
-	if ( t < min[j] ) min[j] = t;
-	if ( t > max[j] ) max[j] = t;
-      }
-    }
 
-    min -= 1e-06;
-    max += 1e-06;
-    
-    Vec3fa mid = 0.5 * (max + min);
-    box_center += mid[0] * axes[0] + mid[1] * axes[1] + mid[2] * axes[2];
-
-    bbox = AABB(min,max);
-    
     transform = LinSpace(axes[0], axes[1], axes[2]);
     transform = transform.transpose();
+
+    
+    Vec3fa mint(inf), maxt(neg_inf);
+    for(size_t i = 0; i < num_pnts; i++) {
+      Vec3fa p = Vec3fa(x[i],y[i],z[i]);
+      Vec3fa xpnt = xfmPnt(transform, p);
+      mint = min(mint,xpnt);
+      maxt = max(maxt,xpnt);
+    }
+    
+    Vec3fa mid = 0.5 * (maxt + mint);
+    box_center = mid[0] * axes[0] + mid[1] * axes[1] + mid[2] * axes[2];
+
+    bbox = AABB(mint,maxt);
+    bbox.bump(5e-03);
     
     return;
   }

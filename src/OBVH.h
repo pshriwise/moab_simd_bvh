@@ -356,7 +356,7 @@ class OBVH {
       x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
     }
     
-    OBB box = OBB(&(x.front()), &(y.front()), &(z.front()), current.size());
+    OBB box = OBB(&(x.front()), &(y.front()), &(z.front()), x.size());
 
     // extend box 
     box.bump(box_bump);
@@ -395,7 +395,7 @@ class OBVH {
   void splitNode(NodeRef* node, const PrimRef* primitives, const size_t numPrimitives, TempPrimNode tempNodes[N], BVHSettings *settings) {
 
     // split node along each axis
-    float max_cost = 2.0;
+    float max_cost = 100.0;
     float min_cost = 0.0;
   
     float best_cost = max_cost;
@@ -418,7 +418,7 @@ class OBVH {
       x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
     }
 
-    OBB node_box = OBB(&(x.front()), &(y.front()), &(z.front()), numPrimitives);
+    OBB node_box = OBB(&(x.front()), &(y.front()), &(z.front()), x.size());
 
     size_t np = numPrimitives;
     // split along each axis and get lowest cost
@@ -458,7 +458,6 @@ class OBVH {
     std::vector<float> x,y,z;
     for(size_t i = 0; i < numPrimitives; i++) {
 
-      
       P t = P((I*)MDAM->conn + (primitives[i].primID()*MDAM->element_stride), (I)primitives[i].primitivePtr);
       
       Vec3da pnt;
@@ -467,14 +466,11 @@ class OBVH {
       pnt = t.get_point(1, (void*)MDAM);
       x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
       pnt = t.get_point(2, (void*)MDAM);
-      x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
-      /* Vec3fa fpnt = primitives[i].center(); */
-      /* x.push_back(fpnt.x); y.push_back(fpnt.y); z.push_back(fpnt.z); */
+      x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);      
     }
     
-    OBB box = OBB(&(x.front()), &(y.front()), &(z.front()), numPrimitives);
-
-        
+    OBB box = OBB(&(x.front()), &(y.front()), &(z.front()), x.size());
+    
     //create new child bounds
     OBB boxes[N];
 
@@ -491,29 +487,27 @@ class OBVH {
     // sort primitives into boxes by their centroid
     for(size_t i = 0; i < numPrimitives; i++) {
       const PrimRef* p = &(primitives[i]);
+      P t = P((I*)MDAM->conn + (p->primID()*MDAM->element_stride), (I)p->primitivePtr);
+      
       bool placed = false;
       for(size_t j = 0; j < 4 ; j++) {
 	// if the centroid is in the box, place it there
-	if( inside(boxes[j], p->center()) ){
+	if( inside(boxes[j], t.get_centroid((void*)MDAM)) ){
 	  placed = true;
 	  tn[j].prims.push_back(*p);
-
-	  P t = P((I*)MDAM->conn + (p->primID()*MDAM->element_stride), (I)p->primitivePtr);
-
 	  break;
 	}
       }
       assert(placed);
     }
 
-
     for(size_t i = 0; i < N; i++) {
-      TempPrimNode this_temp_node = tn[i];
 
       std::vector<float> x,y,z;
-      for(size_t j = 0; j < this_temp_node.prims.size(); j++) {
+      
+      for(size_t j = 0; j < tn[i].prims.size(); j++) {
 		
-	P t = P((I*)MDAM->conn + (this_temp_node.prims[j].primID()*MDAM->element_stride), (I)this_temp_node.prims[j].primitivePtr);
+	P t = P((I*)MDAM->conn + (tn[i].prims[j].primID()*MDAM->element_stride), (I)tn[i].prims[j].primitivePtr);
 	
 	Vec3da pnt;
 	pnt = t.get_point(0, (void*)MDAM);
@@ -523,8 +517,8 @@ class OBVH {
 	pnt = t.get_point(2, (void*)MDAM);
 	x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
       }
-      
-      tn[i].box = OBB(&(x.front()), &(y.front()), &(z.front()), this_temp_node.prims.size());
+
+      tn[i].box = OBB(&(x.front()), &(y.front()), &(z.front()), x.size());
 
     }
     
@@ -583,7 +577,7 @@ class OBVH {
       x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
     }
     
-    OBB bounds = OBB(&(x.front()), &(y.front()), &(z.front()), current.prims.size());
+    OBB bounds = OBB(&(x.front()), &(y.front()), &(z.front()), x.size());
 
     tempChildren[0] = current;
     for( size_t i = 1; i < numChildren; i++) {
@@ -643,7 +637,7 @@ class OBVH {
 	x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
       }
       
-      OBB b = OBB(&(x.front()), &(y.front()), &(z.front()), current.size());
+      OBB b = OBB(&(x.front()), &(y.front()), &(z.front()), x.size());
 
       b.bump(box_bump);
       
