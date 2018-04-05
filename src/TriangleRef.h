@@ -130,6 +130,20 @@ template<typename V, typename P, typename I>
   }
 
   __forceinline size_t num_points() { return 3; }
+
+  __forceinline V get_centroid(void* mesh_ptr) {
+
+    MOABDirectAccessManager *mdam = (MOABDirectAccessManager*) mesh_ptr;
+
+    V p0, p1, p2;
+    p0 = V(mdam->xPtr[i1], mdam->yPtr[i1], mdam->zPtr[i1]);
+    p1 = V(mdam->xPtr[i2], mdam->yPtr[i2], mdam->zPtr[i2]);
+    p2 = V(mdam->xPtr[i3], mdam->yPtr[i3], mdam->zPtr[i3]);
+
+
+    return (p0 + p1 + p2) / 3.0;
+    
+  }
   
   __forceinline V get_point( size_t i, void* mesh_ptr ) {
     
@@ -148,6 +162,7 @@ template<typename V, typename P, typename I>
       point = V(mdam->xPtr[i3], mdam->yPtr[i3], mdam->zPtr[i3]);
       break;
     default:
+      assert(false);
       break;
     }
 
