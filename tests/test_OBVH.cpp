@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
   moab::Interface* mbi = new moab::Core();
 
   // check for a user-specified file
-  if ( filename.empty() )filename = TEST_SMALL_SPHERE;
+  if ( filename.empty() )filename = TEST_3K_CUBE;
 
   //load the moab file
   std::cout << "Loading file: " << filename << std::endl;
