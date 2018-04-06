@@ -3,6 +3,7 @@
 #include "testutil.hpp"
 #include "Node.h"
 
+#define EPS 1e-06
 
 // returns an OBB constructed using the bounding points of an AABB
 OBB obb_from_aabb(const AABB& aabb) {
@@ -204,8 +205,7 @@ void nonuniform_node_tests() {
 
     // check the results
     expected_result = 0;
-    CHECK_EQUAL(expected_result, result);
-
+    CHECK_EQUAL(expected_result, result);    
   }
 
   return;
@@ -290,7 +290,7 @@ void unaligned_node_tests() {
 
   OBB bounds = node.bounds();
 
-  CHECK_REAL_EQUAL(area(box), area(bounds), 1e-05);
+  CHECK_REAL_EQUAL(area(box), area(bounds), EPS);
   
   return;
 }

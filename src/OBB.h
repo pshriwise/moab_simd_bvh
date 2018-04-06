@@ -30,6 +30,22 @@ struct OBB {
     transform = LinSpace(axis0.normalized(), axis1.normalized(), axis2.normalized()).transpose();
   }
 
+  __forceinline OBB(Vec3fa* points, size_t num_points) {
+    std::vector<float> xs, ys, zs;
+
+    for(size_t i = 0; i < num_points; i++){
+      Vec3fa this_point = points[i];
+      xs.push_back(this_point.x);
+      ys.push_back(this_point.y);
+      zs.push_back(this_point.z);
+    }
+
+    *this = OBB(&xs.front(), &ys.front(), &zs.front(), xs.size());
+
+    return;
+  }
+  
+  
   __forceinline OBB( float *x, float *y, float *z, size_t num_pnts) : bbox(AABB()), covariance(0.0f), transform(zero) {
 
     Vec3fa box_center(0.0);

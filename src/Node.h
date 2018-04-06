@@ -364,14 +364,9 @@ struct __aligned(16) UANode : public Node {
     
     return rsqrt(vx*vx + vy*vy + vz*vz);
   }
-
-  __forceinline OBB bounds() {
-
-    AABB bounds = aabounds();
-
-    std::vector<float> xs, ys, zs;
-
-    for(size_t i = 0; i < N; i++){
+  
+  __forceinline void global_points(size_t i, Vec3fa corners[8]) {
+    assert(i<N);
 
       // populate the affinespace
       AffineSpace3fa space;
@@ -396,73 +391,90 @@ struct __aligned(16) UANode : public Node {
       Vec3fa ext = extent(i);
       space = AffineSpace3fa::scale(ext) * space;
 
-      
       Vec3fa lower = -space.p;
 
       //get each of the box points in real space
-      
-      Vec3fa corner;
-
       LinSpace trans = space.l.transpose();
       
-      corner = trans * lower;
-      xs.push_back(corner.x); ys.push_back(corner.y); zs.push_back(corner.z);
-      corner = trans * (lower + Vec3fa(ext.x, 0.0, 0.0));
-      xs.push_back(corner.x); ys.push_back(corner.y); zs.push_back(corner.z);
-      corner = trans * (lower + Vec3fa(0.0, ext.y, 0.0));
-      xs.push_back(corner.x); ys.push_back(corner.y); zs.push_back(corner.z);
-      corner = trans * (lower + Vec3fa(ext.x, ext.y, 0.0));
-      xs.push_back(corner.x); ys.push_back(corner.y); zs.push_back(corner.z);
+      corners[0] = trans * lower;
+      corners[1] = trans * (lower + Vec3fa(ext.x, 0.0, 0.0));
+      corners[2] = trans * (lower + Vec3fa(0.0, ext.y, 0.0));
+      corners[3] = trans * (lower + Vec3fa(ext.x, ext.y, 0.0));
 
-      corner = trans * (lower + ext);
-      xs.push_back(corner.x); ys.push_back(corner.y); zs.push_back(corner.z);
-      corner = trans * (lower + Vec3fa(ext.x, 0.0, ext.z));
-      xs.push_back(corner.x); ys.push_back(corner.y); zs.push_back(corner.z);
-      corner = trans * (lower + Vec3fa(0.0, ext.y, ext.z));
-      xs.push_back(corner.x); ys.push_back(corner.y); zs.push_back(corner.z);
-      corner = trans * (lower + Vec3fa(0.0, 0.0, ext.z));
-      xs.push_back(corner.x); ys.push_back(corner.y); zs.push_back(corner.z);
+      corners[4] = trans * (lower + Vec3fa(0.0, 0.0, ext.z));
+      corners[5] = trans * (lower + Vec3fa(ext.x, 0.0, ext.z));
+      corners[6] = trans * (lower + Vec3fa(0.0, ext.y, ext.z));
+      corners[7] = trans * (lower + ext);
+
+      return;
+  }
+  
+  __forceinline OBB bounds() {
+
+    std::vector<float> xs, ys, zs;
+
+    Vec3fa corners[8];
+    for(size_t i = 0; i < N; i++){
+      global_points(i, corners);
+
+      for(size_t j = 0; j < 8; j++) {
+	xs.push_back(corners[j].x);
+	ys.push_back(corners[j].y);
+	zs.push_back(corners[j].z);
+      }
     }
 
     return OBB(&xs.front(), &ys.front(), &zs.front(), xs.size());
+  }
 
+  __forceinline AABB aabounds() {
+    Vec3fa corners[8];
+    AABB ret_box;
+    for(size_t i = 0; i < N; i++){
+      global_points(i, corners);
+      
+      for(size_t j = 0; j < 8; j++) {
+	ret_box.update(corners[j]);
+      }
+    }
+    return ret_box;
   }
   
-  __forceinline AABB aabounds() const {
-    Vec3fa size(0.0);
-    Vec3fa llc(inf);
-    for(size_t i = 0; i < N; i++) {
+  /* __forceinline AABB aabounds() const { */
+  /*   Vec3fa size(0.0); */
+  /*   Vec3fa llc(inf); */
+  /*   for(size_t i = 0; i < N; i++) { */
 
-      // populate the affinespace
-      AffineSpace3fa space;
+  /*     // populate the affinespace */
+  /*     AffineSpace3fa space; */
 
-      space.l.vx.x = obb.l.vx.x[i];
-      space.l.vx.y = obb.l.vx.y[i];
-      space.l.vx.z = obb.l.vx.z[i];
+  /*     space.l.vx.x = obb.l.vx.x[i]; */
+  /*     space.l.vx.y = obb.l.vx.y[i]; */
+  /*     space.l.vx.z = obb.l.vx.z[i]; */
 
-      space.l.vy.x = obb.l.vy.x[i];
-      space.l.vy.y = obb.l.vy.y[i];
-      space.l.vy.z = obb.l.vy.z[i];
+  /*     space.l.vy.x = obb.l.vy.x[i]; */
+  /*     space.l.vy.y = obb.l.vy.y[i]; */
+  /*     space.l.vy.z = obb.l.vy.z[i]; */
       
-      space.l.vz.x = obb.l.vz.x[i];
-      space.l.vz.y = obb.l.vz.y[i];
-      space.l.vz.z = obb.l.vz.z[i];
+  /*     space.l.vz.x = obb.l.vz.x[i]; */
+  /*     space.l.vz.y = obb.l.vz.y[i]; */
+  /*     space.l.vz.z = obb.l.vz.z[i]; */
       
-      space.p.x = obb.p.x[i];
-      space.p.y = obb.p.y[i];
-      space.p.z = obb.p.z[i];
+  /*     space.p.x = obb.p.x[i]; */
+  /*     space.p.y = obb.p.y[i]; */
+  /*     space.p.z = obb.p.z[i]; */
 
-      // rescale the affine space of the box
-      Vec3fa ext = extent(i);
-      space = AffineSpace3fa::scale(ext) * space;
-      // reverse the transformation of the lower corner
-      Vec3fa lower = space.l.transpose() * -space.p;
-      ext = space.l.transpose() * ext;
-      llc = min(llc, lower);
-      size = max(size, ext);
-    }
-    return AABB(llc, llc + size);
-  }
+  /*     // rescale the affine space of the box */
+  /*     Vec3fa ext = extent(i); */
+  /*     space = AffineSpace3fa::scale(ext) * space; */
+  /*     // reverse the transformation of the lower corner */
+  /*     Vec3fa lower = space.l.transpose() * -space.p; */
+  /*     ext = space.l.transpose() * ext; */
+  /*     llc = min(llc, lower); */
+  /*     size = max(size, ext); */
+  /*   } */
+  /*   return AABB(llc, llc + size); */
+  /* } */
   
  public:
   AffineSpaceV obb;
