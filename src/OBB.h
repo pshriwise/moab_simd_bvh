@@ -31,15 +31,12 @@ struct OBB {
     transform = LinSpace(axis0.normalized(), axis1.normalized(), axis2.normalized()).transpose();
   }
 
-  __forceinline OBB( float *x, float *y, float *z, size_t num_pnts, bool verbose = false) : bbox(AABB()), covariance(0.0f), transform(zero), box_center(zero) {
-
-    if(verbose) std::cout << "Building box around points:" << std::endl;
+  __forceinline OBB( float *x, float *y, float *z, size_t num_pnts) : bbox(AABB()), covariance(0.0f), transform(zero), box_center(zero) {
     
     // set the covariance matrix for all points
     for(size_t i = 0; i < num_pnts; i++) {
       Vec3fa pnt(x[i], y[i], z[i]);
       box_center += pnt;
-      if(verbose) std::cout << "Point " << i << ": " << pnt << std::endl;
     }
     box_center /= num_pnts;
 
