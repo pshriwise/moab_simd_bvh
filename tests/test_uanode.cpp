@@ -266,6 +266,28 @@ void unaligned_node_tests() {
   CHECK_EQUAL(expected_result, result);
   CHECK_VFLOATREAL_EQUAL(expected_dist, dist);
 
+  r.org = Vec3fa(20.0, 7.5, 0.0);
+
+  // intersect the node
+  result = intersectBox(node, r, z, i, dist);
+  
+  // check the results
+  expected_dist = vfloat4(12.5);
+  expected_result = 15;
+  CHECK_EQUAL(expected_result, result);
+  CHECK_VFLOATREAL_EQUAL(expected_dist, dist);
+
+  r.org = Vec3fa(20.0, -2.5, 0.0);
+
+  // intersect the node
+  result = intersectBox(node, r, z, i, dist);
+  
+  // check the results
+  expected_dist = vfloat4(17.5);
+  expected_result = 15;
+  CHECK_EQUAL(expected_result, result);
+  CHECK_VFLOATREAL_EQUAL(expected_dist, dist);
+  
   
   return;
 }
