@@ -365,16 +365,104 @@ struct __aligned(16) UANode : public Node {
     const Vec3fa vx(obb.l.vx.x[i],obb.l.vx.y[i],obb.l.vx.z[i]);
     const Vec3fa vy(obb.l.vy.x[i],obb.l.vy.y[i],obb.l.vy.z[i]);
     const Vec3fa vz(obb.l.vz.x[i],obb.l.vz.y[i],obb.l.vz.z[i]);
+
+    
     return rsqrt(vx*vx + vy*vy + vz*vz);
   }
 
-  __forceinline AABB bounds() const {
+  __forceinline OBB bounds() {
+
+    AABB bounds = aabounds();
+
+    std::vector<float> xs, ys, zs;
+
+    for(size_t i = 0; i < N; i++){
+
+      // populate the affinespace
+      AffineSpace3fa space;
+
+      space.l.vx.x = obb.l.vx.x[i];
+      space.l.vx.y = obb.l.vx.y[i];
+      space.l.vx.z = obb.l.vx.z[i];
+
+      space.l.vy.x = obb.l.vy.x[i];
+      space.l.vy.y = obb.l.vy.y[i];
+      space.l.vy.z = obb.l.vy.z[i];
+      
+      space.l.vz.x = obb.l.vz.x[i];
+      space.l.vz.y = obb.l.vz.y[i];
+      space.l.vz.z = obb.l.vz.z[i];
+      
+      space.p.x = obb.p.x[i];
+      space.p.y = obb.p.y[i];
+      space.p.z = obb.p.z[i];
+
+      // rescale the affine space of the box
+      Vec3fa ext = extent(i);
+      space = AffineSpace3fa::scale(ext) * space;
+
+      
+      Vec3fa lower = -space.p;
+
+      //get each of the box points in real space
+      
+      Vec3fa corner;
+
+      LinSpace trans = space.l.transpose();
+      
+      corner = trans * lower;
+      xs.push_back(corner.x); ys.push_back(corner.y); zs.push_back(corner.z);
+      corner = trans * (lower + Vec3fa(ext.x, 0.0, 0.0));
+      xs.push_back(corner.x); ys.push_back(corner.y); zs.push_back(corner.z);
+      corner = trans * (lower + Vec3fa(0.0, ext.y, 0.0));
+      xs.push_back(corner.x); ys.push_back(corner.y); zs.push_back(corner.z);
+      corner = trans * (lower + Vec3fa(ext.x, ext.y, 0.0));
+      xs.push_back(corner.x); ys.push_back(corner.y); zs.push_back(corner.z);
+
+      corner = trans * (lower + ext);
+      xs.push_back(corner.x); ys.push_back(corner.y); zs.push_back(corner.z);
+      corner = trans * (lower + Vec3fa(ext.x, 0.0, ext.z));
+      xs.push_back(corner.x); ys.push_back(corner.y); zs.push_back(corner.z);
+      corner = trans * (lower + Vec3fa(0.0, ext.y, ext.z));
+      xs.push_back(corner.x); ys.push_back(corner.y); zs.push_back(corner.z);
+      corner = trans * (lower + Vec3fa(0.0, 0.0, ext.z));
+      xs.push_back(corner.x); ys.push_back(corner.y); zs.push_back(corner.z);
+    }
+
+    return OBB(&xs.front(), &ys.front(), &zs.front(), xs.size());
+
+  }
+  
+  __forceinline AABB aabounds() const {
     Vec3fa size(0.0);
     Vec3fa llc(inf);
     for(size_t i = 0; i < N; i++) {
+
+      // populate the affinespace
+      AffineSpace3fa space;
+
+      space.l.vx.x = obb.l.vx.x[i];
+      space.l.vx.y = obb.l.vx.y[i];
+      space.l.vx.z = obb.l.vx.z[i];
+
+      space.l.vy.x = obb.l.vy.x[i];
+      space.l.vy.y = obb.l.vy.y[i];
+      space.l.vy.z = obb.l.vy.z[i];
+      
+      space.l.vz.x = obb.l.vz.x[i];
+      space.l.vz.y = obb.l.vz.y[i];
+      space.l.vz.z = obb.l.vz.z[i];
+      
+      space.p.x = obb.p.x[i];
+      space.p.y = obb.p.y[i];
+      space.p.z = obb.p.z[i];
+
+      // rescale the affine space of the box
       Vec3fa ext = extent(i);
-      Vec3fa lower = Vec3fa(obb.p.x[i], obb.p.y[i], obb.p.z[i]);
-      lower = lower * ext;
+      space = AffineSpace3fa::scale(ext) * space;
+      // reverse the transformation of the lower corner
+      Vec3fa lower = space.l.transpose() * -space.p;
+      ext = space.l.transpose() * ext;
       llc = min(llc, lower);
       size = max(size, ext);
     }

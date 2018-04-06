@@ -287,7 +287,10 @@ void unaligned_node_tests() {
   expected_result = 15;
   CHECK_EQUAL(expected_result, result);
   CHECK_VFLOATREAL_EQUAL(expected_dist, dist);
-  
+
+  OBB bounds = node.bounds();
+
+  CHECK_REAL_EQUAL(area(box), area(bounds), 1e-05);
   
   return;
 }
