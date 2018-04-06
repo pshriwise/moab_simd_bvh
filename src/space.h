@@ -204,7 +204,7 @@ template<typename L>
 __forceinline AffineSpaceT<L> operator *( const AffineSpaceT<L>& a, const float&       b) { return AffineSpaceT<L>(b   * a.l, b   * a.p); }
 
 template<typename L>
-__forceinline AffineSpaceT<L> operator *( const AffineSpaceT<L>& a, const AffineSpaceT<L>& b ) { return AffineSpaceT<L>(a.l * b.l, a.p * b.p); }
+__forceinline AffineSpaceT<L> operator *( const AffineSpaceT<L>& a, const AffineSpaceT<L>& b ) { return AffineSpaceT<L>(a.l * b.l, a.l*b.p + a.p); }
 
 template<typename L>
 __forceinline AffineSpaceT<L> operator /( const AffineSpaceT<L>& a, const AffineSpaceT<L>& b ) { return a * rcp(b); }

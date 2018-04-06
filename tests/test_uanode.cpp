@@ -33,6 +33,7 @@ int main() {
  
   uniform_node_tests();
   nonuniform_node_tests();
+  unaligned_node_tests();
   
   return 0;
 }
@@ -207,5 +208,56 @@ void nonuniform_node_tests() {
 
   }
 
+  return;
+}
+
+void unaligned_node_tests() {
+
+  std::vector<float> xs, ys, zs;
+
+  xs.push_back( 5.0); ys.push_back( 0.0); zs.push_back( 0.0);
+  xs.push_back(-5.0); ys.push_back( 0.0); zs.push_back( 0.0);
+  xs.push_back(-2.5); ys.push_back( 2.5); zs.push_back( 0.0);
+  xs.push_back( 2.5); ys.push_back( 2.5); zs.push_back( 0.0);
+  xs.push_back( 0.0); ys.push_back( 5.0); zs.push_back( 0.0);
+  xs.push_back( 0.0); ys.push_back(-5.0); zs.push_back( 0.0);
+  
+  xs.push_back( 5.0); ys.push_back( 0.0); zs.push_back(10.0);
+  xs.push_back(-5.0); ys.push_back( 0.0); zs.push_back(10.0);
+  xs.push_back(-2.5); ys.push_back( 2.5); zs.push_back(10.0);
+  xs.push_back( 2.5); ys.push_back( 2.5); zs.push_back(10.0);
+  xs.push_back( 0.0); ys.push_back( 5.0); zs.push_back(10.0);
+  xs.push_back( 0.0); ys.push_back(-5.0); zs.push_back(10.0);
+
+  OBB box(&xs.front(), &ys.front(), &zs.front(), xs.size());
+
+  // setup some intersection information
+  vfloat4 z(zero), i(inf), ni(neg_inf);
+  vfloat4 dist(100.0);
+  size_t result;
+
+  vfloat4 expected_dist;
+  size_t expected_result;
+
+  UANode node = UANode();
+  node.setBounds(box);
+  
+  size_t dim = 0;
+  
+  // create a ray
+  Vec3fa org(20.0, 0.0, 0.0);
+  Vec3fa dir(-1.0,  0.0,  0.0);
+
+  TravRay r(org,dir);
+  
+  // intersect the node
+  result = intersectBox(node, r, z, i, dist);
+  
+  // check the results
+  expected_dist = vfloat4(15.0);
+  expected_result = 15;
+  CHECK_EQUAL(expected_result, result);
+  CHECK_VFLOATREAL_EQUAL(expected_dist, dist);
+  
   return;
 }
