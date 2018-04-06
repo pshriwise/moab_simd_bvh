@@ -15,7 +15,6 @@ struct OBB {
 
   // member variables
   AABB bbox;
-  Vec3fa box_center;
   Matrix3 covariance;
   LinSpace transform;
     
@@ -31,7 +30,9 @@ struct OBB {
     transform = LinSpace(axis0.normalized(), axis1.normalized(), axis2.normalized()).transpose();
   }
 
-  __forceinline OBB( float *x, float *y, float *z, size_t num_pnts) : bbox(AABB()), covariance(0.0f), transform(zero), box_center(zero) {
+  __forceinline OBB( float *x, float *y, float *z, size_t num_pnts) : bbox(AABB()), covariance(0.0f), transform(zero) {
+
+    Vec3fa box_center(0.0);
     
     // set the covariance matrix for all points
     for(size_t i = 0; i < num_pnts; i++) {
@@ -77,7 +78,6 @@ struct OBB {
   }
   
   __forceinline void clear() {
-    box_center = 0.0;
     covariance = Matrix3(0.0);
     transform = LinSpace(zero);
     bbox.clear();
@@ -188,7 +188,6 @@ struct OBB {
     ret_box.bbox = this->bbox;
 
     ret_box.covariance = Matrix3(0.0);
-    ret_box.box_center = 0.0;
     
     Vec3fa box_size;
 
