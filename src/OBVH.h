@@ -123,42 +123,42 @@ class OBVH {
     return (void*) encodeLeaf((void*)primitives, numPrimitives - 1);
   }
 
-  /* inline void split_sets(NodeRef* current_node, size_t split_dim, NodeRef** nodesPtr, size_t numNodes, TempSetNode child_nodes[N]) { */
+  inline void split_sets(NodeRef* current_node, size_t split_dim, NodeRef** nodesPtr, size_t numNodes, TempSetNode child_nodes[N]) {
 
-  /*   // get the current node's bounds */
-  /*   OBB box = current_node->safeNode()->bounds(); */
+    // get the current node's bounds
+    OBB box = box_from_node(current_node);
 
-  /*   //create new child bounds */
-  /*   OBB boxes[N]; */
+    //create new child bounds
+    OBB boxes[N];
 
-  /*   boxes[0] = box.splitBox(split_dim, 0.00,  0.25); */
-  /*   boxes[1] = box.splitBox(split_dim, 0.25,  0.50); */
-  /*   boxes[2] = box.splitBox(split_dim, 0.50,  0.75); */
-  /*   boxes[3] = box.splitBox(split_dim, 0.75,  1.00); */
+    boxes[0] = box.splitBox(split_dim, 0.00,  0.25);
+    boxes[1] = box.splitBox(split_dim, 0.25,  0.50);
+    boxes[2] = box.splitBox(split_dim, 0.50,  0.75);
+    boxes[3] = box.splitBox(split_dim, 0.75,  1.00);
 
-  /*   child_nodes[0].clear(); */
-  /*   child_nodes[1].clear(); */
-  /*   child_nodes[2].clear(); */
-  /*   child_nodes[3].clear(); */
+    child_nodes[0].clear();
+    child_nodes[1].clear();
+    child_nodes[2].clear();
+    child_nodes[3].clear();
 
-  /*   for(size_t i = 0; i < numNodes; i ++) { */
-  /*     UANode* aanode = nodesPtr[i]->safeNode(); */
-  /*     bool placed = false; */
+    for(size_t i = 0; i < numNodes; i ++) {
+      UANode* aanode = nodesPtr[i]->safeNode();
+      bool placed = false;
       
-  /*     for(size_t j = 0; j < N; j++){ */
-  /* 	OBB node_box = box_from_node(nodesPtr[i]); */
+      for(size_t j = 0; j < N; j++){
+  	OBB node_box = box_from_node(nodesPtr[i]);
 
-  /* 	if( inside( boxes[j], node_box.center() ) ){ */
-  /* 	  placed = true; */
-  /* 	  child_nodes[j].push_back(nodesPtr[i]); */
-  /* 	  break; */
-  /* 	} */
-  /*     } */
-  /*     assert(placed); */
-  /*   } */
+  	if( inside( boxes[j], node_box.center() ) ){
+  	  placed = true;
+  	  child_nodes[j].push_back(nodesPtr[i]);
+  	  break;
+  	}
+      }
+      assert(placed);
+    }
 
-  /*   return; */
-  /* } */
+    return;
+  }
 
   inline OBB box_from_nodes(NodeRef** nodesPtr, size_t numNodes) {
     OBB nodes_box;
@@ -204,29 +204,30 @@ class OBVH {
     }
     
     return points;
-  }  
-  /* inline void split_sets(NodeRef* current_node, NodeRef** nodesPtr, size_t numNodes, TempSetNode child_nodes[N], BVHJoinTreeSettings* settings) { */
+  }
+  
+  inline void split_sets(NodeRef* current_node, NodeRef** nodesPtr, size_t numNodes, TempSetNode child_nodes[N], BVHJoinTreeSettings* settings) {
 
-  /*   int best_dim; */
-  /*   float best_cost = 1.0; */
-  /*   float cost; */
+    int best_dim;
+    float best_cost = 1.0;
+    float cost;
 
-  /*   OBB node_box = current_node->node()->bounds(); */
-  /*   // attempt split along each axis */
-  /*   for(size_t i = 0; i < 3; i++) { */
-  /*     split_sets(current_node, i, nodesPtr, numNodes, child_nodes); */
-  /*     cost = settings->evaluate_cost(child_nodes, node_box, numNodes);       */
-  /*     if ( cost <= best_cost ) { */
-  /* 	best_cost = cost; */
-  /* 	best_dim = i; */
-  /*     } */
-  /*   } */
+    OBB node_box = current_node->node()->bounds();
+    // attempt split along each axis
+    for(size_t i = 0; i < 3; i++) {
+      split_sets(current_node, i, nodesPtr, numNodes, child_nodes);
+      cost = settings->evaluate_cost(child_nodes, node_box, numNodes);
+      if ( cost <= best_cost ) {
+  	best_cost = cost;
+  	best_dim = i;
+      }
+    }
 
-  /*   split_sets(current_node, best_dim, nodesPtr, numNodes, child_nodes); */
+    split_sets(current_node, best_dim, nodesPtr, numNodes, child_nodes);
 
-  /*   return; */
+    return;
     
-  /* } */
+  }
 
   __forceinline NodeRef* join_trees( std::vector<NodeRef*> nodes, BVHJoinTreeSettings* settings = NULL) {
     if(!settings) settings = new BVHJoinTreeSettings();
@@ -252,50 +253,41 @@ class OBVH {
     
     NodeRef* this_node = new NodeRef((size_t)aanode);
     
-    /* TempSetNode child_nodes[N]; */
-    /* split_sets(this_node, nodesPtr, numNodes, child_nodes, settings); */
+    TempSetNode child_nodes[N];
+    split_sets(this_node, nodesPtr, numNodes, child_nodes, settings);
 
-    /* // need arbitrary split check here */
-    /* for(size_t i = 0; i < N; i++) { */
-    /*   if (child_nodes[i].size() == numNodes) { */
-    /* 	child_nodes[0].clear(); */
-    /* 	child_nodes[1].clear(); */
-    /* 	child_nodes[2].clear(); */
-    /* 	child_nodes[3].clear(); */
-    /* 	//arb split */
-    /* 	int i = 0; */
-    /* 	NodeRef** it = nodesPtr; */
-    /* 	NodeRef** end = nodesPtr+(numNodes */
-    /* 				  ); */
-    /* 	while(it != end) { */
-    /* 	  child_nodes[i].push_back(*it); */
-    /* 	  i++; */
-    /* 	  it++; */
-    /* 	  if (i == N) { i = 0; } */
-    /* 	} */
-    /* 	break; */
-    /*   } */
-    /* } */
+    // need arbitrary split check here
+    for(size_t i = 0; i < N; i++) {
+      if (child_nodes[i].size() == numNodes) {
+    	child_nodes[0].clear();
+    	child_nodes[1].clear();
+    	child_nodes[2].clear();
+    	child_nodes[3].clear();
+    	//arb split
+    	int i = 0;
+    	NodeRef** it = nodesPtr;
+    	NodeRef** end = nodesPtr+(numNodes
+    				  );
+    	while(it != end) {
+    	  child_nodes[i].push_back(*it);
+    	  i++;
+    	  it++;
+    	  if (i == N) { i = 0; }
+    	}
+    	break;
+      }
+    }
 
-    /* for(size_t i = 0; i < N; i++) { */
-    /*   size_t num_child_prims = child_nodes[i].size(); */
-    /*   OBB box; */
-    /*   if(num_child_prims == 0) { */
-    /* 	box = OBB(0.0f); */
-    /*   } */
-    /*   else { */
-    /* 	for(size_t j = 0; j < num_child_prims; j++) { */
-    /* 	  box.update(child_nodes[i].prims[j]->safeNode()->bounds()); */
-    /* 	} */
-    /*   } */
-    /*   assert(box.isValid()); */
-    /*   aanode->setBound(i, box); */
-    /* } */
+    for(size_t i = 0; i < N; i++) {
+      size_t num_child_prims = child_nodes[i].size();
+      OBB box = box_from_nodes(&child_nodes[i].front(), child_nodes[i].size());
+      aanode->setBound(i, box);
+    }
     
-    /* for(size_t i = 0; i < N; i++) { */
-    /*   NodeRef* child_node = join_trees(child_nodes[i].prims, settings); */
-    /*   aanode->setRef(i, *child_node); */
-    /* } */
+    for(size_t i = 0; i < N; i++) {
+      NodeRef* child_node = join_trees(child_nodes[i].prims, settings);
+      aanode->setRef(i, *child_node);
+    }
 
     return this_node;
   }
