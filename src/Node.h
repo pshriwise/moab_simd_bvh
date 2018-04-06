@@ -370,7 +370,7 @@ struct __aligned(16) UANode : public Node {
     return rsqrt(vx*vx + vy*vy + vz*vz);
   }
   
-  __forceinline void global_points(size_t i, Vec3fa corners[8]) {
+  __forceinline void global_points(size_t i, Vec3fa corners[8]) const {
     assert(i<N);
 
       // populate the affinespace
