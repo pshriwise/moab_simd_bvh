@@ -302,7 +302,10 @@ void operator_tests() {
 
   // multiply by identity
   C = A * B;
-  CHECK_EQUAL(B, C);
+
+  AffineSpaceV expected_result(B);
+  expected_result.p = A.p + B.p;
+  CHECK_EQUAL(expected_result, C);
 
   // multiply by self
   C = B * B;
@@ -320,9 +323,9 @@ void operator_tests() {
   CHECK_VFLOATREAL_EQUAL(zero_vec,            C.l.vz.y);
   CHECK_VFLOATREAL_EQUAL(one_fifth*one_fifth, C.l.vz.z);
 
-  CHECK_VFLOATREAL_EQUAL(one_fifth*one_fifth, C.p.x);
-  CHECK_VFLOATREAL_EQUAL(one_fifth*one_fifth, C.p.y);
-  CHECK_VFLOATREAL_EQUAL(one_fifth*one_fifth, C.p.z);
+  CHECK_VFLOATREAL_EQUAL(one_fifth+ one_fifth*one_fifth, C.p.x);
+  CHECK_VFLOATREAL_EQUAL(one_fifth+ one_fifth*one_fifth, C.p.y);
+  CHECK_VFLOATREAL_EQUAL(one_fifth+ one_fifth*one_fifth, C.p.z);
 
   // addition op
   C = A + B;
