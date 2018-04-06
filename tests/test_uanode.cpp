@@ -215,22 +215,18 @@ void unaligned_node_tests() {
 
   std::vector<float> xs, ys, zs;
 
-  xs.push_back( 5.0); ys.push_back( 0.0); zs.push_back( 0.0);
+  xs.push_back(10.0); ys.push_back( 5.0); zs.push_back( 0.0);
   xs.push_back(-5.0); ys.push_back( 0.0); zs.push_back( 0.0);
-  xs.push_back(-2.5); ys.push_back( 2.5); zs.push_back( 0.0);
-  xs.push_back( 2.5); ys.push_back( 2.5); zs.push_back( 0.0);
-  xs.push_back( 0.0); ys.push_back( 5.0); zs.push_back( 0.0);
+  xs.push_back( 5.0); ys.push_back(10.0); zs.push_back( 0.0);
   xs.push_back( 0.0); ys.push_back(-5.0); zs.push_back( 0.0);
   
-  xs.push_back( 5.0); ys.push_back( 0.0); zs.push_back(10.0);
+  xs.push_back(10.0); ys.push_back( 5.0); zs.push_back(10.0);
   xs.push_back(-5.0); ys.push_back( 0.0); zs.push_back(10.0);
-  xs.push_back(-2.5); ys.push_back( 2.5); zs.push_back(10.0);
-  xs.push_back( 2.5); ys.push_back( 2.5); zs.push_back(10.0);
-  xs.push_back( 0.0); ys.push_back( 5.0); zs.push_back(10.0);
+  xs.push_back( 5.0); ys.push_back(10.0); zs.push_back(10.0);
   xs.push_back( 0.0); ys.push_back(-5.0); zs.push_back(10.0);
 
   OBB box(&xs.front(), &ys.front(), &zs.front(), xs.size());
-
+  
   // setup some intersection information
   vfloat4 z(zero), i(inf), ni(neg_inf);
   vfloat4 dist(100.0);
@@ -258,6 +254,18 @@ void unaligned_node_tests() {
   expected_result = 15;
   CHECK_EQUAL(expected_result, result);
   CHECK_VFLOATREAL_EQUAL(expected_dist, dist);
+
+  r.org = Vec3fa(20.0, 5.0, 0.0);
+
+  // intersect the node
+  result = intersectBox(node, r, z, i, dist);
+  
+  // check the results
+  expected_dist = vfloat4(10.0);
+  expected_result = 15;
+  CHECK_EQUAL(expected_result, result);
+  CHECK_VFLOATREAL_EQUAL(expected_dist, dist);
+
   
   return;
 }
