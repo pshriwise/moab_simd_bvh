@@ -160,38 +160,51 @@ class OBVH {
   /*   return; */
   /* } */
 
-  /* inline OBB box_from_nodes(NodeRef** nodesPtr, size_t numNodes) { */
-  /*   OBB nodes_box; */
-  /*   nodes_box.clear(); */
-  /*   for(size_t i = 0; i < numNodes; i++){ */
-  /*     nodes_box.extend(box_from_node(nodesPtr[i])); */
-  /*   } */
-  /*   return nodes_box; */
-  /* } */
+  inline OBB box_from_nodes(NodeRef** nodesPtr, size_t numNodes) {
+    OBB nodes_box;
+    nodes_box.clear();
+    std::vector<Vec3fa> all_points;
+    for(size_t i = 0; i < numNodes; i++) {
+      std::vector<Vec3fa> points = points_from_node(nodesPtr[i]);
+      all_points.insert(all_points.end(), points.begin(), points.end());
+    }
+
+    return OBB(&all_points.front(), all_points.size());
+  }
   
-  /* inline OBB box_from_node(NodeRef* node) { */
-  /*   // create a new node that contains all nodes */
-  /*   OBB node_box; */
-  /*   if(!node->isLeaf()){ */
-  /*     UANode* temp_node = node->safeNode(); */
-  /*     node_box = temp_node->bounds(); */
-  /*   } */
-  /*   else { */
-  /*     // get the primitives */
-  /*     size_t numPrims; */
-  /*     P* primIDs = (P*)node->leaf(numPrims); */
-  /*     for (size_t j = 0; j < numPrims; j++){ */
-  /* 	P t = primIDs[j]; */
-  /* 	Vec3fa lower, upper; */
-  /* 	t.get_bounds(lower, upper, MDAM); */
-  /* 	OBB box = OBB(lower, upper); */
-  /* 	box.bump(box_bump); */
-  /* 	node_box.update(box); */
-  /*     } */
-  /*   } */
-  /*   return node_box; */
-  /* } */
-  
+  inline OBB box_from_node(const NodeRef* node) {
+    std::vector<Vec3fa> points = points_from_node(node);
+    return OBB(&points.front(), points.size());
+  }
+
+  inline std::vector<Vec3fa> points_from_node(const NodeRef* node) {
+    std::vector<Vec3fa> points;
+    if(!node->isLeaf()){
+      UANode* temp_node = node->safeNode();
+      Vec3fa corners[8];
+      for(size_t i = 0; i < N; i++) {
+	node->uanode()->global_points(i, corners);
+	for(size_t j = 0; j < 8; j++){
+	  points.push_back(corners[j]);
+	}
+      }
+    }
+    else {
+      // get the primitives
+      size_t numPrims;
+      P* primIDs = (P*)node->leaf(numPrims);
+      for (size_t i = 0; i < numPrims; i++){
+  	P t = primIDs[i];
+	size_t np = t.num_points();
+	for(size_t j = 0; j < np; j++){
+	  V point = t.get_point(j, (void*)MDAM);
+	  points.push_back(Vec3fa(point));
+	}
+      }
+    }
+    
+    return points;
+  }  
   /* inline void split_sets(NodeRef* current_node, NodeRef** nodesPtr, size_t numNodes, TempSetNode child_nodes[N], BVHJoinTreeSettings* settings) { */
 
   /*   int best_dim; */
@@ -215,76 +228,77 @@ class OBVH {
     
   /* } */
 
-  /* inline NodeRef* join_trees( std::vector<NodeRef*> nodes, BVHJoinTreeSettings* settings = NULL) { */
-  /*   if(!settings) settings = new BVHJoinTreeSettings(); */
-  /*   settings->set_heuristic(ENTITY_RATIO_HEURISTIC); */
+  __forceinline NodeRef* join_trees( std::vector<NodeRef*> nodes, BVHJoinTreeSettings* settings = NULL) {
+    if(!settings) settings = new BVHJoinTreeSettings();
+    settings->set_heuristic(ENTITY_RATIO_HEURISTIC);
+
     
-  /*   return join_trees( &(nodes[0]), (size_t)nodes.size(), settings ); */
-  /* } */
+    return join_trees( &(nodes[0]), (size_t)nodes.size(), settings );
+  }
   
-  /* inline NodeRef* join_trees(NodeRef** nodesPtr, size_t numNodes, BVHJoinTreeSettings* settings) { */
+  inline NodeRef* join_trees(NodeRef** nodesPtr, size_t numNodes, BVHJoinTreeSettings* settings) {
     
-  /*   if (numNodes == 1) { */
-  /*     return nodesPtr[0]; */
-  /*   } */
+    if (numNodes == 1) {
+      return nodesPtr[0];
+    }
 
-  /*   if (numNodes == 0) { */
-  /*     return new NodeRef(); */
-  /*   } */
+    if (numNodes == 0) {
+      return new NodeRef();
+    }
 
-  /*   UANode* aanode = new UANode(); */
-  /*   OBB box = box_from_nodes(nodesPtr, numNodes); */
-  /*   aanode->setBounds(box); */
+    UANode* aanode = new UANode();
+    OBB box = box_from_nodes(nodesPtr, numNodes);
+    aanode->setBounds(box);
     
-  /*   NodeRef* this_node = new NodeRef((size_t)aanode); */
+    NodeRef* this_node = new NodeRef((size_t)aanode);
     
-  /*   TempSetNode child_nodes[N]; */
-  /*   split_sets(this_node, nodesPtr, numNodes, child_nodes, settings); */
+    /* TempSetNode child_nodes[N]; */
+    /* split_sets(this_node, nodesPtr, numNodes, child_nodes, settings); */
 
-  /*   // need arbitrary split check here */
-  /*   for(size_t i = 0; i < N; i++) { */
-  /*     if (child_nodes[i].size() == numNodes) { */
-  /* 	child_nodes[0].clear(); */
-  /* 	child_nodes[1].clear(); */
-  /* 	child_nodes[2].clear(); */
-  /* 	child_nodes[3].clear(); */
-  /* 	//arb split */
-  /* 	int i = 0; */
-  /* 	NodeRef** it = nodesPtr; */
-  /* 	NodeRef** end = nodesPtr+(numNodes */
-  /* 				  ); */
-  /* 	while(it != end) { */
-  /* 	  child_nodes[i].push_back(*it); */
-  /* 	  i++; */
-  /* 	  it++; */
-  /* 	  if (i == N) { i = 0; } */
-  /* 	} */
-  /* 	break; */
-  /*     } */
-  /*   } */
+    /* // need arbitrary split check here */
+    /* for(size_t i = 0; i < N; i++) { */
+    /*   if (child_nodes[i].size() == numNodes) { */
+    /* 	child_nodes[0].clear(); */
+    /* 	child_nodes[1].clear(); */
+    /* 	child_nodes[2].clear(); */
+    /* 	child_nodes[3].clear(); */
+    /* 	//arb split */
+    /* 	int i = 0; */
+    /* 	NodeRef** it = nodesPtr; */
+    /* 	NodeRef** end = nodesPtr+(numNodes */
+    /* 				  ); */
+    /* 	while(it != end) { */
+    /* 	  child_nodes[i].push_back(*it); */
+    /* 	  i++; */
+    /* 	  it++; */
+    /* 	  if (i == N) { i = 0; } */
+    /* 	} */
+    /* 	break; */
+    /*   } */
+    /* } */
 
-  /*   for(size_t i = 0; i < N; i++) { */
-  /*     size_t num_child_prims = child_nodes[i].size(); */
-  /*     OBB box; */
-  /*     if(num_child_prims == 0) { */
-  /* 	box = OBB(0.0f); */
-  /*     } */
-  /*     else { */
-  /* 	for(size_t j = 0; j < num_child_prims; j++) { */
-  /* 	  box.update(child_nodes[i].prims[j]->safeNode()->bounds()); */
-  /* 	} */
-  /*     } */
-  /*     assert(box.isValid()); */
-  /*     aanode->setBound(i, box); */
-  /*   } */
+    /* for(size_t i = 0; i < N; i++) { */
+    /*   size_t num_child_prims = child_nodes[i].size(); */
+    /*   OBB box; */
+    /*   if(num_child_prims == 0) { */
+    /* 	box = OBB(0.0f); */
+    /*   } */
+    /*   else { */
+    /* 	for(size_t j = 0; j < num_child_prims; j++) { */
+    /* 	  box.update(child_nodes[i].prims[j]->safeNode()->bounds()); */
+    /* 	} */
+    /*   } */
+    /*   assert(box.isValid()); */
+    /*   aanode->setBound(i, box); */
+    /* } */
     
-  /*   for(size_t i = 0; i < N; i++) { */
-  /*     NodeRef* child_node = join_trees(child_nodes[i].prims, settings); */
-  /*     aanode->setRef(i, *child_node); */
-  /*   } */
+    /* for(size_t i = 0; i < N; i++) { */
+    /*   NodeRef* child_node = join_trees(child_nodes[i].prims, settings); */
+    /*   aanode->setRef(i, *child_node); */
+    /* } */
 
-  /*   return this_node; */
-  /* } */
+    return this_node;
+  }
 
   inline NodeRef* Build(I* id, size_t numPrimitives, BVHSettings* settings = NULL) {
     // create BuildState of PrimitiveReferences
