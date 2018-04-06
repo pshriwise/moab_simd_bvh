@@ -15,6 +15,7 @@ struct OBB {
 
   // member variables
   AABB bbox;
+  Vec3fa box_center;
   Matrix3 covariance;
   LinSpace transform;
     
@@ -30,13 +31,15 @@ struct OBB {
     transform = LinSpace(axis0.normalized(), axis1.normalized(), axis2.normalized()).transpose();
   }
 
-  __forceinline OBB( float *x, float *y, float *z, size_t num_pnts) : bbox(AABB()), covariance(0.0f), transform(zero) {
+  __forceinline OBB( float *x, float *y, float *z, size_t num_pnts, bool verbose = false) : bbox(AABB()), covariance(0.0f), transform(zero), box_center(zero) {
 
-    Vec3fa box_center;
+    if(verbose) std::cout << "Building box around points:" << std::endl;
+    
     // set the covariance matrix for all points
     for(size_t i = 0; i < num_pnts; i++) {
       Vec3fa pnt(x[i], y[i], z[i]);
       box_center += pnt;
+      if(verbose) std::cout << "Point " << i << ": " << pnt << std::endl;
     }
     box_center /= num_pnts;
 
@@ -53,7 +56,7 @@ struct OBB {
     axes[0].normalize(); axes[1].normalize(); axes[2].normalize();
 
     transform = LinSpace(axes[0], axes[1], axes[2]);
-    transform = transform;
+    transform = transform;//.transpose();
 
     
     Vec3fa mint(inf), maxt(neg_inf);
@@ -64,8 +67,11 @@ struct OBB {
       maxt = max(maxt,xpnt);
     }
     
-    bbox = AABB(mint, maxt);
+    Vec3fa mid = 0.5 * (maxt + mint);
+    box_center = mid[0] * axes[0] + mid[1] * axes[1] + mid[2] * axes[2];
 
+    bbox = AABB(mint,maxt);
+    
     return;
   }
 
@@ -74,6 +80,7 @@ struct OBB {
   }
   
   __forceinline void clear() {
+    box_center = 0.0;
     covariance = Matrix3(0.0);
     transform = LinSpace(zero);
     bbox.clear();
@@ -184,6 +191,7 @@ struct OBB {
     ret_box.bbox = this->bbox;
 
     ret_box.covariance = Matrix3(0.0);
+    ret_box.box_center = 0.0;
     
     Vec3fa box_size;
 
