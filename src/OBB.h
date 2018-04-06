@@ -71,7 +71,6 @@ struct OBB {
     box_center = mid[0] * axes[0] + mid[1] * axes[1] + mid[2] * axes[2];
 
     bbox = AABB(mint,maxt);
-    bbox.bump(5e-03);
     
     return;
   }
