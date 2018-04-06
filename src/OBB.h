@@ -180,8 +180,8 @@ struct OBB {
   }
 
   // property methods
-  __forceinline       Vec3fa center()       { return bbox.center(); }
-  __forceinline const Vec3fa center() const { return bbox.center(); }
+  __forceinline       Vec3fa center()       { return transform.transpose() * bbox.center(); }
+  __forceinline const Vec3fa center() const { return transform.transpose() * bbox.center(); }
 
   __forceinline Vec3fa center2() { return bbox.center2(); }
   

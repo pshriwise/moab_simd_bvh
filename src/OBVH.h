@@ -89,35 +89,35 @@ class OBVH {
     return new NodeRef((size_t)prim_arr | (tyLeaf + num));
   }
   
-  /* inline void makeSetNode(NodeRef* node, I setID, I fwd = 0, I rev = 0) { */
+  inline void makeSetNode(NodeRef* node, I setID, I fwd = 0, I rev = 0) {
 
-  /*   //make sure this isn't already a set node */
-  /*   assert(!node->isSetLeaf()); */
+    //make sure this isn't already a set node
+    assert(!node->isSetLeaf());
     
-  /*   // replace this normal root node with a set node */
-  /*   UANode *aanode = new UANode(); */
-  /*   OBB node_box = box_from_node(node); */
-  /*   aanode->setBounds(node_box); */
-  /*   SetNode* snode = new SetNode(*aanode, setID, fwd, rev); */
+    // replace this normal root node with a set node
+    UANode *aanode = new UANode();
+    OBB node_box = box_from_node(node);
+    aanode->setBounds(node_box);
+    SetNode* snode = new SetNode(*aanode, setID, fwd, rev);
         
-  /*   if( node->isLeaf() ) { */
-  /*     snode->setRef(0,*node); */
-  /*     snode->setRef(1,NodeRef()); */
-  /*     snode->setRef(2,NodeRef()); */
-  /*     snode->setRef(3,NodeRef()); */
-  /*   } */
-  /*   else { */
-  /*     snode->setRef(0,node->node()->child(0)); */
-  /*     snode->setRef(1,node->node()->child(1)); */
-  /*     snode->setRef(2,node->node()->child(2)); */
-  /*     snode->setRef(3,node->node()->child(3)); */
-  /*     delete node->node(); */
-  /*   } */
+    if( node->isLeaf() ) {
+      snode->setRef(0,*node);
+      snode->setRef(1,NodeRef());
+      snode->setRef(2,NodeRef());
+      snode->setRef(3,NodeRef());
+    }
+    else {
+      snode->setRef(0,node->node()->child(0));
+      snode->setRef(1,node->node()->child(1));
+      snode->setRef(2,node->node()->child(2));
+      snode->setRef(3,node->node()->child(3));
+      delete node->node();
+    }
     
-  /*   node->setPtr((size_t)snode | setLeafAlign); */
+    node->setPtr((size_t)snode | setLeafAlign);
 
-  /*   return; */
-  /* } */
+    return;
+  }
   
   inline void* createLeaf(P* primitives, size_t numPrimitives) {
     return (void*) encodeLeaf((void*)primitives, numPrimitives - 1);
@@ -135,14 +135,15 @@ class OBVH {
     boxes[1] = box.splitBox(split_dim, 0.25,  0.50);
     boxes[2] = box.splitBox(split_dim, 0.50,  0.75);
     boxes[3] = box.splitBox(split_dim, 0.75,  1.00);
-
+    boxes[0].bump(1e-06); boxes[1].bump(1e-06);
+    boxes[2].bump(1e-06); boxes[3].bump(1e-06);
     child_nodes[0].clear();
     child_nodes[1].clear();
     child_nodes[2].clear();
     child_nodes[3].clear();
 
     for(size_t i = 0; i < numNodes; i ++) {
-      UANode* aanode = nodesPtr[i]->safeNode();
+      UANode* aanode = nodesPtr[i]->uasafeNode();
       bool placed = false;
       
       for(size_t j = 0; j < N; j++){
@@ -180,7 +181,7 @@ class OBVH {
   inline std::vector<Vec3fa> points_from_node(const NodeRef* node) {
     std::vector<Vec3fa> points;
     if(!node->isLeaf()){
-      UANode* temp_node = node->safeNode();
+      const UANode* temp_node = node->uasafeNode();
       Vec3fa corners[8];
       for(size_t i = 0; i < N; i++) {
 	node->uanode()->global_points(i, corners);
@@ -212,7 +213,7 @@ class OBVH {
     float best_cost = 1.0;
     float cost;
 
-    OBB node_box = current_node->node()->bounds();
+    OBB node_box = box_from_node(current_node);
     // attempt split along each axis
     for(size_t i = 0; i < 3; i++) {
       split_sets(current_node, i, nodesPtr, numNodes, child_nodes);
