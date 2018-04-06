@@ -125,6 +125,7 @@ __forceinline const Vec3fa rcp_safe(const Vec3fa& a) { return rcp(zero_fix(a)); 
 
 __forceinline const Vec3fa sqrt(const Vec3fa& a) {  return Vec3fa(sqrt(a.x),sqrt(a.y),sqrt(a.z)); }
 
+__forceinline const Vec3fa rsqrt(const Vec3fa& a) { return sqrt(rcp_safe(a)); }
 
 __forceinline float dot( const Vec3fa& a, const Vec3fa& b ) { return reduce_add(a*b); }
 

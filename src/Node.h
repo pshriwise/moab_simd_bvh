@@ -355,6 +355,27 @@ struct __aligned(16) UANode : public Node {
     children[i] = ref;
   }
 
+  __forceinline Vec3fa extent(size_t i) const {
+    assert(i<N);
+    const Vec3fa vx(obb.l.vx.x[i],obb.l.vx.y[i],obb.l.vx.z[i]);
+    const Vec3fa vy(obb.l.vy.x[i],obb.l.vy.y[i],obb.l.vy.z[i]);
+    const Vec3fa vz(obb.l.vz.x[i],obb.l.vz.y[i],obb.l.vz.z[i]);
+    return rsqrt(vx*vx + vy*vy + vz*vz);
+  }
+
+  __forceinline AABB bounds() const {
+    Vec3fa size(0.0);
+    Vec3fa llc(inf);
+    for(size_t i = 0; i < N; i++) {
+      Vec3fa ext = extent(i);
+      Vec3fa lower = Vec3fa(obb.p.x[i], obb.p.y[i], obb.p.z[i]);
+      lower = lower * ext;
+      llc = min(llc, lower);
+      size = max(size, ext);
+    }
+    return AABB(llc, llc + size);
+  }
+  
  public:
   AffineSpaceV obb;
   
