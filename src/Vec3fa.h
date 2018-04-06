@@ -67,7 +67,7 @@ __forceinline Vec3fa operator -( const Vec3fa& b, const Vec3fa& c ) { return Vec
 __forceinline Vec3fa operator *( const Vec3fa& b, const Vec3fa& c ) { return Vec3fa(b.x*c.x, b.y*c.y, b.z*c.z, b.a*c.a); }
 __forceinline Vec3fa operator *( const float& pa, const Vec3fa& c ) { return Vec3fa(pa) * c; }
 __forceinline Vec3fa operator *( const Vec3fa& c, const float& pa ) { return Vec3fa(pa) * c; }
-__forceinline Vec3fa operator /( const Vec3fa& b, const Vec3fa& c ) { return Vec3fa(b.x/c.x, b.y/c.y, b.z/c.z, b.a/c.a); }
+__forceinline Vec3fa operator /( const Vec3fa& b, const Vec3fa& c ) { return Vec3fa(b.x/c.x, b.y/c.y, b.z/c.z, c.a == 0 ?  inf : b.a/c.a); }
 __forceinline Vec3fa operator /( const float& pa, const Vec3fa& c ) { return Vec3fa(pa) / c; }
 __forceinline Vec3fa operator /( const Vec3fa& c, const float& pa ) { return c / Vec3fa(pa); }
 
