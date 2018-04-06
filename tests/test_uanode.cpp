@@ -27,18 +27,8 @@ OBB obb_from_aabb(const AABB& aabb) {
 
 int main() {
 
-  // generate a controlled OBB 
-  std::vector<float> xs, ys, zs;
-  xs.push_back( 5.0); ys.push_back( 0.0); zs.push_back( 0.0);
-  xs.push_back( 0.0); ys.push_back( 5.0); zs.push_back( 0.0);
-  xs.push_back( 5.0); ys.push_back( 5.0); zs.push_back( 0.0);
-  xs.push_back( 0.0); ys.push_back( 0.0); zs.push_back( 0.0);
-  xs.push_back( 5.0); ys.push_back( 0.0); zs.push_back( 5.0);
-  xs.push_back( 0.0); ys.push_back( 5.0); zs.push_back( 5.0);
-  xs.push_back( 5.0); ys.push_back( 5.0); zs.push_back( 5.0);
-  xs.push_back( 0.0); ys.push_back( 0.0); zs.push_back( 5.0);
-
-  OBB box(&xs.front(), &ys.front(), &zs.front(), xs.size());
+  AABB aabb(Vec3fa(0.0), Vec3fa(5.0));
+  OBB box = obb_from_aabb(aabb);
 
   // setup a node with that box
   UANode node = UANode();
