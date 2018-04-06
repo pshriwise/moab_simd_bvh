@@ -329,7 +329,8 @@ struct __aligned(16) UANode : public Node {
     space.p -= bounds.bbox.lower;
 
     space = AffineSpace3fa::scale(1.0f/max(Vec3fa(1E-19f), bounds.bbox.upper - bounds.bbox.lower)) * space;
-
+ 
+    
     obb.l.vx.x[i] = space.l.vx.x;
     obb.l.vx.y[i] = space.l.vx.y;
     obb.l.vx.z[i] = space.l.vx.z;
