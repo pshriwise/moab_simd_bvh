@@ -3,7 +3,7 @@
 #include "testutil.hpp"
 #include "Node.h"
 
-#define EPS 1e-06
+#define EPS 1e-04
 
 // returns an OBB constructed using the bounding points of an AABB
 OBB obb_from_aabb(const AABB& aabb) {
