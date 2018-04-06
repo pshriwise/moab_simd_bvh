@@ -27,6 +27,7 @@ OBB obb_from_aabb(const AABB& aabb) {
 
 void uniform_node_tests();
 void nonuniform_node_tests();
+void unaligned_node_tests();
 
 int main() {
  
@@ -52,38 +53,44 @@ void uniform_node_tests() {
 
   vfloat4 expected_dist;
   size_t expected_result;
+
+  for(size_t dim = 0 ; dim < 3; dim++) {
+    // create a ray
+    Vec3fa org(0.0);
+    Vec3fa dir(0.0);
+
+    org[dim] = 10.0;
+    dir[dim] = -1.0;
+    
+    TravRay r(org, dir);
+
+    // intersect the node
+    result = intersectBox(node, r, z, i, dist);
+
+    // check the results
+    expected_dist = 5.0;
+    expected_result = 15;
+    CHECK_EQUAL(expected_result, result);
+    CHECK_VFLOATREAL_EQUAL(expected_dist, dist);
+
+    // intersect the node
+    result = intersectBox(node, r, z, z, dist);
+
+    // check the results
+    expected_result = 0;
+    CHECK_EQUAL(expected_result, result);
+
+    // setup a new ray (reversed direction)
+    r.dir = -r.dir;
+
+    // intersect the node
+    result = intersectBox(node, r, z, i, dist);
+
+    // check the results
+    expected_result = 0;
+    CHECK_EQUAL(expected_result, result);
+  }
   
-  // create a ray
-  Vec3fa org(10.0, 0.0, 0.0);
-  Vec3fa dir(-1.0, 0.0, 0.0);
-  TravRay r(org, dir);
-
-  // intersect the node
-  result = intersectBox(node, r, z, i, dist);
-
-  // check the results
-  expected_dist = 5.0;
-  expected_result = 15;
-  CHECK_EQUAL(expected_result, result);
-  CHECK_VFLOATREAL_EQUAL(expected_dist, dist);
-
-  // intersect the node
-  result = intersectBox(node, r, z, z, dist);
-
-  // check the results
-  expected_result = 0;
-  CHECK_EQUAL(expected_result, result);
-
-  // setup a new ray (reversed direction)
-  r.dir = -r.dir;
-
-  // intersect the node
-  result = intersectBox(node, r, z, i, dist);
-
-  // check the results
-  expected_result = 0;
-  CHECK_EQUAL(expected_result, result);
-
   return;
 }
 void nonuniform_node_tests() {
@@ -111,89 +118,94 @@ void nonuniform_node_tests() {
 
   vfloat4 expected_dist;
   size_t expected_result;
-  
-  // create a ray
-  Vec3fa org(10.0, 0.0, 0.0);
-  Vec3fa dir(-1.0, 0.0, 0.0);
-  TravRay r(org, dir);
 
-  // intersect the node
-  result = intersectBox(node, r, z, i, dist);
+  for(size_t dim = 0; dim < 3; dim++) { 
+    // create a ray
+    Vec3fa org(0.0);
+    Vec3fa dir(0.0);
 
-  // check the results
-  expected_dist = vfloat4(5.0, 6.0, 7.0, 8.0);;
-  expected_result = 15;
-  CHECK_EQUAL(expected_result, result);
-  CHECK_VFLOATREAL_EQUAL(expected_dist, dist);
+    org[dim] = 10.0;
+    dir[dim] = -1.0;
+    
+    TravRay r(org, dir);
 
-  // intersect the node
-  result = intersectBox(node, r, z, z, dist);
+    // intersect the node
+    result = intersectBox(node, r, z, i, dist);
 
-  // check the results
-  expected_result = 0;
-  CHECK_EQUAL(expected_result, result);
+    // check the results
+    expected_dist = vfloat4(5.0, 6.0, 7.0, 8.0);;
+    expected_result = 15;
+    CHECK_EQUAL(expected_result, result);
+    CHECK_VFLOATREAL_EQUAL(expected_dist, dist);
 
-  // set a non-uniform ray length
-  vfloat4 tfar(10.0, 10.0, 10.0, 0.0);
+    // intersect the node
+    result = intersectBox(node, r, z, z, dist);
 
-  // intersect the node
-  result = intersectBox(node, r, z, tfar, dist);
+    // check the results
+    expected_result = 0;
+    CHECK_EQUAL(expected_result, result);
 
-  // check the results
-  expected_result = 7;
-  CHECK_EQUAL(expected_result, result);
+    // set a non-uniform ray length
+    vfloat4 tfar(10.0, 10.0, 10.0, 0.0);
 
-  // set a non-uniform ray length
-  tfar = vfloat4(10.0, 10.0, 0.0, 0.0);
+    // intersect the node
+    result = intersectBox(node, r, z, tfar, dist);
 
-  // intersect the node
-  result = intersectBox(node, r, z, tfar, dist);
+    // check the results
+    expected_result = 7;
+    CHECK_EQUAL(expected_result, result);
 
-  // check the results
-  expected_result = 3;
-  CHECK_EQUAL(expected_result, result);
+    // set a non-uniform ray length
+    tfar = vfloat4(10.0, 10.0, 0.0, 0.0);
 
-  // set a non-uniform ray length
-  tfar = vfloat4(5.5, 5.5, 5.5, 5.5);
+    // intersect the node
+    result = intersectBox(node, r, z, tfar, dist);
 
-  // intersect the node
-  result = intersectBox(node, r, z, tfar, dist);
+    // check the results
+    expected_result = 3;
+    CHECK_EQUAL(expected_result, result);
 
-  // check the results
-  expected_result = 1;
-  CHECK_EQUAL(expected_result, result);
+    // set a non-uniform ray length
+    tfar = vfloat4(5.5, 5.5, 5.5, 5.5);
 
-  // set a non-uniform ray length
-  tfar = vfloat4(7.5, 7.5, 7.5, 7.5);
+    // intersect the node
+    result = intersectBox(node, r, z, tfar, dist);
 
-  // intersect the node
-  result = intersectBox(node, r, z, tfar, dist);
+    // check the results
+    expected_result = 1;
+    CHECK_EQUAL(expected_result, result);
 
-  // check the results
-  expected_result = 7;
-  CHECK_EQUAL(expected_result, result);
+    // set a non-uniform ray length
+    tfar = vfloat4(7.5, 7.5, 7.5, 7.5);
 
-  // set a non-uniform ray length
-  tfar = vfloat4(8.5, 8.5, 8.5, 8.5);
+    // intersect the node
+    result = intersectBox(node, r, z, tfar, dist);
 
-  // intersect the node
-  result = intersectBox(node, r, z, tfar, dist);
+    // check the results
+    expected_result = 7;
+    CHECK_EQUAL(expected_result, result);
 
-  // check the results
-  expected_result = 15;
-  CHECK_EQUAL(expected_result, result);
+    // set a non-uniform ray length
+    tfar = vfloat4(8.5, 8.5, 8.5, 8.5);
 
-  // setup a new ray (reversed direction)
-  r.dir = -r.dir;
+    // intersect the node
+    result = intersectBox(node, r, z, tfar, dist);
 
-  // intersect the node
-  result = intersectBox(node, r, z, i, dist);
+    // check the results
+    expected_result = 15;
+    CHECK_EQUAL(expected_result, result);
 
-  // check the results
-  expected_result = 0;
-  CHECK_EQUAL(expected_result, result);
+    // setup a new ray (reversed direction)
+    r.dir = -r.dir;
 
+    // intersect the node
+    result = intersectBox(node, r, z, i, dist);
 
+    // check the results
+    expected_result = 0;
+    CHECK_EQUAL(expected_result, result);
+
+  }
 
   return;
 }
