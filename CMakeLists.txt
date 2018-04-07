@@ -42,6 +42,12 @@ SET(TEST_FILES_DIR CACHE INTERNAL "Test File Location" FORCE)
 
 INCLUDE_DIRECTORIES(${MOAB_INCLUDE_DIRS})
 
+OPTION(OBBS "Use Oriented Bounding Boxes" OFF)
+
+if(OBBS)
+  ADD_DEFINITIONS(-DOBBS)
+endif()
+
 # A list of all unittests
 # test files are named test_<test_name>
 LIST(APPEND TEST_FILES "vec3fa")
