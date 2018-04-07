@@ -161,7 +161,7 @@ int main(int argc, char** argv) {
   MOABDirectAccessManager* MDAM = new MOABDirectAccessManager(mbi, x_ptr, y_ptr, z_ptr, vert_count, volume_triangles.front(),
 							      connPointer, numPrimitives, vpere);
   // construct the SIMD BVH
-  OMBVH* BVH = new OMBVH(MDAM);
+  MBVH* BVH = new MBVH(MDAM);
   std::cout << "Building SIMD BVH..." << std::endl;
   start = std::clock();
   moab::EntityHandle vol = volumes[0];
