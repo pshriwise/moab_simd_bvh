@@ -31,6 +31,47 @@ public:
 
     return;
   }
+
+  moab::EntityHandle corners_to_hex(Vec3fa corners[8]) {
+
+    
+    std::vector<double> vertex_coords;
+
+    vertex_coords.push_back(corners[0][0]); vertex_coords.push_back(corners[0][1]); vertex_coords.push_back(corners[0][2]);
+    vertex_coords.push_back(corners[1][0]); vertex_coords.push_back(corners[1][1]); vertex_coords.push_back(corners[1][2]);
+    vertex_coords.push_back(corners[2][0]); vertex_coords.push_back(corners[2][1]); vertex_coords.push_back(corners[2][2]);
+    vertex_coords.push_back(corners[3][0]); vertex_coords.push_back(corners[3][1]); vertex_coords.push_back(corners[3][2]);
+    vertex_coords.push_back(corners[4][0]); vertex_coords.push_back(corners[4][1]); vertex_coords.push_back(corners[4][2]);
+    vertex_coords.push_back(corners[5][0]); vertex_coords.push_back(corners[5][1]); vertex_coords.push_back(corners[5][2]);
+    vertex_coords.push_back(corners[6][0]); vertex_coords.push_back(corners[6][1]); vertex_coords.push_back(corners[6][2]);
+    vertex_coords.push_back(corners[7][0]); vertex_coords.push_back(corners[7][1]); vertex_coords.push_back(corners[7][2]);
+
+    return vec_to_hex(vertex_coords);
+
+  }
+
+  moab::EntityHandle vec_to_hex(std::vector<double> coords) {
+
+        // create mesh vertices and hex element for box
+    moab::ErrorCode rval;
+    moab::Range hex_verts;
+    rval = write_mbi()->create_vertices(&(coords[0]), 8, hex_verts);
+    MB_CHK_ERR_CONT(rval);
+
+    // convet to vector - MOAB has no element constructor using Ranges?
+    std::vector<moab::EntityHandle> hex_vert_vec;
+    for(moab::Range::iterator i = hex_verts.begin(); i != hex_verts.end() ; i++) {
+      hex_vert_vec.push_back(*i);
+    }
+
+    // create hex element
+    moab::EntityHandle hex;
+    rval = write_mbi()->create_element(moab::MBHEX, &(hex_vert_vec[0]), 8, hex);
+    MB_CHK_ERR_CONT(rval);
+
+    return hex;
+
+  }
   
   moab::EntityHandle aabb_to_hex(AABB box) {
     // create vertex coordinates for hex element
@@ -46,24 +87,8 @@ public:
     vertex_coords.push_back(box.upper[0]); vertex_coords.push_back(box.upper[1]); vertex_coords.push_back(box.upper[2]);
     vertex_coords.push_back(box.lower[0]); vertex_coords.push_back(box.upper[1]); vertex_coords.push_back(box.upper[2]);
 
-    // create mesh vertices and hex element for box
-    moab::ErrorCode rval;
-    moab::Range hex_verts;
-    rval = write_mbi()->create_vertices(&(vertex_coords[0]), 8, hex_verts);
-    MB_CHK_ERR_CONT(rval);
+    return vec_to_hex(vertex_coords);
 
-    // convet to vector - MOAB has no element constructor using Ranges?
-    std::vector<moab::EntityHandle> hex_vert_vec;
-    for(moab::Range::iterator i = hex_verts.begin(); i != hex_verts.end() ; i++) {
-      hex_vert_vec.push_back(*i);
-    }
-
-    // create hex element
-    moab::EntityHandle hex;
-    rval = write_mbi()->create_element(moab::MBHEX, &(hex_vert_vec[0]), 8, hex);
-    MB_CHK_ERR_CONT(rval);
-
-    return hex;
   }
   
   std::vector<moab::EntityHandle> transfer_tris(std::vector<moab::EntityHandle> tris) {

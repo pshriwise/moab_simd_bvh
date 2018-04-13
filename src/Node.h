@@ -171,6 +171,26 @@ struct __aligned(16) AANode : public Node
 						       upper_x[i] = bounds.upper.x;
                                                        upper_y[i] = bounds.upper.y;
 						       upper_z[i] = bounds.upper.z;  }
+
+  __forceinline void get_corners(size_t i, Vec3fa corners[8]) {
+
+    AABB box = getBound(i);
+
+    Vec3fa size = box.size();
+    
+    corners[0] = box.lower;
+    corners[1] = box.lower + Vec3fa(size.x, 0.0, 0.0);
+    corners[2] = box.lower + Vec3fa(0.0, size.y, 0.0);
+    corners[3] = box.lower + Vec3fa(size.x, size.y, 0.0);
+    
+    corners[4] = box.lower + Vec3fa(0.0, 0.0, size.z);
+    corners[5] = box.lower + Vec3fa(size.x, 0.0, size.z);
+    corners[6] = box.lower + Vec3fa(0.0, size.y, size.z);
+    corners[7] = box.lower + size;
+
+    return;
+  }
+  
   
   inline AABB getBound(size_t i) { // check index value
                                    assert(i >= 0 && i < 4); 
@@ -360,9 +380,14 @@ struct __aligned(16) UANode : public Node {
     const Vec3fa vx(obb.l.vx.x[i],obb.l.vx.y[i],obb.l.vx.z[i]);
     const Vec3fa vy(obb.l.vy.x[i],obb.l.vy.y[i],obb.l.vy.z[i]);
     const Vec3fa vz(obb.l.vz.x[i],obb.l.vz.y[i],obb.l.vz.z[i]);
-
     
     return rsqrt(vx*vx + vy*vy + vz*vz);
+  }
+
+  __forceinline void get_corners(size_t i, Vec3fa corners[8]) const {
+    
+    global_points(i, corners);
+
   }
   
   __forceinline void global_points(size_t i, Vec3fa corners[8]) const {
@@ -398,14 +423,15 @@ struct __aligned(16) UANode : public Node {
       
       corners[0] = trans * lower;
       corners[1] = trans * (lower + Vec3fa(ext.x, 0.0, 0.0));
-      corners[2] = trans * (lower + Vec3fa(0.0, ext.y, 0.0));
-      corners[3] = trans * (lower + Vec3fa(ext.x, ext.y, 0.0));
+      corners[2] = trans * (lower + Vec3fa(ext.x, ext.y, 0.0));
+      corners[3] = trans * (lower + Vec3fa(0.0, ext.y, 0.0));
+
 
       corners[4] = trans * (lower + Vec3fa(0.0, 0.0, ext.z));
       corners[5] = trans * (lower + Vec3fa(ext.x, 0.0, ext.z));
-      corners[6] = trans * (lower + Vec3fa(0.0, ext.y, ext.z));
-      corners[7] = trans * (lower + ext);
-
+      corners[6] = trans * (lower + ext);
+      corners[7] = trans * (lower + Vec3fa(0.0, ext.y, ext.z));
+	  
       return;
   }
   

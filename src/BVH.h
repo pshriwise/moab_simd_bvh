@@ -666,6 +666,8 @@ class BVH {
 	if(stackPtr == stack) break;
 	stackPtr--;
 	NodeRef cur = NodeRef(stackPtr->ptr);
+
+      next:
 	
 	// if the ray doesn't reach this node, move to next
 	if(*(float*)&stackPtr->dist > ray.tfar) { continue; }
@@ -718,9 +720,11 @@ class BVH {
 	    vray.sense = 1;
 	  }
 	  // WILL ALSO SET SENSE HERE AT SOME POINT
-	  NodeRef setNode = cur.setLeaf();
-	  intersectRay(setNode, ray, vray);
-	  continue;
+	  cur = cur.setLeaf();
+	  goto next;
+	  /* NodeRef setNode = cur.setLeaf(); */
+	  /* intersectRay(setNode, ray, vray); */
+	  /* continue; */
 	}
 	
 	  size_t numPrims;
