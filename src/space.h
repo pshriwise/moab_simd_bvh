@@ -8,7 +8,7 @@
 
 
 template<typename T>
-struct LinSpaceT {
+struct __aligned(16) LinSpaceT {
 
   typedef T Vector;
   typedef typename T::Scalar Scalar;
@@ -148,7 +148,7 @@ typedef LinSpaceT<Vec3vfa> LinSpaceV;
 #define V typename L::Vector
 
 template< typename L >
-struct AffineSpaceT {
+struct __aligned(16) AffineSpaceT {
   
   __forceinline AffineSpaceT () {}
 

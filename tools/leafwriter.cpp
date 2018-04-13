@@ -89,10 +89,11 @@ public:
     current_node = current_node.setLeaf();
     
     // get the box for this set (should be the same for all children)
-    AABB box = current_node.node()->getBound(0);
+    Vec3fa corners[8];
+    current_node.uanode()->get_corners(0, corners);
 
     // write the box to the class MOAB instance
-    aabb_to_hex(box);
+    corners_to_hex(corners);
 
     moab::EntityHandle surface_handle = snode->setID;
 
@@ -129,10 +130,11 @@ public:
     int child_number = find_child_number(current_node, previous_node);
     
     // retrieve bounding box for this leaf from the parent node
-    AABB box = previous_node.node()->getBound(child_number);
-
+    Vec3fa corners[8];
+    previous_node.uanode()->get_corners(child_number, corners);
+    
     // write box to class MOAB instance
-    aabb_to_hex(box);
+    corners_to_hex(corners);
     
     moab::ErrorCode rval;
 
