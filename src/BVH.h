@@ -127,50 +127,7 @@ class BVH {
     // get the current node's bounds
     AABB box = current_node->safeNode()->bounds();
 
-    /* Vec3fa dxdydz = (box.upper - box.lower) / 4.0f; */
-
-    /* //create new child bounds */
-    /* vfloat4 bounds[6]; */
-  
-    /* bounds[0] = vfloat4(box.lower[0]); // lower x */
-    /* bounds[1] = vfloat4(box.upper[0]); // upper x */
-    /* bounds[2] = vfloat4(box.lower[1]); // lower y */
-    /* bounds[3] = vfloat4(box.upper[1]); // upper y */
-    /* bounds[4] = vfloat4(box.lower[2]); // lower z */
-    /* bounds[5] =vfloat4(box.upper[2]); // upper z */
-
-    /* float lb = box.lower[split_dim]; */
-    /* float delta = dxdydz[split_dim]; */
-    /* bounds[2*split_dim] = vfloat4(lb, lb + delta, lb + 2*delta, lb + 3*delta); */
-    /* bounds[2*split_dim+1] = vfloat4(lb + delta, lb + 2*delta, lb + 3*delta, lb + 4*delta); */
-
     AABB boxes[N];
-
-	 
-    /* boxes[0] = AABB(bounds[0][0], */
-    /* 		    bounds[2][0], */
-    /* 		    bounds[4][0], */
-    /* 		    bounds[1][0], */
-    /* 		    bounds[3][0], */
-    /* 		    bounds[5][0]); */
-    /* boxes[1] = AABB(bounds[0][1], */
-    /* 		    bounds[2][1], */
-    /* 		    bounds[4][1], */
-    /* 		    bounds[1][1], */
-    /* 		    bounds[3][1], */
-    /* 		    bounds[5][1]); */
-    /* boxes[2] = AABB(bounds[0][2], */
-    /* 		    bounds[2][2], */
-    /* 		    bounds[4][2], */
-    /* 		    bounds[1][2], */
-    /* 		    bounds[3][2], */
-    /* 		    bounds[5][2]); */
-    /* boxes[3] = AABB(bounds[0][3], */
-    /* 		    bounds[2][3], */
-    /* 		    bounds[4][3], */
-    /* 		    bounds[1][3], */
-    /* 		    bounds[3][3], */
-    /* 		    bounds[5][3]); */
 
     boxes[0]= box.splitBox(split_dim, 0.00, 0.25);
     boxes[1]= box.splitBox(split_dim, 0.25, 0.50);
@@ -456,39 +413,10 @@ class BVH {
     tempNodes[1].box.bump(BOX_BUMP);
     tempNodes[2].box.bump(BOX_BUMP);
     tempNodes[3].box.bump(BOX_BUMP);
-    
-    vfloat4 low_x, upp_x,
-      low_y, upp_y,
-      low_z, upp_z;
 
-    low_x = vfloat4(tempNodes[0].box.lower.x,
-		    tempNodes[1].box.lower.x,
-		    tempNodes[2].box.lower.x,
-		    tempNodes[3].box.lower.x);
-    low_y = vfloat4(tempNodes[0].box.lower.y,
-		    tempNodes[1].box.lower.y,
-		    tempNodes[2].box.lower.y,
-		    tempNodes[3].box.lower.y);
-    low_z = vfloat4(tempNodes[0].box.lower.z,
-		    tempNodes[1].box.lower.z,
-		    tempNodes[2].box.lower.z,
-		    tempNodes[3].box.lower.z);
-    upp_x = vfloat4(tempNodes[0].box.upper.x,
-		    tempNodes[1].box.upper.x,
-		    tempNodes[2].box.upper.x,
-		    tempNodes[3].box.upper.x);
-    upp_y = vfloat4(tempNodes[0].box.upper.y,
-		    tempNodes[1].box.upper.y,
-		    tempNodes[2].box.upper.y,
-		    tempNodes[3].box.upper.y);
-    upp_z = vfloat4(tempNodes[0].box.upper.z,
-		    tempNodes[1].box.upper.z,
-		    tempNodes[2].box.upper.z,
-		    tempNodes[3].box.upper.z);
-
-    this_node->set(low_x,upp_x,
-		   low_y,upp_y,
-		   low_z,upp_z);
+    for(size_t i = 0; i < N; i++) {
+      this_node->setBound(i, tempNodes[i].box);
+    }
     
     return;
   
@@ -505,50 +433,7 @@ class BVH {
       box.update(primitives[i].upper.x,primitives[i].upper.y,primitives[i].upper.z);
     }
 
-    /* Vec3fa dxdydz = (box.upper - box.lower) / 4.0f; */
-
-    /* //create new child bounds */
-    /* vfloat4 bounds[6]; */
-  
-    /* bounds[0] = vfloat4(box.lower[0]); // lower x */
-    /* bounds[1] = vfloat4(box.upper[0]); // upper x */
-    /* bounds[2] = vfloat4(box.lower[1]); // lower y */
-    /* bounds[3] = vfloat4(box.upper[1]); // upper y */
-    /* bounds[4] = vfloat4(box.lower[2]); // lower z */
-    /* bounds[5] = vfloat4(box.upper[2]); // upper z */
-
-    /* float lb = box.lower[split_axis]; */
-    /* float delta = dxdydz[split_axis]; */
-    /* bounds[2*split_axis] = vfloat4(lb, lb + delta, lb + 2*delta, lb + 3*delta); */
-    /* bounds[2*split_axis+1] = vfloat4(lb + delta, lb + 2*delta, lb + 3*delta, lb + 4*delta); */
-
     AABB boxes[N];
-
-	 
-    /* boxes[0] = AABB(bounds[0][0], */
-    /* 		    bounds[2][0], */
-    /* 		    bounds[4][0], */
-    /* 		    bounds[1][0], */
-    /* 		    bounds[3][0], */
-    /* 		    bounds[5][0]); */
-    /* boxes[1] = AABB(bounds[0][1], */
-    /* 		    bounds[2][1], */
-    /* 		    bounds[4][1], */
-    /* 		    bounds[1][1], */
-    /* 		    bounds[3][1], */
-    /* 		    bounds[5][1]); */
-    /* boxes[2] = AABB(bounds[0][2], */
-    /* 		    bounds[2][2], */
-    /* 		    bounds[4][2], */
-    /* 		    bounds[1][2], */
-    /* 		    bounds[3][2], */
-    /* 		    bounds[5][2]); */
-    /* boxes[3] = AABB(bounds[0][3], */
-    /* 		    bounds[2][3], */
-    /* 		    bounds[4][3], */
-    /* 		    bounds[1][3], */
-    /* 		    bounds[3][3], */
-    /* 		    bounds[5][3]); */
 
     boxes[0]= box.splitBox(split_axis, 0.00, 0.25);
     boxes[1]= box.splitBox(split_axis, 0.25, 0.50);
@@ -560,11 +445,6 @@ class BVH {
     tn[2].clear(); tn[2].prims.shrink_to_fit();
     tn[3].clear(); tn[3].prims.shrink_to_fit();
 
-    /* new (&tn[0]) TempNode<T>(); */
-    /* new (&tn[1]) TempNode<T>(); */
-    /* new (&tn[2]) TempNode<T>(); */
-    /* new (&tn[3]) TempNode<T>(); */
-  
     // sort primitives into boxes by their centroid
     for(size_t i = 0; i < numPrimitives; i++) {
       const PrimRef* p = &(primitives[i]);
