@@ -158,6 +158,8 @@ class OBVH {
       assert(placed);
     }
 
+    assert(child_nodes[0].size()+child_nodes[1].size()+child_nodes[2].size()+child_nodes[3].size() == numNodes);
+    
     return;
   }
 
@@ -170,12 +172,16 @@ class OBVH {
       all_points.insert(all_points.end(), points.begin(), points.end());
     }
 
-    return OBB(&all_points.front(), all_points.size());
+    OBB box = OBB(&all_points.front(), all_points.size());
+    box.bump(box_bump);
+    return box;
   }
   
   inline OBB box_from_node(const NodeRef* node) {
     std::vector<Vec3fa> points = points_from_node(node);
-    return OBB(&points.front(), points.size());
+    OBB box = OBB(&points.front(), points.size());
+    box.bump(box_bump);
+    return box;
   }
 
   inline std::vector<Vec3fa> points_from_node(const NodeRef* node) {
@@ -426,7 +432,8 @@ class OBVH {
     }
 
     OBB node_box = OBB(&(x.front()), &(y.front()), &(z.front()), x.size());
-
+    node_box.bump(box_bump);
+    
     size_t np = numPrimitives;
     // split along each axis and get lowest cost
     for(size_t i = 0; i < 3; i++) {
@@ -477,6 +484,8 @@ class OBVH {
     }
     
     OBB box = OBB(&(x.front()), &(y.front()), &(z.front()), x.size());
+    // extend the box so that entities are not lost
+    box.bump(0.1);
     
     //create new child bounds
     OBB boxes[N];
@@ -490,16 +499,18 @@ class OBVH {
     tn[1].clear(); tn[1].prims.shrink_to_fit();
     tn[2].clear(); tn[2].prims.shrink_to_fit();
     tn[3].clear(); tn[3].prims.shrink_to_fit();
-  
+    
     // sort primitives into boxes by their centroid
     for(size_t i = 0; i < numPrimitives; i++) {
       const PrimRef* p = &(primitives[i]);
       P t = P((I*)MDAM->conn + (p->primID()*MDAM->element_stride), (I)p->primitivePtr);
+      Vec3fa centroid = t.get_centroid((void*)MDAM);
+      inside(box, centroid);
       
       bool placed = false;
       for(size_t j = 0; j < 4 ; j++) {
 	// if the centroid is in the box, place it there
-	if( inside(boxes[j], t.get_centroid((void*)MDAM)) ){
+	if( inside(boxes[j], centroid) ) {
 	  placed = true;
 	  tn[j].prims.push_back(*p);
 	  break;
@@ -508,6 +519,9 @@ class OBVH {
       assert(placed);
     }
 
+    assert(tn[0].size()+tn[1].size()+tn[2].size()+tn[3].size() == numPrimitives);
+
+    
     for(size_t i = 0; i < N; i++) {
 
       std::vector<float> x,y,z;
@@ -728,12 +742,13 @@ class OBVH {
 	if(stackPtr == stack) break;
 	stackPtr--;
 	NodeRef cur = NodeRef(stackPtr->ptr);
-
-      next:
 	
 	// if the ray doesn't reach this node, move to next
 	if(*(float*)&stackPtr->dist > ray.tfar) { continue; }
-        
+
+      next:
+
+	
 	while (true)
 	  {
 	    size_t mask = 0; vfloat4 tNear(inf);
