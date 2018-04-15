@@ -645,7 +645,9 @@ class BVH {
 	
 	// if the ray doesn't reach this node, move to next
 	if(*(float*)&stackPtr->dist > ray.tfar) { continue; }
-        
+
+      next:
+	
 	while (true)
 	  {
 	    size_t mask = 0; vfloat4 tNear(inf);
@@ -694,9 +696,11 @@ class BVH {
 	    vray.sense = 1;
 	  }
 	  // WILL ALSO SET SENSE HERE AT SOME POINT
-	  NodeRef setNode = cur.setLeaf();
-	  intersectRay(setNode, ray, vray);
-	  continue;
+	  cur = cur.setLeaf();
+	  goto next;
+	  /* NodeRef setNode = cur.setLeaf(); */
+	  /* intersectRay(setNode, ray, vray); */
+	  /* continue; */
 	}
 	
 	  size_t numPrims;
