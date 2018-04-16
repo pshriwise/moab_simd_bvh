@@ -92,24 +92,24 @@ class BVH {
     assert(!node->isSetLeaf());
     
     // replace this normal root node with a set node
-    AANode *aanode = new AANode();
-    AABB node_box = box_from_node(node);
-    aanode->setBounds(node_box);
-    SetNode* snode = new SetNode(*aanode, setID, fwd, rev);
+    /* AANode *aanode = new AANode(); */
+    /* AABB node_box = box_from_node(node); */
+    /* aanode->setBounds(node_box); */
+    SetNode* snode = new SetNode(node->pointer(), setID, fwd, rev);
         
-    if( node->isLeaf() ) {
-      snode->setRef(0,*node);
-      snode->setRef(1,NodeRef());
-      snode->setRef(2,NodeRef());
-      snode->setRef(3,NodeRef());
-    }
-    else {
-      snode->setRef(0,node->node()->child(0));
-      snode->setRef(1,node->node()->child(1));
-      snode->setRef(2,node->node()->child(2));
-      snode->setRef(3,node->node()->child(3));
-      delete node->node();
-    }
+    /* if( node->isLeaf() ) { */
+    /*   snode->setRef(0,*node); */
+    /*   snode->setRef(1,NodeRef()); */
+    /*   snode->setRef(2,NodeRef()); */
+    /*   snode->setRef(3,NodeRef()); */
+    /* } */
+    /* else { */
+    /*   snode->setRef(0,node->node()->child(0)); */
+    /*   snode->setRef(1,node->node()->child(1)); */
+    /*   snode->setRef(2,node->node()->child(2)); */
+    /*   snode->setRef(3,node->node()->child(3)); */
+    /*   delete node->node(); */
+    /* } */
     
     node->setPtr((size_t)snode | setLeafAlign);
 
@@ -168,15 +168,19 @@ class BVH {
   
   inline AABB box_from_node(NodeRef* node) {
     // create a new node that contains all nodes
-    AABB node_box;
-    if(!node->isLeaf()){
-      AANode* temp_node = node->safeNode();
-      node_box = temp_node->bounds();
+    NodeRef node_ref = *node;
+
+    // if this is a SetNode, redirect the node_ref appropriately
+    if(node_ref.isSetLeaf()){
+      SetNode* snode = (SetNode*)node_ref.snode();
+      node_ref = snode->ref();
     }
-    else {
+
+    AABB node_box;
+    if(node_ref.isLeaf()){
       // get the primitives
       size_t numPrims;
-      P* primIDs = (P*)node->leaf(numPrims);
+      P* primIDs = (P*)node_ref.leaf(numPrims);
       for (size_t j = 0; j < numPrims; j++){
 	P t = primIDs[j];
 	Vec3fa lower, upper;
@@ -186,6 +190,11 @@ class BVH {
 	node_box.update(box);
       }
     }
+    else {
+      AANode* temp_node = node_ref.safeNode();
+      node_box = temp_node->bounds();
+    }
+    
     return node_box;
   }
   
@@ -248,8 +257,7 @@ class BVH {
 	//arb split
 	int i = 0;
 	NodeRef** it = nodesPtr;
-	NodeRef** end = nodesPtr+(numNodes
-				  );
+	NodeRef** end = nodesPtr+(numNodes);
 	while(it != end) {
 	  child_nodes[i].push_back(*it);
 	  i++;
@@ -267,9 +275,7 @@ class BVH {
 	box = AABB(0.0f);
       }
       else {
-	for(size_t j = 0; j < num_child_prims; j++) {
-	  box.update(child_nodes[i].prims[j]->safeNode()->bounds());
-	}
+	box = box_from_nodes(&child_nodes[i].prims.front(), num_child_prims);
       }
       assert(box.isValid());
       aanode->setBound(i, box);
@@ -694,7 +700,7 @@ class BVH {
 	    vray.sense = 1;
 	  }
 	  // WILL ALSO SET SENSE HERE AT SOME POINT
-	  cur = cur.setLeaf();
+	  cur = snode->ref();
 	  goto next;
 	  /* NodeRef setNode = cur.setLeaf(); */
 	  /* intersectRay(setNode, ray, vray); */
@@ -783,7 +789,7 @@ class BVH {
 	      vray.sense = 1;
 	    }
 	    // WILL ALSO SET SENSE HERE AT SOME POINT
-	    cur = cur.setLeaf();
+	    cur = snode->ref();
 	    goto next;
 	    /* NodeRef setNode = cur.setLeaf(); */
 	    /* intersectClosest(setNode, ray, vray); */

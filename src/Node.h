@@ -233,38 +233,22 @@ struct __aligned(16) AANode : public Node
 };
 
 template<typename I>
-struct SetNodeT : public AANode {
-
-  using::Node::children;
+struct SetNodeT {
   
-  using::AANode::lower_x;
-  using::AANode::lower_y;
-  using::AANode::lower_z;
-  using::AANode::upper_x;
-  using::AANode::upper_y;
-  using::AANode::upper_z;
-
-  
- SetNodeT(const AANode &aanode,
-	 const I &setid,
-	 const I &fwdID,
-	 const I &revID) :
+ SetNodeT(const size_t &ptr_in,
+	  const I &setid,
+	  const I &fwdID,
+	  const I &revID) :
   setID(setid),
     fwdID(fwdID),
-    revID(revID)
-    { lower_x = aanode.lower_x;
-                 lower_y = aanode.lower_y;
-		 lower_z = aanode.lower_z;
-		 upper_x = aanode.upper_x;
-                 upper_y = aanode.upper_y;
-		 upper_z = aanode.upper_z;
-                 children[0] = aanode.children[0];
-                 children[1] = aanode.children[1];
-		 children[2] = aanode.children[2];
-		 children[3] = aanode.children[3]; }
-  
+    revID(revID),
+    ptr(ptr_in) {}
+
+  size_t ptr;
   I setID;
   I fwdID, revID;
+
+  __forceinline NodeRef ref() { return NodeRef(ptr); }
   
 };
 
