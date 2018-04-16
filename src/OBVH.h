@@ -378,7 +378,7 @@ class OBVH {
     aanode->setBounds(box);
     NodeRef* this_node = new NodeRef((size_t)aanode);
     TempPrimNode tempNodes[4];
-    splitNode(this_node, primitives, numPrimitives, tempNodes, settings);
+    splitNode(this_node, box, primitives, numPrimitives, tempNodes, settings);
 
 #ifdef VERBOSE_MODE
     std::cout << "New Node with Bounds: " << std::endl << *aanode << std::endl;
@@ -405,7 +405,7 @@ class OBVH {
   } // end build
 
 
-  void splitNode(NodeRef* node, const PrimRef* primitives, const size_t numPrimitives, TempPrimNode tempNodes[N], BVHSettings *settings) {
+  void splitNode(NodeRef* node, const OBB& node_box, const PrimRef* primitives, const size_t numPrimitives, TempPrimNode tempNodes[N], BVHSettings *settings) {
 
     // split node along each axis
     float max_cost = 100.0;
@@ -416,28 +416,11 @@ class OBVH {
     float cost;
 
     UANode* this_node = node->uanode();
-
-    std::vector<float> x,y,z;
-    for(size_t i = 0; i < numPrimitives; i++) {
-
-      P t = P((I*)MDAM->conn + (primitives[i].primID()*MDAM->element_stride), (I)primitives[i].primitivePtr);
-
-      Vec3da pnt;
-      pnt = t.get_point(0, (void*)MDAM);
-      x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
-      pnt = t.get_point(1, (void*)MDAM);
-      x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
-      pnt = t.get_point(2, (void*)MDAM);
-      x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
-    }
-
-    OBB node_box = OBB(&(x.front()), &(y.front()), &(z.front()), x.size());
-    node_box.bump(box_bump);
     
     size_t np = numPrimitives;
     // split along each axis and get lowest cost
     for(size_t i = 0; i < 3; i++) {
-      splitNode(node, i, primitives, numPrimitives, tempNodes);
+      splitNode(node, node_box, i, primitives, numPrimitives, tempNodes);
       //compute the SAH cost of this node split
       cost = settings->evaluate_cost(tempNodes, node_box, np);
       //      assert(cost >= min_cost && cost <= max_cost);
@@ -450,7 +433,9 @@ class OBVH {
 
     assert(best_dim != -1);
 
-    splitNode(node, best_dim, primitives, numPrimitives, tempNodes);
+    if(best_dim != 2) {
+      splitNode(node, node_box, best_dim, primitives, numPrimitives, tempNodes);
+    }
 
     tempNodes[0].box.bump(box_bump);
     tempNodes[1].box.bump(box_bump);
@@ -465,26 +450,11 @@ class OBVH {
     return;
   }
 
-  void splitNode(NodeRef* node, size_t split_axis, const PrimRef* primitives, const size_t numPrimitives, TempPrimNode tn[N]) {
+  void splitNode(NodeRef* node, OBB box, size_t split_axis, const PrimRef* primitives, const size_t numPrimitives, TempPrimNode tn[N]) {
 
     assert(split_axis >= 0 && split_axis <= 2);
 
-    std::vector<float> x,y,z;
-    for(size_t i = 0; i < numPrimitives; i++) {
-
-      P t = P((I*)MDAM->conn + (primitives[i].primID()*MDAM->element_stride), (I)primitives[i].primitivePtr);
-      
-      Vec3da pnt;
-      pnt = t.get_point(0, (void*)MDAM);
-      x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
-      pnt = t.get_point(1, (void*)MDAM);
-      x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
-      pnt = t.get_point(2, (void*)MDAM);
-      x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);      
-    }
-    
-    OBB box = OBB(&(x.front()), &(y.front()), &(z.front()), x.size());
-    // extend the box so that entities are not lost
+    // extend the box considerably for robustness
     box.bump(0.1);
     
     //create new child bounds
