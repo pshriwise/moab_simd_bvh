@@ -23,7 +23,7 @@ class OBVH {
   typedef BVHSettingsT<PrimRef, OBB> BVHSettings;
   typedef BVHSettingsT<NodeRef*, OBB> BVHJoinTreeSettings;
 
-  typedef OSetNodeT<I> SetNode;
+  typedef SetNodeT<I> SetNode;
   
   typedef TempNodeT<PrimRef, OBB> TempPrimNode;
   typedef TempNodeT<NodeRef*, OBB> TempSetNode;
@@ -94,25 +94,7 @@ class OBVH {
     //make sure this isn't already a set node
     assert(!node->isSetLeaf());
     
-    // replace this normal root node with a set node
-    UANode *aanode = new UANode();
-    OBB node_box = box_from_node(node);
-    aanode->setBounds(node_box);
-    SetNode* snode = new SetNode(*aanode, setID, fwd, rev);
-        
-    if( node->isLeaf() ) {
-      snode->setRef(0,*node);
-      snode->setRef(1,NodeRef());
-      snode->setRef(2,NodeRef());
-      snode->setRef(3,NodeRef());
-    }
-    else {
-      snode->setRef(0,node->node()->child(0));
-      snode->setRef(1,node->node()->child(1));
-      snode->setRef(2,node->node()->child(2));
-      snode->setRef(3,node->node()->child(3));
-      delete node->node();
-    }
+    SetNode* snode = new SetNode(node->pointer(), setID, fwd, rev);
     
     node->setPtr((size_t)snode | setLeafAlign);
 
@@ -186,8 +168,15 @@ class OBVH {
 
   inline std::vector<Vec3fa> points_from_node(const NodeRef* node) {
     std::vector<Vec3fa> points;
-    if(!node->isLeaf()){
-      const UANode* temp_node = node->uasafeNode();
+
+    NodeRef node_ref = *node;
+    if(node_ref.isSetLeaf()) {
+      SetNode* snode = (SetNode*)node_ref.snode();
+      node_ref = snode->ref();
+    }
+    
+    if(!node_ref.isLeaf()){
+      const UANode* temp_node = node_ref.uasafeNode();
       Vec3fa corners[8];
       for(size_t i = 0; i < N; i++) {
 	temp_node->global_points(i, corners);
@@ -199,7 +188,7 @@ class OBVH {
     else {
       // get the primitives
       size_t numPrims;
-      P* primIDs = (P*)node->leaf(numPrims);
+      P* primIDs = (P*)node_ref.leaf(numPrims);
       for (size_t i = 0; i < numPrims; i++){
   	P t = primIDs[i];
 	size_t np = t.num_points();
@@ -767,7 +756,7 @@ class OBVH {
 	    vray.sense = 1;
 	  }
 	  // WILL ALSO SET SENSE HERE AT SOME POINT
-	  cur = cur.setLeaf();
+	  cur = snode->ref();
 	  goto next;
 	  /* NodeRef setNode = cur.setLeaf(); */
 	  /* intersectRay(setNode, ray, vray); */
@@ -856,7 +845,7 @@ class OBVH {
 	      vray.sense = 1;
 	    }
 	    // WILL ALSO SET SENSE HERE AT SOME POINT
-	    cur = cur.setLeaf();
+	    cur = snode->ref();
 	    goto next;
 	    /* NodeRef setNode = cur.setLeaf(); */
 	    /* intersectClosest(setNode, ray, vray); */
