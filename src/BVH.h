@@ -85,7 +85,7 @@ class BVH {
   // being the FOURTH leas significant bit.
   NodeRef* encodeLeaf(void *prim_arr, size_t num) {
     assert(num < MAX_LEAF_SIZE);
-    return new NodeRef((size_t)prim_arr | (tyLeaf + num));
+    return new NodeRef((size_t)prim_arr, (tyLeaf + num));
   }
   
   inline void makeSetNode(NodeRef* node, I setID, I fwd = 0, I rev = 0) {

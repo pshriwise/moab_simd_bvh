@@ -11,7 +11,11 @@
 
 static const size_t emptyNode = 8;
 static const size_t tyLeaf = 8;
-static const size_t setLeafAlign = 3;
+static const size_t setLeafAlign = 1;
+
+static const size_t alignedNode = 2;
+static const size_t unalignedNode = 3;
+
 
 static const size_t items_mask = 15;
 static const size_t align_mask = 15;
@@ -20,12 +24,24 @@ static const size_t align_mask = 15;
 struct AANode;
 struct UANode;
 struct Node;
- 
+
+enum NodeMask {
+  EMPTY_MASK = 0,
+  SET_LEAF = 1,
+  ALIGNED_NODE = 2,
+  UNALIGNED_NODE = 3,
+  LEAF_NODE = 8
+};
+
 struct NodeRef {
 
   __forceinline NodeRef () { ptr = emptyNode;}
 
-  __forceinline NodeRef(size_t ptr) : ptr(ptr) {}
+  /* __forceinline NodeRef(size_t ptr) : ptr(ptr) {} */
+
+  __forceinline NodeRef(size_t ptr_in, size_t mask = 0) {
+    ptr = ptr_in + mask;
+  }
 
   __forceinline operator size_t() const { return ptr; }
 
@@ -33,10 +49,16 @@ struct NodeRef {
   
   __forceinline size_t isLeaf() const { return ptr & tyLeaf; }
 
-  __forceinline size_t isSetLeaf() const { return !(isLeaf()) && (ptr & setLeafAlign); }
+  __forceinline size_t isSetLeaf() const { return (ptr & align_mask) == setLeafAlign; }
 
   __forceinline bool isEmpty() const { return ptr == emptyNode; }
 
+  __forceinline bool isUnaligned() const { return (ptr & align_mask) == alignedNode; }
+  
+  __forceinline bool isAligned() const { return (ptr & align_mask) == unalignedNode; }
+  
+  __forceinline const void* anyNode() { return (void*)(ptr & ~align_mask); }
+  
   __forceinline       AANode* node()       { return (AANode*)ptr; }
   __forceinline const AANode* node() const { return (const AANode*)ptr; }
 
