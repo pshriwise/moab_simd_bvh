@@ -18,7 +18,7 @@
 #define MAX_LEAF_SIZE 8
 
 template <typename V, typename T, typename I>
-class BVH {
+class MixedBVH {
 
   typedef BVHSettingsT<PrimRef, AABB> BVHSettings;
   typedef BVHSettingsT<NodeRef*, AABB> BVHJoinTreeSettings;
@@ -43,7 +43,7 @@ class BVH {
   static void no_filter(Ray &ray, void* mesh_ptr) { return; };
 
  public:
-  inline BVH(MOABDirectAccessManager *mdam) : MDAM(mdam), maxLeafSize(8), depth(0), maxDepth(BVH_MAX_DEPTH), num_stored(0), filter(&no_filter)
+  inline MixedBVH(MOABDirectAccessManager *mdam) : MDAM(mdam), maxLeafSize(8), depth(0), maxDepth(BVH_MAX_DEPTH), num_stored(0), filter(&no_filter)
     {
       std::vector<P> storage_vec(MDAM->num_elements);
       leaf_sequence_storage = storage_vec;
