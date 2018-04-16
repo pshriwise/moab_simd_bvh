@@ -207,8 +207,6 @@ int main(int argc, char** argv) {
     double dist = (nearest_location - origin).length();
     MB_CHK_SET_ERR(rval, "Failed in MOAB to intersect a ray with the mesh");
     moab_total += duration;
-
-    std::cout << dist << std::endl;
     
     r = MBRay(origin.array(), Vec3da(0,0,0), 0.0, inf);
     
@@ -216,10 +214,6 @@ int main(int argc, char** argv) {
     MBVHM->MOABBVH->intersectClosest(*root, r);
     duration = (std::clock() - start);
     total += duration;
-
-    std::cout << r.tfar << std::endl;
-
-    std::cout << std::endl;
     
     if (r.primID == -1) {
       misses++;
