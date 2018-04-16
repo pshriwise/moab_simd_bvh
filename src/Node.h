@@ -380,6 +380,18 @@ struct __aligned(16) UANode : public Node {
     children[i] = ref;
   }
 
+  __forceinline Vec3vf extents() const {
+    Vec3vfa res;
+    for(size_t i = 0; i < N; i++) {
+      Vec3fa tmp = extent(i);
+      res.x[i] = tmp.x;
+      res.y[i] = tmp.y;
+      res.z[i] = tmp.z;
+    }
+
+    return res;
+  }
+  
   __forceinline Vec3fa extent(size_t i) const {
     assert(i<N);
     const Vec3fa vx(obb.l.vx.x[i],obb.l.vx.y[i],obb.l.vx.z[i]);
@@ -566,23 +578,26 @@ __forceinline size_t intersectBox(const UANode& node, const TravRayT<I>& ray, co
 template<typename I>
 __forceinline size_t nearestOnBox(const UANode& node, const TravRayT<I>& ray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& dist) {
   
-  const Vec3vf dir   = xfmVector(node.obb, ray.dir);
+  const Vec3vf ext = node.extents();
 
-  const Vec3vf nrdir = Vec3vf(vfloat4(1.0f)) * rcp_safe(dir);
-  const Vec3vf org   = xfmPoint(node.obb, ray.org);
-  const Vec3vf tLowerXYZ = org * nrdir;
-  const Vec3vf tUpperXYZ = tLowerXYZ - nrdir;
+  const Vec3vf lower = -ext * node.obb.p;
+  const Vec3vf upper = lower + ext;
+  
+  const Vec3vf org = ext*xfmPoint(node.obb, ray.org) + lower;
 
-  const vfloat4 tNearX = mini(tLowerXYZ.x,tUpperXYZ.x);
-  const vfloat4 tNearY = mini(tLowerXYZ.y,tUpperXYZ.y);
-  const vfloat4 tNearZ = mini(tLowerXYZ.z,tUpperXYZ.z);
-  const vfloat4 tFarX  = maxi(tLowerXYZ.x,tUpperXYZ.x);
-  const vfloat4 tFarY  = maxi(tLowerXYZ.y,tUpperXYZ.y);
-  const vfloat4 tFarZ  = maxi(tLowerXYZ.z,tUpperXYZ.z);
-  const vfloat4 tNear  = max(tnear, tNearX,tNearY,tNearZ);
-  const vfloat4 tFar   = min(tfar,  tFarX ,tFarY ,tFarZ );
-  const vbool4 vmask = tNear <= tFar;
-  dist = max(tNear,tFar);
+  // compute the vector from the ray origin to the box center
+  const vfloat4 tminX = lower.x - org.x;
+  const vfloat4 tminY = lower.y - org.y;
+  const vfloat4 tminZ = lower.z - org.z;
+  const vfloat4 tmaxX = org.x - upper.x;
+  const vfloat4 tmaxY = org.y - upper.y;
+  const vfloat4 tmaxZ = org.z - upper.z;
+
+  vfloat4 tX = max(tminX, tmaxX);
+  vfloat4 tY = max(tminY, tmaxY);
+  vfloat4 tZ = max(tminZ, tmaxZ);
+
+  dist = max(tX, tY, tZ);
   
   return 15;
 }
