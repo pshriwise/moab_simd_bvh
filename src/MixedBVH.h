@@ -104,11 +104,11 @@ class MixedBVH {
       snode->setRef(3,NodeRef());
     }
     else {
-      snode->setRef(0,node->node()->child(0));
-      snode->setRef(1,node->node()->child(1));
-      snode->setRef(2,node->node()->child(2));
-      snode->setRef(3,node->node()->child(3));
-      delete node->node();
+      snode->setRef(0,node->bnode()->child(0));
+      snode->setRef(1,node->bnode()->child(1));
+      snode->setRef(2,node->bnode()->child(2));
+      snode->setRef(3,node->bnode()->child(3));
+      delete node->anyNode();
     }
     
     node->setPtr((size_t)snode | setLeafAlign);
@@ -123,7 +123,7 @@ class MixedBVH {
   inline void split_sets(NodeRef* current_node, size_t split_dim, NodeRef** nodesPtr, size_t numNodes, TempSetNode child_nodes[N]) {
 
     // get the current node's bounds
-    AABB box = current_node->safeNode()->bounds();
+    AABB box = ((AANode*)current_node->anyNode())->bounds();
 
     AABB boxes[N];
 
@@ -139,7 +139,7 @@ class MixedBVH {
 	
 
     for(size_t i = 0; i < numNodes; i ++) {
-      AANode* aanode = nodesPtr[i]->safeNode();
+      AANode* aanode = (AANode*)nodesPtr[i]->anyNode();
       bool placed = false;
       
       for(size_t j = 0; j < N; j++){
@@ -170,7 +170,7 @@ class MixedBVH {
     // create a new node that contains all nodes
     AABB node_box;
     if(!node->isLeaf()){
-      AANode* temp_node = node->safeNode();
+      AANode* temp_node = (AANode*)node->anyNode();
       node_box = temp_node->bounds();
     }
     else {
@@ -195,7 +195,7 @@ class MixedBVH {
     float best_cost = 1.0;
     float cost;
 
-    AABB node_box = current_node->node()->bounds();
+    AABB node_box = ((AANode*)current_node->anyNode())->bounds();
     // attempt split along each axis
     for(size_t i = 0; i < 3; i++) {
       split_sets(current_node, i, nodesPtr, numNodes, child_nodes);
@@ -233,7 +233,7 @@ class MixedBVH {
     AABB box = box_from_nodes(nodesPtr, numNodes);
     aanode->setBounds(box);
     
-    NodeRef* this_node = new NodeRef((size_t)aanode);
+    NodeRef* this_node = new NodeRef((size_t)aanode, ALIGNED_NODE);
     
     TempSetNode child_nodes[N];
     split_sets(this_node, nodesPtr, numNodes, child_nodes, settings);
@@ -268,7 +268,7 @@ class MixedBVH {
       }
       else {
 	for(size_t j = 0; j < num_child_prims; j++) {
-	  box.update(child_nodes[i].prims[j]->safeNode()->bounds());
+	  box.update(((AANode*)child_nodes[i].prims[j]->anyNode())->bounds());
 	}
       }
       assert(box.isValid());
@@ -289,11 +289,11 @@ class MixedBVH {
     // if no primitives are passed, return a node pointing to emptt leaves
     if(numPrimitives == 0) {
       AANode *aanode = new AANode();
-      NodeRef* node = new NodeRef((size_t)aanode);
-      node->node()->setRef(0,NodeRef());
-      node->node()->setRef(1,NodeRef());
-      node->node()->setRef(2,NodeRef());
-      node->node()->setRef(3,NodeRef());
+      aanode->setRef(0,NodeRef());
+      aanode->setRef(1,NodeRef());
+      aanode->setRef(2,NodeRef());
+      aanode->setRef(3,NodeRef());
+      NodeRef* node = new NodeRef((size_t)aanode, ALIGNED_NODE);
       return node;
     }
     
@@ -346,7 +346,7 @@ class MixedBVH {
     box.bump(BOX_BUMP);
     // increment depth and recur here
     aanode->setBounds(box);
-    NodeRef* this_node = new NodeRef((size_t)aanode);
+    NodeRef* this_node = new NodeRef((size_t)aanode, ALIGNED_NODE);
     TempPrimNode tempNodes[4];
     splitNode(this_node, primitives, numPrimitives, tempNodes, settings);
 
@@ -385,7 +385,7 @@ class MixedBVH {
     int best_dim = -1;
     float cost;
 
-    AANode* this_node = node->node();
+    AANode* this_node = (AANode*)node->anyNode();
 
     AABB node_box = this_node->bounds();
 
@@ -564,7 +564,7 @@ class MixedBVH {
     
     /* create node */
     AANode* aanode = new AANode(x_min, x_max, y_min, y_max, z_min, z_max);
-    NodeRef* node = new NodeRef((size_t)aanode);
+    NodeRef* node = new NodeRef((size_t)aanode, ALIGNED_NODE);
 
     
     /* recurse into each child and perform reduction */
@@ -608,7 +608,7 @@ class MixedBVH {
 
   static inline bool intersect(NodeRef& node, const TravRay& ray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& dist, size_t& mask) {
     if(node.isLeaf() || node.isSetLeaf() ) return false;
-    mask = intersectBox<I>(*node.node(),ray,tnear,tfar,dist);
+    mask = intersectBox<I>(*(AANode*)node.anyNode(),ray,tnear,tfar,dist);
     return true;
   }
 
@@ -652,7 +652,7 @@ class MixedBVH {
 	    bool nodeIntersected = intersect(cur, vray, ray_near, ray_far, tNear, mask);
 	    
 #ifdef VERBOSE_MODE
-	    AANode* curaa = cur.node();
+	    AANode* curaa = (AANode*)cur.anyNode();
 	    if( !cur.isEmpty() ) std::cout << curaa->bounds() << std::endl;
 	    else std::cout << "EMPTY NODE" << std::endl;
 	    
@@ -660,7 +660,7 @@ class MixedBVH {
 	      std::cout << "INTERIOR NODE" << std::endl;
 	      std::cout << std::bitset<4>(mask) << std::endl;
 	      std::cout << "Distances to hit: " << tNear << std::endl;
-	      std::cout << *cur.node() << std::endl;
+	      std::cout << *(AANode*)cur.anyNode() << std::endl;
 	    }
 	    else
 	      std::cout << "LEAF NODE" << std::endl;
@@ -718,7 +718,7 @@ class MixedBVH {
 
     static inline bool intersectNearest(NodeRef& node, const TravRay& ray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& dist, size_t& mask) {
     if(node.isLeaf() || node.isSetLeaf() ) return false;
-    mask = nearestOnBox<I>(*node.node(),ray,tnear,tfar,dist);
+    mask = nearestOnBox<I>(*(AANode*)node.anyNode(),ray,tnear,tfar,dist);
     return true;
   }
 

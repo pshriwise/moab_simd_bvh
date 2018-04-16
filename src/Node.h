@@ -40,7 +40,7 @@ struct NodeRef {
   /* __forceinline NodeRef(size_t ptr) : ptr(ptr) {} */
 
   __forceinline NodeRef(size_t ptr_in, size_t mask = 0) {
-    ptr = ptr_in + mask;
+    ptr = ptr_in | mask;
   }
 
   __forceinline operator size_t() const { return ptr; }
@@ -57,7 +57,8 @@ struct NodeRef {
   
   __forceinline bool isAligned() const { return (ptr & align_mask) == unalignedNode; }
   
-  __forceinline const void* anyNode() { return (void*)(ptr & ~align_mask); }
+  __forceinline       void* anyNode()       { return (void*)(ptr & ~align_mask); }
+  __forceinline const void* anyNode() const { return (void*)(ptr & ~align_mask); }
   
   __forceinline       AANode* node()       { return (AANode*)ptr; }
   __forceinline const AANode* node() const { return (const AANode*)ptr; }
@@ -71,11 +72,11 @@ struct NodeRef {
   __forceinline       UANode* uasafeNode()        { return isSetLeaf() ? (UANode*)setLeafPtr() : uanode(); }
   __forceinline const UANode* uasafeNode() const  { return isSetLeaf() ? (UANode*)setLeafPtr() : uanode(); }
 
-  __forceinline       void* snode()       { return (void*)setLeafPtr(); }
-  __forceinline const void* snode() const { return (const void*)setLeafPtr(); }
+  __forceinline       void* snode()       { return (void*)anyNode(); }
+  __forceinline const void* snode() const { return (const void*)anyNode(); }
   
-  __forceinline       Node* bnode()       { return (Node*)ptr; }
-  __forceinline const Node* bnode() const { return (const Node*)ptr; }
+  __forceinline       Node* bnode()       { return (Node*)anyNode(); }
+  __forceinline const Node* bnode() const { return (const Node*)anyNode(); }
 
   __forceinline const void setPtr(size_t new_ptr) { ptr = new_ptr; }
 
