@@ -468,6 +468,7 @@ class MixedBVH {
     return;
   }
 
+
   NodeRef* createLargeLeaf(BuildState& current) {
     
     /* if(current.depth > maxDepth) { */
@@ -504,7 +505,24 @@ class MixedBVH {
     
     BuildState tempChildren[N];
     size_t numChildren = 1;
-    AABB bounds = current.prims.bounds();
+
+    std::vector<float> x,y,z;
+    for(size_t i = 0; i < current.prims.size(); i++) {
+
+      
+      P t = P((I*)MDAM->conn + (current.prims[i].primID()*MDAM->element_stride), (I)current.prims[i].primitivePtr);
+      
+      Vec3da pnt;
+      pnt = t.get_point(0, (void*)MDAM);
+      x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
+      pnt = t.get_point(1, (void*)MDAM);
+      x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
+      pnt = t.get_point(2, (void*)MDAM);
+      x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
+    }
+    
+    OBB bounds = OBB(&(x.front()), &(y.front()), &(z.front()), x.size());
+
     tempChildren[0] = current;
     for( size_t i = 1; i < numChildren; i++) {
       tempChildren[i] = BuildState(current.depth+1);
@@ -544,27 +562,34 @@ class MixedBVH {
     } while (numChildren < N);
 
     /* get children bounds */
-    vfloat4 x_min, y_min, z_min, x_max, y_max, z_max;
+    UANode* aanode = new UANode();
     
     for (size_t i = 0; i < numChildren; i++) {
-      AABB b;
       BuildSetT<PrimRef> primitives = tempChildren[i].prims;
-      
-      for(size_t j = 0; j < primitives.size(); j++) {
-	b.update(primitives[j].lower.x, primitives[j].lower.y, primitives[j].lower.z);
-	b.update(primitives[j].upper.x, primitives[j].upper.y, primitives[j].upper.z);
+
+      std::vector<float> x,y,z;
+      for(size_t i = 0; i < primitives.size(); i++) {
+	
+	P t = P((I*)MDAM->conn + (primitives[i].primID()*MDAM->element_stride), (I)primitives[i].primitivePtr);
+	
+	Vec3da pnt;
+	pnt = t.get_point(0, (void*)MDAM);
+	x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
+	pnt = t.get_point(1, (void*)MDAM);
+	x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
+	pnt = t.get_point(2, (void*)MDAM);
+	x.push_back(pnt.x); y.push_back(pnt.y); z.push_back(pnt.z);
       }
       
+      OBB b = OBB(&(x.front()), &(y.front()), &(z.front()), x.size());
+
       b.bump(BOX_BUMP);
       
-      x_min[i] = b.lower.x; y_min[i] = b.lower.y; z_min[i] = b.lower.z;
-      x_max[i] = b.upper.x; y_max[i] = b.upper.y; z_max[i] = b.upper.z;
+      aanode->setBound(i, b);
       
     }
     
-    /* create node */
-    AANode* aanode = new AANode(x_min, x_max, y_min, y_max, z_min, z_max);
-    NodeRef* node = new NodeRef((size_t)aanode, ALIGNED_NODE);
+    NodeRef* node = new NodeRef((size_t)aanode, UNALIGNED_NODE);
 
     
     /* recurse into each child and perform reduction */
@@ -584,6 +609,124 @@ class MixedBVH {
     return node;
 
   }
+
+  
+/*   NodeRef* createLargeLeaf(BuildState& current) { */
+    
+/*     /\* if(current.depth > maxDepth) { *\/ */
+/*     /\*   std::cerr << "Maximum depth reached" << std::endl; *\/ */
+/*     /\*   std::cerr << "Current depth: " << current.depth << std::endl; *\/ */
+/*     /\*   std::cerr << "Maximum allowed depth: " << maxDepth << std::endl; *\/ */
+/*     /\*   std::cerr << "Number of primitives remaining: " << current.size() << std::endl; *\/ */
+/*     /\*   assert(false); *\/ */
+/*     /\* } *\/ */
+
+/*     if (current.size() <= maxLeafSize) { */
+/*       depth = current.depth > depth ? current.depth : depth; */
+
+/*       if(current.size() == 0 ) return new NodeRef(); */
+
+/*       P* position = &(*(leaf_sequence_storage.begin()+num_stored)); */
+
+/*       for( size_t i = 0; i < current.size(); i++) { */
+	
+/* 	P t = P((I*)MDAM->conn + (current.prims[i].primID()*MDAM->element_stride), (I)current.prims[i].primitivePtr); */
+/* 	leaf_sequence_storage[num_stored+i] = t; */
+	
+/*       } */
+      
+/*       num_stored += (int)current.size(); */
+
+/*       if(num_stored > leaf_sequence_storage.size()) { std::cout << "FAILURE: too many primitives have been stored" << std::endl; assert(false); } */
+      
+/*       if ((size_t)position & 8 )  std::cout << "Uh-oh" << std::endl; */
+      
+/*       return current.size() ? (NodeRef*) createLeaf(position, current.size()) : new NodeRef(); */
+/*     } */
+
+    
+/*     BuildState tempChildren[N]; */
+/*     size_t numChildren = 1; */
+/*     AABB bounds = current.prims.bounds(); */
+/*     tempChildren[0] = current; */
+/*     for( size_t i = 1; i < numChildren; i++) { */
+/*       tempChildren[i] = BuildState(current.depth+1); */
+/*     } */
+    
+/*     do { */
+
+/*       size_t best_child = -1; */
+/*       size_t best_size = 0; */
+/*       for (size_t i = 0; i < numChildren; i++) { */
+/* 	/\* ignore leaf if under the limit *\/ */
+/* 	if(tempChildren[i].prims.size() <= maxLeafSize) */
+/* 	  continue; */
+
+/* 	/\* track child with largest size *\/ */
+/* 	if (tempChildren[i].prims.size() > best_size) { */
+/* 	  best_size = tempChildren[i].prims.size(); */
+/* 	  best_child = i; */
+/* 	} */
+/*       } */
+
+/*       /\* if no child over maxLeafSize, then we're done *\/ */
+/*       if(best_child == (size_t)-1) break; */
+
+/*       BuildState left(current.depth+1); */
+/*       BuildState right(current.depth+1); */
+/*       /\* split the best child into left and right *\/ */
+/*       splitFallback(tempChildren[best_child], left, right); */
+
+/*       /\* add new children *\/ */
+/*       tempChildren[best_child] = tempChildren[numChildren-1]; */
+/*       tempChildren[numChildren-1] = left; */
+/*       tempChildren[numChildren+0]= right; */
+/*       numChildren++; */
+      
+/*       /\* find child with largest bounding box area *\/ */
+/*     } while (numChildren < N); */
+
+/*     /\* get children bounds *\/ */
+/*     vfloat4 x_min, y_min, z_min, x_max, y_max, z_max; */
+    
+/*     for (size_t i = 0; i < numChildren; i++) { */
+/*       AABB b; */
+/*       BuildSetT<PrimRef> primitives = tempChildren[i].prims; */
+      
+/*       for(size_t j = 0; j < primitives.size(); j++) { */
+/* 	b.update(primitives[j].lower.x, primitives[j].lower.y, primitives[j].lower.z); */
+/* 	b.update(primitives[j].upper.x, primitives[j].upper.y, primitives[j].upper.z); */
+/*       } */
+      
+/*       b.bump(BOX_BUMP); */
+      
+/*       x_min[i] = b.lower.x; y_min[i] = b.lower.y; z_min[i] = b.lower.z; */
+/*       x_max[i] = b.upper.x; y_max[i] = b.upper.y; z_max[i] = b.upper.z; */
+      
+/*     } */
+    
+/*     /\* create node *\/ */
+/*     AANode* aanode = new AANode(x_min, x_max, y_min, y_max, z_min, z_max); */
+/*     NodeRef* node = new NodeRef((size_t)aanode, ALIGNED_NODE); */
+
+    
+/*     /\* recurse into each child and perform reduction *\/ */
+/*     for (size_t i = 0; i < numChildren; i++) { */
+/* #ifdef VERBOSE_MODE */
+/*       std::cout << "Recurring into CLL" << std::endl; */
+/*       std::cout << "Sending " << tempChildren[i].size() << " primitives" << std::endl; */
+/*       std::cout << *aanode << std::endl; */
+/* #endif */
+/*       NodeRef* child_node = createLargeLeaf(tempChildren[i]); */
+/*       aanode->setRef(i, *child_node); */
+/*       delete child_node; */
+/*     } */
+
+/*     depth = current.depth > depth ? current.depth : depth; */
+    
+/*     return node; */
+
+/*   } */
 
 
   void splitFallback(const BuildState& current, BuildState& left, BuildState& right) {
@@ -608,7 +751,12 @@ class MixedBVH {
 
   static inline bool intersect(NodeRef& node, const TravRay& ray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& dist, size_t& mask) {
     if(node.isLeaf() || node.isSetLeaf() ) return false;
-    mask = intersectBox<I>(*(AANode*)node.anyNode(),ray,tnear,tfar,dist);
+    if(node.isAligned()) {
+      mask = intersectBox<I>(*(AANode*)node.anyNode(),ray,tnear,tfar,dist);
+    }
+    else if(node.isUnaligned()) {
+      mask = intersectBox<I>(*(AANode*)node.anyNode(),ray,tnear,tfar,dist);
+    }
     return true;
   }
 

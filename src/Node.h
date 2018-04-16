@@ -49,7 +49,7 @@ struct NodeRef {
   
   __forceinline size_t isLeaf() const { return ptr & tyLeaf; }
 
-  __forceinline size_t isSetLeaf() const { return (ptr & align_mask) == setLeafAlign; }
+  __forceinline size_t isSetLeaf() const { return !isLeaf() && (ptr & align_mask) & setLeafAlign; }
 
   __forceinline bool isEmpty() const { return ptr == emptyNode; }
 
