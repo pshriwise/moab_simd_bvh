@@ -854,6 +854,8 @@ class OBVH {
 	
 	// if the ray doesn't reach this node, move to next
 	if(*(float*)&stackPtr->dist > ray.tfar) { continue; }
+
+      next:
 	
 	while (true)
 	  {
@@ -884,9 +886,11 @@ class OBVH {
 	      vray.sense = 1;
 	    }
 	    // WILL ALSO SET SENSE HERE AT SOME POINT
-	    NodeRef setNode = cur.setLeaf();
-	    intersectClosest(setNode, ray, vray);
-	    continue;
+	    cur = cur.setLeaf();
+	    goto next;
+	    /* NodeRef setNode = cur.setLeaf(); */
+	    /* intersectClosest(setNode, ray, vray); */
+	    /* continue; */
 	  }
 	  
 	  size_t numPrims;
