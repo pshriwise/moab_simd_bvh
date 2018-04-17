@@ -92,24 +92,24 @@ class MixedBVH {
     assert(!node->isSetLeaf());
     
     // replace this normal root node with a set node
-    AANode *aanode = new AANode();
-    AABB node_box = box_from_node(node);
-    aanode->setBounds(node_box);
-    SetNode* snode = new SetNode(*aanode, setID, fwd, rev);
+    /* AANode *aanode = new AANode(); */
+    /* AABB node_box = box_from_node(node); */
+    /* aanode->setBounds(node_box); */
+    SetNode* snode = new SetNode(node->pointer(), setID, fwd, rev);
         
-    if( node->isLeaf() ) {
-      snode->setRef(0,*node);
-      snode->setRef(1,NodeRef());
-      snode->setRef(2,NodeRef());
-      snode->setRef(3,NodeRef());
-    }
-    else {
-      snode->setRef(0,node->bnode()->child(0));
-      snode->setRef(1,node->bnode()->child(1));
-      snode->setRef(2,node->bnode()->child(2));
-      snode->setRef(3,node->bnode()->child(3));
-      delete node->anyNode();
-    }
+    /* if( node->isLeaf() ) { */
+    /*   snode->setRef(0,*node); */
+    /*   snode->setRef(1,NodeRef()); */
+    /*   snode->setRef(2,NodeRef()); */
+    /*   snode->setRef(3,NodeRef()); */
+    /* } */
+    /* else { */
+    /*   snode->setRef(0,node->bnode()->child(0)); */
+    /*   snode->setRef(1,node->bnode()->child(1)); */
+    /*   snode->setRef(2,node->bnode()->child(2)); */
+    /*   snode->setRef(3,node->bnode()->child(3)); */
+    /*   delete node->anyNode(); */
+    /* } */
     
     node->setPtr((size_t)snode | setLeafAlign);
 
@@ -167,16 +167,25 @@ class MixedBVH {
   }
   
   inline AABB box_from_node(NodeRef* node) {
-    // create a new node that contains all nodes
+
+    
+    NodeRef node_ref = *node;
+
+    // if this is a SetNode, redirect the node_ref appropriately
+    if(node_ref.isSetLeaf()){
+      SetNode* snode = (SetNode*)node_ref.snode();
+      node_ref = snode->ref();
+    }
+
     AABB node_box;
-    if(!node->isLeaf()){
-      AANode* temp_node = (AANode*)node->anyNode();
+    if(!node_ref.isLeaf()){
+      AANode* temp_node = (AANode*)node_ref.anyNode();
       node_box = temp_node->bounds();
     }
     else {
       // get the primitives
       size_t numPrims;
-      P* primIDs = (P*)node->leaf(numPrims);
+      P* primIDs = (P*)node_ref.leaf(numPrims);
       for (size_t j = 0; j < numPrims; j++){
 	P t = primIDs[j];
 	Vec3fa lower, upper;
@@ -267,9 +276,7 @@ class MixedBVH {
 	box = AABB(0.0f);
       }
       else {
-	for(size_t j = 0; j < num_child_prims; j++) {
-	  box.update(((AANode*)child_nodes[i].prims[j]->anyNode())->bounds());
-	}
+	box = box_from_nodes(&child_nodes[i].prims.front(), num_child_prims);
       }
       assert(box.isValid());
       aanode->setBound(i, box);
@@ -588,9 +595,8 @@ class MixedBVH {
       aanode->setBound(i, b);
       
     }
-    
-    NodeRef* node = new NodeRef((size_t)aanode, UNALIGNED_NODE);
 
+    NodeRef* node = new NodeRef((size_t)aanode, UNALIGNED_NODE);
     
     /* recurse into each child and perform reduction */
     for (size_t i = 0; i < numChildren; i++) {
@@ -601,7 +607,7 @@ class MixedBVH {
 #endif
       NodeRef* child_node = createLargeLeaf(tempChildren[i]);
       aanode->setRef(i, *child_node);
-      delete child_node;
+      //      delete child_node;
     }
 
     depth = current.depth > depth ? current.depth : depth;
@@ -755,7 +761,10 @@ class MixedBVH {
       mask = intersectBox<I>(*(AANode*)node.anyNode(),ray,tnear,tfar,dist);
     }
     else if(node.isUnaligned()) {
-      mask = intersectBox<I>(*(AANode*)node.anyNode(),ray,tnear,tfar,dist);
+      mask = intersectBox<I>(*(UANode*)node.anyNode(),ray,tnear,tfar,dist);
+    }
+    else {
+      std::cout << "Could not categorize node. Not good" << std::endl;
     }
     return true;
   }
@@ -842,7 +851,7 @@ class MixedBVH {
 	    vray.sense = 1;
 	  }
 	  // WILL ALSO SET SENSE HERE AT SOME POINT
-	  cur = cur.setLeaf();
+	  cur = snode->ref();
 	  goto next;
 	  /* NodeRef setNode = cur.setLeaf(); */
 	  /* intersectRay(setNode, ray, vray); */
@@ -931,7 +940,7 @@ class MixedBVH {
 	      vray.sense = 1;
 	    }
 	    // WILL ALSO SET SENSE HERE AT SOME POINT
-	    cur = cur.setLeaf();
+	    cur = snode->ref();
 	    goto next;
 	    /* NodeRef setNode = cur.setLeaf(); */
 	    /* intersectClosest(setNode, ray, vray); */
