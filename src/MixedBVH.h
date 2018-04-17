@@ -15,6 +15,8 @@
 #include "BVHSettings.h"
 #include "PrimitiveReference.h"
 
+#include "BVHRefiner.h"
+
 #define MAX_LEAF_SIZE 8
 
 template <typename V, typename T, typename I>
