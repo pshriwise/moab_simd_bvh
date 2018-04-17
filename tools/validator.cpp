@@ -43,12 +43,6 @@ public:
       // if this is not a leaf, visit all child nodes
       mask = 15;
 
-      // if this is a set leaf, remove the encoding and continue
-      if( current_node.isSetLeaf() ) {
-	setLeaf(current_node);
-	current_node = current_node.setLeaf();
-      }
-
       // if there is a mix of leafs and interior nodes, make sure the interior nodes
       // come last in the traversal by artificially setting distances
       tNear = 100.0f;
@@ -60,7 +54,7 @@ public:
     return true;
   }
   
-  virtual void setLeaf(NodeRef current_node) {
+  virtual void setLeaf(NodeRef current_node, const NodeRef& previous_node) {
     num_set_leaves++;
     return;
   }

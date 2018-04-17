@@ -72,7 +72,7 @@ public:
     
   }
 
-  virtual void setLeaf(NodeRef current_node) {
+  virtual void setLeaf(NodeRef current_node, const NodeRef& previous_node) {
     // nothing to do for set leaves
     return; 
   }

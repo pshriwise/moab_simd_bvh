@@ -76,7 +76,7 @@ void BVHCustomTraversalT<V,P,I>::traverse(NodeRef root, RayT<V,P,I> & ray, BVHOp
 	    size_t mask = 0; vfloat4 tNear(inf);
 
 	    if( cur.isSetLeaf() ) {
-	      op.setLeaf(cur);
+	      op.setLeaf(cur, previous_node);
 	      SetNode* snode = (SetNode*)cur.snode();
 	      last_set_leaf = cur; // track the last visited set leaf
 	      cur = snode->ref();

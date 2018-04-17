@@ -73,35 +73,35 @@ public:
     return true;
   }
 
-  virtual void setLeaf(NodeRef current_node) {
+  virtual void setLeaf(NodeRef current_node, const NodeRef& previous_node) {
 
     num_set_leaves++;
 
     // if hexes for set leaves weren't requested, then do nothing
     if (!write_set_leaves) { return; }
 
-    SetNodeT<moab::EntityHandle>* snode = (SetNodeT<moab::EntityHandle>*)current_node.snode();
-    current_node = snode->ref();
+    int child_number = find_child_number(current_node, previous_node);
 
-    if(current_node.isUnaligned()) {
+    if(previous_node.isUnaligned()) {
     
       // retrieve bounding box for this leaf from the parent node
       Vec3fa corners[8];
-      current_node.uanode()->get_corners(0, corners);
+      previous_node.uanode()->get_corners(child_number, corners);
 
       // write box to class MOAB instance
       corners_to_hex(corners);
 
     }
-    else if(current_node.isAligned()) {
+    else if(previous_node.isAligned()) {
       
       // retrieve bounding box for this leaf from the parent node
-      AABB box = ((AANode*)current_node.anyNode())->bounds();
+      AABB box = ((AANode*)previous_node.anyNode())->getBound(child_number);
       // write box to class MOAB instance
       aabb_to_hex(box);
       
     }
 
+    SetNode* snode = (SetNode*)current_node.snode();
     moab::EntityHandle surface_handle = snode->setID;
 
     // if requrested, gather all triangles for this surface and and write
