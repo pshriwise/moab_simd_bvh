@@ -48,8 +48,11 @@ class BVH {
       std::vector<P> storage_vec(MDAM->num_elements);
       leaf_sequence_storage = storage_vec;
       //      leaf_sequence_storage.resize(MDAM->num_elements);
+      stack = (StackItemT<NodeRef>*)malloc(sizeof(StackItemT<NodeRef>)*stackSize);
     }
-     
+
+  inline ~BVH() { free(stack); }
+  
  private:
   
   size_t maxLeafSize;
@@ -63,9 +66,11 @@ class BVH {
   MOABDirectAccessManager* MDAM;
   
   static const size_t stackSize = 1+N*BVH_MAX_DEPTH;
+  StackItemT<NodeRef> *stack;
 
  public:
-
+  
+  
   inline void set_filter(typename Filter::FilterFunc ff) { filter = ff; }
 
   inline void unset_filter() { filter = no_filter; }
@@ -626,7 +631,6 @@ class BVH {
   
   inline void intersectRay (NodeRef root, Ray &ray, TravRay &vray) {
     /* initialiez stack state */
-    StackItemT<NodeRef> stack[stackSize];
     StackItemT<NodeRef>* stackPtr = stack+1;
     StackItemT<NodeRef>* stackEnd = stack+stackSize;
     stack[0].ptr = root;
@@ -737,7 +741,6 @@ class BVH {
   
   inline void intersectClosest(NodeRef root, Ray &ray, TravRay &vray) {
         /* initialiez stack state */
-    StackItemT<NodeRef> stack[stackSize];
     StackItemT<NodeRef>* stackPtr = stack+1;
     StackItemT<NodeRef>* stackEnd = stack+stackSize;
     stack[0].ptr = root;
