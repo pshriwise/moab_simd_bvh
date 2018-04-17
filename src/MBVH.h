@@ -6,11 +6,15 @@
 
 typedef RayT<Vec3da, double, moab::EntityHandle> MBRay;
 
+#ifdef MIXED
 typedef MixedBVH<Vec3da, double, moab::EntityHandle> MBVH;
+#endif
 
-/* #ifdef OBBS */
-/* typedef OBVH<Vec3da, double, moab::EntityHandle> MBVH; */
-/* #else */
-/* typedef BVH<Vec3da, double, moab::EntityHandle> MBVH; */
-/* #endif */
+#ifdef OBBS
+typedef OBVH<Vec3da, double, moab::EntityHandle> MBVH;
+#endif
+
+#ifdef AABBS
+typedef BVH<Vec3da, double, moab::EntityHandle> MBVH;
+#endif
 

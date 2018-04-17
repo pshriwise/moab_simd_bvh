@@ -42,11 +42,18 @@ SET(TEST_FILES_DIR CACHE INTERNAL "Test File Location" FORCE)
 
 INCLUDE_DIRECTORIES(${MOAB_INCLUDE_DIRS})
 
-OPTION(OBBS "Use Oriented Bounding Boxes" OFF)
+set(BBOX_TYPES AABBS OBBS MIXED)
+set(BBOX_TYPE MIXED CACHE STRING "Type of Bounding Boxes used in the BVH")
+set_property(CACHE BBOX_TYPE PROPERTY STRINGS ${BBOX_TYPES})
 
-if(OBBS)
-  ADD_DEFINITIONS(-DOBBS)
+list(FIND BBOX_TYPES ${BBOX_TYPE} index)
+if(index EQUAL -1)
+  message(FATAL_ERROR "BBOX_TYPE must be one of ${BBOX_TYPES}")
+else()
+  add_definitions(-D${BBOX_TYPE})
 endif()
+
+
 
 # A list of all unittests
 # test files are named test_<test_name>
