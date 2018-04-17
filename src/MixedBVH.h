@@ -365,9 +365,11 @@ class MixedBVH {
     // increment depth and recur here
     aanode->setBounds(box);
 
-    NodeRef* this_node = RefinerTool->refine(current);
-    if(this_node) { return this_node; }
-      
+    NodeRef* this_node;
+    if(current.depth > 3) {
+      this_node = RefinerTool->refine(current);
+      if(this_node) { return this_node; }
+    }
 
     this_node = new NodeRef((size_t)aanode, ALIGNED_NODE);
     TempPrimNode tempNodes[4];
@@ -890,7 +892,15 @@ class MixedBVH {
 
     static inline bool intersectNearest(NodeRef& node, const TravRay& ray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& dist, size_t& mask) {
     if(node.isLeaf() || node.isSetLeaf() ) return false;
-    mask = nearestOnBox<I>(*(AANode*)node.anyNode(),ray,tnear,tfar,dist);
+    if(node.isAligned()){
+      mask = nearestOnBox<I>(*(AANode*)node.anyNode(),ray,tnear,tfar,dist);
+    }
+    else if(node.isUnaligned()) {
+      mask = nearestOnBox<I>(*(UANode*)node.anyNode(), ray, tnear, tfar, dist);
+    }
+    else {
+      std::cout << "Could not categorize node. Not good." << std::endl;
+    }
     return true;
   }
 
