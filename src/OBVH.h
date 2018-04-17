@@ -328,8 +328,10 @@ class OBVH {
     return root;
   }
 
-  inline NodeRef* Build(BuildState& current, BVHSettings *settings) {
+  inline NodeRef* Build(BuildState& current, BVHSettings *settings = NULL) {
 
+    if(!settings) { settings = new BVHSettings(); }
+    
     const PrimRef* primitives = current.ptr();
     size_t numPrimitives = current.size();
     

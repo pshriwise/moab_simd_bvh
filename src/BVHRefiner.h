@@ -11,9 +11,9 @@ class BVHRefinerT {
   typedef BuildStateT<PrimRef> BuildState;
 
   typedef MBTriangleRefT<V, T, I> P;
-
+  
  public:
-  inline BVHRefinerT(MOABDirectAccessManager* MDAM) : MDAM(MDAM) {}
+  inline BVHRefinerT(MOABDirectAccessManager* MDAM) : MDAM(MDAM) { OBVHBuilder = new OBVH<V,T,I>(MDAM);  }
   
  private:
   
@@ -50,13 +50,19 @@ class BVHRefinerT {
 
  public:
   
-  inline NodeRef* refine(const BuildState &cur) {
+  inline NodeRef* refine(BuildState &cur) {
     bool is_hv = is_hv_region(cur);
-    std::cout << "HV Region Check Result: " << is_hv << std::endl;
+    if( is_hv ) {
+      return OBVHBuilder->Build(cur);
+    }
+    else {
+      return NULL;
+    }
   }
 
  private:
   
   MOABDirectAccessManager* MDAM;
-		    
+  OBVH<V,T,I>* OBVHBuilder;
+  
 };

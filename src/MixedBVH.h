@@ -364,7 +364,12 @@ class MixedBVH {
     box.bump(BOX_BUMP);
     // increment depth and recur here
     aanode->setBounds(box);
-    NodeRef* this_node = new NodeRef((size_t)aanode, ALIGNED_NODE);
+
+    NodeRef* this_node = RefinerTool->refine(current);
+    if(this_node) { return this_node; }
+      
+
+    this_node = new NodeRef((size_t)aanode, ALIGNED_NODE);
     TempPrimNode tempNodes[4];
     splitNode(this_node, primitives, numPrimitives, tempNodes, settings);
 
@@ -519,8 +524,6 @@ class MixedBVH {
       
       return current.size() ? (NodeRef*) createLeaf(position, current.size()) : new NodeRef();
     }
-
-    RefinerTool->refine(current);
     
     
     BuildState tempChildren[N];
