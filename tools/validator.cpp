@@ -48,6 +48,7 @@ public:
       tNear = 100.0f;
       for (size_t i = 0; i < N; i++) {
 	if ( current_node.bnode()->child(i).isLeaf() ) tNear[i] = 0.0f;
+      	if ( current_node.bnode()->child(i).isSetLeaf() ) tNear[i] = 10.0f;
       }
     }
     
@@ -59,52 +60,70 @@ public:
     return;
   }
   
-  virtual void leaf(NodeRef current_node, const NodeRef& previous_node, const NodeRef& set_parent, Ray& ray) {
+  virtual void leaf(NodeRef current_node, const NodeRef& previous_node, const NodeRef& last_set_leaf, Ray& ray) {
         // if node is empty, do nothing
     if ( current_node.isEmpty() ) { return; }
-
+    if ( previous_node.isEmpty() ) { return; } // corner case - root is a leafnode
     num_leaves++;
 
     // get the child number of this node using the parent node
     int child_number = find_child_number(current_node, previous_node);
 
-        // retrieve bounding box for this leaf from the parent node
-    AABB box = previous_node.node()->getBound(child_number);
-
-    size_t numPrims;
-    MBTriangleRef* prims = (MBTriangleRef*)current_node.leaf(numPrims);
-
-    moab::ErrorCode rval;
-    
-    for(size_t i = 0; i < numPrims; i++) {
-      moab::EntityHandle tri = prims[i].eh;
-
-      // add triangle to range
-      tris_found.insert(tri);
-
-      // make sure all triangle vertices are within its box     
-      moab::Range verts;
-      rval = original_mbi()->get_connectivity(&tri, 1, verts);
-      MB_CHK_ERR_CONT(rval);
-
-      Vec3da coords;
-      moab::EntityHandle vert;
-      vert = verts[0];
-      rval = original_mbi()->get_coords(&vert, 1, &(coords.x));
-      MB_CHK_ERR_CONT(rval);
-      assert(inside(box, coords));
-
-      vert = verts[1];
-      rval = original_mbi()->get_coords(&vert, 1, &(coords.x));
-      MB_CHK_ERR_CONT(rval);
-      assert(inside(box, coords));
-      
-      vert = verts[2];
-      rval = original_mbi()->get_coords(&vert, 1, &(coords.x));
-      MB_CHK_ERR_CONT(rval);
-      assert(inside(box, coords));
-
+    if(child_number < 0) {
+      child_number = find_child_number(last_set_leaf, previous_node);
     }
+
+    if(previous_node.isUnaligned()) {
+    
+      // retrieve bounding box for this leaf from the parent node
+      Vec3fa corners[8];
+      ((UANode*)previous_node.uanode())->get_corners(child_number, corners);
+
+      OBB box = OBB(&corners[0], 8);
+      
+    }
+    else if(previous_node.isAligned()) {
+      
+      // retrieve bounding box for this leaf from the parent node
+      AABB box = ((AANode*)previous_node.anyNode())->getBound(child_number);
+
+      size_t numPrims;
+      MBTriangleRef* prims = (MBTriangleRef*)current_node.leaf(numPrims);
+
+      moab::ErrorCode rval;
+    
+      for(size_t i = 0; i < numPrims; i++) {
+	moab::EntityHandle tri = prims[i].eh;
+
+	// add triangle to range
+	tris_found.insert(tri);
+
+	// make sure all triangle vertices are within its box     
+	moab::Range verts;
+	rval = original_mbi()->get_connectivity(&tri, 1, verts);
+	MB_CHK_ERR_CONT(rval);
+
+	Vec3da coords;
+	moab::EntityHandle vert;
+	vert = verts[0];
+	rval = original_mbi()->get_coords(&vert, 1, &(coords.x));
+	MB_CHK_ERR_CONT(rval);
+	assert(inside(box, coords));
+
+	vert = verts[1];
+	rval = original_mbi()->get_coords(&vert, 1, &(coords.x));
+	MB_CHK_ERR_CONT(rval);
+	assert(inside(box, coords));
+      
+	vert = verts[2];
+	rval = original_mbi()->get_coords(&vert, 1, &(coords.x));
+	MB_CHK_ERR_CONT(rval);
+	assert(inside(box, coords));
+
+      }
+
+   }
+
 
     return;
   }
