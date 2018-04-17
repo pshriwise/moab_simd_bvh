@@ -124,17 +124,59 @@ public:
   }
 
   virtual void leaf(NodeRef current_node, const NodeRef& previous_node, const NodeRef& last_set_leaf, Ray& ray) {
-
+    int child_number;
+    
     // if node is empty, do nothing
     if ( current_node.isEmpty() ) { return; }
 
     num_leaves++;
+
+    if ( previous_node.isEmpty() ) {
+      // get leaf entities
+      size_t numPrims;
+      MBTriangleRef* prims = (MBTriangleRef*)current_node.leaf(numPrims);
+
+      AABB box;
+
+      moab::ErrorCode rval;
+    
+      for(size_t i = 0; i < numPrims; i++) {
+	moab::EntityHandle tri = prims[i].eh;
+
+	// make sure all triangle vertices are within its box     
+	moab::Range verts;
+	rval = original_mbi()->get_connectivity(&tri, 1, verts);
+	MB_CHK_ERR_CONT(rval);
+
+	Vec3da coords;
+	moab::EntityHandle vert;
+	vert = verts[0];
+	rval = original_mbi()->get_coords(&vert, 1, &(coords.x));
+	MB_CHK_ERR_CONT(rval);
+	box.update(coords);
+
+	vert = verts[1];
+	rval = original_mbi()->get_coords(&vert, 1, &(coords.x));
+	MB_CHK_ERR_CONT(rval);
+	box.update(coords);
+      
+	vert = verts[2];
+	rval = original_mbi()->get_coords(&vert, 1, &(coords.x));
+	MB_CHK_ERR_CONT(rval);
+	box.update(coords);
+
+      }
+
+      aabb_to_hex(box);
+      
+      goto tris;
+    } // corner case - root is a leaf node
     
     // if no leaf writing was requested, then do nothing
     if (!write_leaves) { return; }
     
     // get the child number of this node using the parent node
-    int child_number = find_child_number(current_node, previous_node);
+    child_number = find_child_number(current_node, previous_node);
 
     if(child_number < 0) {
       child_number = find_child_number(last_set_leaf, previous_node);
@@ -159,12 +201,13 @@ public:
       aabb_to_hex(box);
       
     }
-    
+   
     moab::ErrorCode rval;
 
     // if triangles are to be written with the hexes, then
     // decode the leaf and transfer the triangle to the
     // class MOAB instance
+  tris:
     if(write_tris) {
       // get leaf entities
       size_t numPrims;
