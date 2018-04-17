@@ -38,12 +38,18 @@ public:
     else {
       // if this is a set leaf, remove the encoding and continue
       if( current_node.isSetLeaf() ) {
-	current_node = current_node.setLeaf();
+	SetNode* snode = (SetNode*)current_node.snode();
+	current_node = snode->ref();
+      }
+
+      if(current_node.isAligned()) {
+	// perform ray intersection
+	mask = intersectBox(*(AANode*)current_node.anyNode(), vray, tnear, tfar, tNear);
+      }
+      else if(current_node.isUnaligned()) {
+	mask = intersectBox(*(UANode*)current_node.anyNode(), vray, tnear, tfar, tNear);
       }
       
-      // perform ray intersection
-      mask = intersectBox(*current_node.node(), vray, tnear, tfar, tNear);
-
       if ( mask != 0 ) {
 	nodes_visited++;
 	size_t mask_copy = mask;
@@ -51,9 +57,26 @@ public:
 	while(mask_copy != 0) {
 	  size_t r = __bscf(mask_copy);
 	  // get the box for this set (should be the same for all children)
-	  AABB box = current_node.node()->getBound(r);
-	  aabb_to_hex(box);
-
+	      
+	  if(current_node.isUnaligned()) {
+	    
+	    // retrieve bounding box for this leaf from the parent node
+	    Vec3fa corners[8];
+	    ((UANode*)current_node.anyNode())->get_corners(r, corners);
+	    
+	    // write box to class MOAB instance
+	    corners_to_hex(corners);
+	  }
+	  else if(current_node.isAligned()) {
+	    
+	    // retrieve bounding box for this leaf from the parent node
+	    AABB box = ((AANode*)current_node.anyNode())->getBound(r);
+	    
+	    // write box to class MOAB instance
+	    aabb_to_hex(box);
+	    
+	  }
+	  
 	}
 
 	std::stringstream outfilename;
@@ -77,18 +100,37 @@ public:
     return; 
   }
 
-  virtual void leaf(NodeRef current_node, const NodeRef& previous_node, const NodeRef& set_parent, Ray& ray) {
+  virtual void leaf(NodeRef current_node, const NodeRef& previous_node, const NodeRef& last_set_leaf, Ray& ray) {
     // if node is empty, do nothing
     if ( current_node.isEmpty() ) return;
     
     nodes_visited++;
 
     int child_number = find_child_number(current_node, previous_node);
-    
-    // retrieve bounding box for this leaf from the parent node
-    AABB box = previous_node.node()->getBound(child_number);
 
-    aabb_to_hex(box);
+    if(child_number < 0) {
+      child_number = find_child_number(last_set_leaf, previous_node);
+    }
+    
+    if(previous_node.isUnaligned()) {
+    
+      // retrieve bounding box for this leaf from the parent node
+      Vec3fa corners[8];
+      previous_node.uanode()->get_corners(child_number, corners);
+
+      // write box to class MOAB instance
+      corners_to_hex(corners);
+
+    }
+    else if(previous_node.isAligned()) {
+      
+      // retrieve bounding box for this leaf from the parent node
+      AABB box = ((AANode*)previous_node.anyNode())->getBound(child_number);
+
+      // write box to class MOAB instance
+      aabb_to_hex(box);
+      
+    }
     
     moab::ErrorCode rval;
     // get leaf entities
