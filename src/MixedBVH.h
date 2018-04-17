@@ -37,6 +37,8 @@ class MixedBVH {
   typedef TravRayT<I> TravRay;
   typedef RayT<V,T,I> Ray;
 
+  typedef BVHRefinerT<V, T, I> BVHRefiner;
+  
  public:
   typedef FilterT<V,double,I> Filter;
   typename Filter::FilterFunc filter;
@@ -51,6 +53,8 @@ class MixedBVH {
       leaf_sequence_storage = storage_vec;
       //      leaf_sequence_storage.resize(MDAM->num_elements);
       stack = (StackItemT<NodeRef>*)malloc(sizeof(StackItemT<NodeRef>)*stackSize);
+      
+      RefinerTool = new BVHRefiner(mdam);
     }
 
   inline ~MixedBVH() { free(stack); }
@@ -66,6 +70,7 @@ class MixedBVH {
   std::vector<P> leaf_sequence_storage;
 
   MOABDirectAccessManager* MDAM;
+  BVHRefiner *RefinerTool;
   
   static const size_t stackSize = 1+N*BVH_MAX_DEPTH;
   StackItemT<NodeRef>* stack;
@@ -515,6 +520,8 @@ class MixedBVH {
       return current.size() ? (NodeRef*) createLeaf(position, current.size()) : new NodeRef();
     }
 
+    RefinerTool->refine(current);
+    
     
     BuildState tempChildren[N];
     size_t numChildren = 1;

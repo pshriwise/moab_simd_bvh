@@ -6,13 +6,16 @@
 #include "moab/Core.hpp"
 
 template <typename V, typename T, typename I>
-class BVHRefiner {
+class BVHRefinerT {
 
   typedef BuildStateT<PrimRef> BuildState;
 
   typedef MBTriangleRefT<V, T, I> P;
+
+ public:
+  inline BVHRefinerT(MOABDirectAccessManager* MDAM) : MDAM(MDAM) {}
   
-  inline BVHRefiner(MOABDirectAccessManager* MDAM) : MDAM(MDAM) {}
+ private:
   
   inline bool is_hv_region(const BuildState& cur) {
     bool result = false;
@@ -45,10 +48,14 @@ class BVHRefiner {
     return result;
   }
 
-  inline NodeRef refine(NodeRef current_node, const BuildState &cur) {
+ public:
+  
+  inline NodeRef* refine(const BuildState &cur) {
     bool is_hv = is_hv_region(cur);
     std::cout << "HV Region Check Result: " << is_hv << std::endl;
   }
+
+ private:
   
   MOABDirectAccessManager* MDAM;
 		    
