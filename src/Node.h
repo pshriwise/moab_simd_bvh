@@ -214,6 +214,11 @@ struct __aligned(16) AANode : public Node
     return;
   }
   
+  inline const AABB getBound(size_t i) const { // check index value
+                                   assert(i >= 0 && i < 4); 
+                                   // create and return bounding box
+                                   return AABB( lower_x[i], lower_y[i], lower_z[i],
+						upper_x[i], upper_y[i], upper_z[i]); }
   
   inline AABB getBound(size_t i) { // check index value
                                    assert(i >= 0 && i < 4); 

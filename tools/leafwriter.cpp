@@ -48,30 +48,25 @@ private:
   
 public:
   
-  virtual bool visit(NodeRef& current_node, TravRay vray,
+  virtual bool visit(NodeRef current_node, TravRay& vray,
 		     const vfloat4& tnear,
 		     const vfloat4& tfar,
 		     vfloat4& tNear,
-		     size_t& mask)  {
+		     size_t& mask)  {    
     // if this is a leaf, no intersection
-    if(current_node.isLeaf()) {
+    if(current_node.isLeaf() || current_node.isSetLeaf() ) {
       return false;
     }
     else {
       // if this is not a leaf, visit all child nodes
       mask = 15;
-
-      // if this is a set leaf, remove the encoding and continue
-      if( current_node.isSetLeaf() ) {
-	setLeaf(current_node);
-	current_node = current_node.setLeaf();
-      }
-
+      
       // if there is a mix of leafs and interior nodes, make sure the interior nodes
       // come last in the traversal by artificially setting distances
       tNear = 100.0f;
       for (size_t i = 0; i < N; i++) {
 	if ( current_node.bnode()->child(i).isLeaf() ) tNear[i] = 0.0f;
+	if ( current_node.bnode()->child(i).isSetLeaf() ) tNear[i] = 10.0f;
       }
     }
     
@@ -86,14 +81,26 @@ public:
     if (!write_set_leaves) { return; }
 
     SetNodeT<moab::EntityHandle>* snode = (SetNodeT<moab::EntityHandle>*)current_node.snode();
-    current_node = current_node.setLeaf();
-    
-    // get the box for this set (should be the same for all children)
-    Vec3fa corners[8];
-    current_node.uanode()->get_corners(0, corners);
+    current_node = snode->ref();
 
-    // write the box to the class MOAB instance
-    corners_to_hex(corners);
+    if(current_node.isUnaligned()) {
+    
+      // retrieve bounding box for this leaf from the parent node
+      Vec3fa corners[8];
+      current_node.uanode()->get_corners(0, corners);
+
+      // write box to class MOAB instance
+      corners_to_hex(corners);
+
+    }
+    else if(current_node.isAligned()) {
+      
+      // retrieve bounding box for this leaf from the parent node
+      AABB box = ((AANode*)current_node.anyNode())->bounds();
+      // write box to class MOAB instance
+      aabb_to_hex(box);
+      
+    }
 
     moab::EntityHandle surface_handle = snode->setID;
 
@@ -116,7 +123,7 @@ public:
     return;
   }
 
-  virtual void leaf(NodeRef current_node, NodeRef previous_node, Ray ray) {
+  virtual void leaf(NodeRef current_node, const NodeRef& previous_node, const NodeRef& last_set_leaf, Ray& ray) {
 
     // if node is empty, do nothing
     if ( current_node.isEmpty() ) { return; }
@@ -128,13 +135,30 @@ public:
     
     // get the child number of this node using the parent node
     int child_number = find_child_number(current_node, previous_node);
+
+    if(child_number < 0) {
+      child_number = find_child_number(last_set_leaf, previous_node);
+    }
     
-    // retrieve bounding box for this leaf from the parent node
-    Vec3fa corners[8];
-    previous_node.uanode()->get_corners(child_number, corners);
+    if(previous_node.isUnaligned()) {
     
-    // write box to class MOAB instance
-    corners_to_hex(corners);
+      // retrieve bounding box for this leaf from the parent node
+      Vec3fa corners[8];
+      previous_node.uanode()->get_corners(child_number, corners);
+
+      // write box to class MOAB instance
+      corners_to_hex(corners);
+
+    }
+    else if(previous_node.isAligned()) {
+      
+      // retrieve bounding box for this leaf from the parent node
+      AABB box = ((AANode*)previous_node.anyNode())->getBound(child_number);
+
+      // write box to class MOAB instance
+      aabb_to_hex(box);
+      
+    }
     
     moab::ErrorCode rval;
 

@@ -30,6 +30,7 @@ public:
 	break;
       }
     }
+
     assert( child_number >= 0 );
 
     return child_number;

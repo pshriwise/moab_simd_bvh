@@ -23,6 +23,7 @@ class BVHCustomTraversalT {
 
 private:
   NodeRef previous_node;
+  NodeRef last_set_leaf;
   
 public:
   //  void intersectRay(NodeRef root, Ray& ray);
@@ -73,8 +74,16 @@ void BVHCustomTraversalT<V,P,I>::traverse(NodeRef root, RayT<V,P,I> & ray, BVHOp
 	while (true)
 	  {
 	    size_t mask = 0; vfloat4 tNear(inf);
-	    bool nodeIntersected = op.visit(cur, vray, ray_near, ray_far, tNear, mask);
 
+	    if( cur.isSetLeaf() ) {
+	      op.setLeaf(cur);
+	      SetNode* snode = (SetNode*)cur.snode();
+	      last_set_leaf = cur; // track the last visited set leaf
+	      cur = snode->ref();
+	    }
+	    
+	    bool nodeIntersected = op.visit(cur, vray, ray_near, ray_far, tNear, mask);
+	    
 #ifdef VERBOSE_MODE
 	    AANode* curaa = cur.node();
 	    if( !cur.isEmpty() ) std::cout << curaa->bounds() << std::endl;
@@ -104,9 +113,10 @@ void BVHCustomTraversalT<V,P,I>::traverse(NodeRef root, RayT<V,P,I> & ray, BVHOp
 	    if (mask == 0) { goto pop; }
 
 	    nodeTraverser.traverseClosest(cur, mask, tNear, stackPtr, stackEnd);
+	    
 	  }
-
-	op.leaf(cur, previous_node, ray);
+	
+	op.leaf(cur, previous_node, last_set_leaf, ray);
 	
       }
     return;

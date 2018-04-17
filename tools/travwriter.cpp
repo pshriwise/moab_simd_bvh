@@ -29,7 +29,7 @@ private:
   
 public:
   
-  virtual bool visit(NodeRef& current_node, TravRay vray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& tNear, size_t& mask)  {
+  virtual bool visit(NodeRef current_node, TravRay& vray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& tNear, size_t& mask)  {
 
     // if this is a leaf, no intersection
     if(current_node.isLeaf()) {
@@ -77,7 +77,7 @@ public:
     return; 
   }
 
-  virtual void leaf(NodeRef current_node, NodeRef previous_node, Ray ray) {
+  virtual void leaf(NodeRef current_node, const NodeRef& previous_node, const NodeRef& set_parent, Ray& ray) {
     // if node is empty, do nothing
     if ( current_node.isEmpty() ) return;
     
