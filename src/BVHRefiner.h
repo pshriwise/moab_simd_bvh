@@ -37,9 +37,9 @@ class BVHRefinerT {
       rval = MDAM->MOAB_instance->get_adjacencies(&vert, 1, 2, false, adj_tris);
       MB_CHK_SET_ERR_CONT(rval, "Failed to get adjacencies when checking for HV region.");
 
-      moab::Range overlap;
+      moab::Range overlap = ehs;
       overlap -= adj_tris;
-      if( (double)overlap.size()/(double)ehs.size() < 0.8 ) {
+      if( (double)overlap.size()/(double)ehs.size() < 0.1 ) {
 	result = true;
 	break;
       }
@@ -53,6 +53,7 @@ class BVHRefinerT {
   inline NodeRef* refine(BuildState &cur) {
     bool is_hv = is_hv_region(cur);
     if( is_hv ) {
+      std::cout << "Found an HV Region at depth: " << cur.depth << std::endl;
       return OBVHBuilder->Build(cur);
     }
     else {
