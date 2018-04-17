@@ -125,7 +125,7 @@ class OBVH {
     child_nodes[3].clear();
 
     for(size_t i = 0; i < numNodes; i ++) {
-      UANode* aanode = nodesPtr[i]->uasafeNode();
+      UANode* aanode = (UANode*)nodesPtr[i]->anyNode();
       bool placed = false;
       
       for(size_t j = 0; j < N; j++){
@@ -176,7 +176,7 @@ class OBVH {
     }
     
     if(!node_ref.isLeaf()){
-      const UANode* temp_node = node_ref.uasafeNode();
+      const UANode* temp_node = (UANode*)node_ref.anyNode();
       Vec3fa corners[8];
       for(size_t i = 0; i < N; i++) {
 	temp_node->global_points(i, corners);
@@ -247,7 +247,7 @@ class OBVH {
     OBB box = box_from_nodes(nodesPtr, numNodes);
     aanode->setBounds(box);
     
-    NodeRef* this_node = new NodeRef((size_t)aanode);
+    NodeRef* this_node = new NodeRef((size_t)aanode, UNALIGNED_NODE);
     
     TempSetNode child_nodes[N];
     split_sets(this_node, nodesPtr, numNodes, child_nodes, settings);
@@ -294,7 +294,7 @@ class OBVH {
     // if no primitives are passed, return a node pointing to emptt leaves
     if(numPrimitives == 0) {
       UANode *aanode = new UANode();
-      NodeRef* node = new NodeRef((size_t)aanode);
+      NodeRef* node = new NodeRef((size_t)aanode, UNALIGNED_NODE);
       node->node()->setRef(0,NodeRef());
       node->node()->setRef(1,NodeRef());
       node->node()->setRef(2,NodeRef());
@@ -367,7 +367,7 @@ class OBVH {
     
     // increment depth and recur here
     aanode->setBounds(box);
-    NodeRef* this_node = new NodeRef((size_t)aanode);
+    NodeRef* this_node = new NodeRef((size_t)aanode, UNALIGNED_NODE);
     TempPrimNode tempNodes[4];
     splitNode(this_node, box, primitives, numPrimitives, tempNodes, settings);
 
@@ -406,7 +406,7 @@ class OBVH {
     int best_dim = -1;
     float cost;
 
-    UANode* this_node = node->uanode();
+    UANode* this_node = (UANode*)node->anyNode();
     
     size_t np = numPrimitives;
     // split along each axis and get lowest cost
@@ -627,7 +627,7 @@ class OBVH {
       
     }
     
-    NodeRef* node = new NodeRef((size_t)aanode);
+    NodeRef* node = new NodeRef((size_t)aanode, UNALIGNED_NODE);
 
     
     /* recurse into each child and perform reduction */
@@ -671,7 +671,7 @@ class OBVH {
 
   static inline bool intersect(NodeRef& node, const TravRay& ray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& dist, size_t& mask) {
     if(node.isLeaf() || node.isSetLeaf() ) return false;
-    mask = intersectBox<I>(*node.uanode(),ray,tnear,tfar,dist);
+    mask = intersectBox<I>(*(UANode*)node.anyNode(),ray,tnear,tfar,dist);
     return true;
   }
 
@@ -715,7 +715,7 @@ class OBVH {
 	    bool nodeIntersected = intersect(cur, vray, ray_near, ray_far, tNear, mask);
 	    
 #ifdef VERBOSE_MODE
-	    UANode* curaa = cur.uanode();
+	    UANode* curaa = (UANode*)cur.anyNode();
 	    if( !cur.isEmpty() ) std::cout << curaa->bounds() << std::endl;
 	    else std::cout << "EMPTY NODE" << std::endl;
 	    
@@ -723,7 +723,7 @@ class OBVH {
 	      std::cout << "INTERIOR NODE" << std::endl;
 	      std::cout << std::bitset<4>(mask) << std::endl;
 	      std::cout << "Distances to hit: " << tNear << std::endl;
-	      std::cout << *cur.uanode() << std::endl;
+	      std::cout << *(UANode*)cur.anyNode() << std::endl;
 	    }
 	    else
 	      std::cout << "LEAF NODE" << std::endl;
@@ -781,7 +781,7 @@ class OBVH {
 
     static inline bool intersectNearest(NodeRef& node, const TravRay& ray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& dist, size_t& mask) {
     if(node.isLeaf() || node.isSetLeaf() ) return false;
-    mask = nearestOnBox<I>(*node.uanode(),ray,tnear,tfar,dist);
+    mask = nearestOnBox<I>(*(UANode*)node.anyNode(),ray,tnear,tfar,dist);
     return true;
   }
 
