@@ -49,13 +49,13 @@ struct NodeRef {
   
   __forceinline size_t isLeaf() const { return ptr & tyLeaf; }
 
-  __forceinline size_t isSetLeaf() const { return !isLeaf() && (ptr & align_mask) & setLeafAlign; }
+  __forceinline size_t isSetLeaf() const { return (ptr & align_mask) == setLeafAlign; }
 
   __forceinline bool isEmpty() const { return ptr == emptyNode; }
 
-  __forceinline bool isUnaligned() const { return (ptr & align_mask) == alignedNode; }
+  __forceinline bool isUnaligned() const { return (ptr & align_mask) == unalignedNode; }
   
-  __forceinline bool isAligned() const { return (ptr & align_mask) == unalignedNode; }
+  __forceinline bool isAligned() const { return (ptr & align_mask) == alignedNode; }
   
   __forceinline       void* anyNode()       { return (void*)(ptr & ~align_mask); }
   __forceinline const void* anyNode() const { return (void*)(ptr & ~align_mask); }
