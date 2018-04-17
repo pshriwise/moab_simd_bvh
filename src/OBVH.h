@@ -48,7 +48,6 @@ class OBVH {
       std::vector<P> storage_vec(MDAM->num_elements);
       leaf_sequence_storage = storage_vec;
       //      leaf_sequence_storage.resize(MDAM->num_elements);
-      box_bump = 5e-03;
     }
      
  private:
@@ -65,8 +64,6 @@ class OBVH {
   
   static const size_t stackSize = 1+N*BVH_MAX_DEPTH;
 
-  float box_bump;
-  
  public:
 
   inline void set_filter(typename Filter::FilterFunc ff) { filter = ff; }
@@ -155,14 +152,14 @@ class OBVH {
     }
 
     OBB box = OBB(&all_points.front(), all_points.size());
-    box.bump(box_bump);
+    box.bump(BOX_BUMP);
     return box;
   }
   
   inline OBB box_from_node(const NodeRef* node) {
     std::vector<Vec3fa> points = points_from_node(node);
     OBB box = OBB(&points.front(), points.size());
-    box.bump(box_bump);
+    box.bump(BOX_BUMP);
     return box;
   }
 
@@ -361,7 +358,7 @@ class OBVH {
     OBB box = OBB(&(x.front()), &(y.front()), &(z.front()), x.size());
 
     // extend box 
-    box.bump(box_bump);
+    box.bump(BOX_BUMP);
     
     // increment depth and recur here
     aanode->setBounds(box);
@@ -426,10 +423,10 @@ class OBVH {
       splitNode(node, node_box, best_dim, primitives, numPrimitives, tempNodes);
     }
 
-    tempNodes[0].box.bump(box_bump);
-    tempNodes[1].box.bump(box_bump);
-    tempNodes[2].box.bump(box_bump);
-    tempNodes[3].box.bump(box_bump);
+    tempNodes[0].box.bump(BOX_BUMP);
+    tempNodes[1].box.bump(BOX_BUMP);
+    tempNodes[2].box.bump(BOX_BUMP);
+    tempNodes[3].box.bump(BOX_BUMP);
 
     this_node->setBound(0, tempNodes[0].box);
     this_node->setBound(1, tempNodes[1].box);
@@ -619,7 +616,7 @@ class OBVH {
       
       OBB b = OBB(&(x.front()), &(y.front()), &(z.front()), x.size());
 
-      b.bump(box_bump);
+      b.bump(BOX_BUMP);
       
       aanode->setBound(i, b);
       
