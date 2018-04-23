@@ -25,7 +25,7 @@ class BVHRefinerT {
       	P t = P((I*)MDAM->conn + (cur.prims[i].primID()*MDAM->element_stride), (I)cur.prims[i].primitivePtr);
 	ehs.insert(t.eh);
     }
-
+    
     moab::Range triangle_verts;
     moab::ErrorCode rval = MDAM->MOAB_instance->get_connectivity(ehs, triangle_verts);
     MB_CHK_SET_ERR_CONT(rval, "Failed to get connectivity when checking for HV region.");
@@ -39,7 +39,7 @@ class BVHRefinerT {
 
       moab::Range overlap = ehs;
       overlap -= adj_tris;
-      if( (double)overlap.size()/(double)ehs.size() < 0.1 ) {
+      if( (double)overlap.size()/(double)ehs.size() < 1.0 - HV_THRESHOLD ) {
 	result = true;
 	break;
       }
