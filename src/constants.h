@@ -5,7 +5,7 @@
 
 #define N 4
 
-static const double HV_THRESHOLD = 0.9;
+static const double HV_THRESHOLD = 0.5;
 
 static const double BOX_BUMP = 5e-03;
 
