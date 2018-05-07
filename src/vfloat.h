@@ -186,7 +186,7 @@ __forceinline vfloat4 mini(const vfloat4& a, const vfloat4&b, const vfloat4& c) 
 
 __forceinline vfloat4 mini(const vfloat4& a, const vfloat4&b, const vfloat4& c, const vfloat4& d) { return mini(mini(a,b),c,d); }
 
-
+__forceinline vfloat4 sqrt(const vfloat4& a) { return vfloat4(sqrt(a[0]), sqrt(a[1]), sqrt(a[2]), sqrt(a[3])); }
 
 __forceinline vfloat4 maxi(const vfloat4& a, const vfloat4&b, const vfloat4& c) { return maxi(maxi(a,b),c); }
 

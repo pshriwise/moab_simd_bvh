@@ -828,7 +828,6 @@ class BVH {
     StackItemT<NodeRef>* stackEnd = stack+stackSize;
     stack[0].ptr = root;
     stack[0].dist = neg_inf;
-
     
     vfloat4 ray_near = std::max(ray.tnear, 0.0);
     vfloat4 ray_far = std::max(ray.tfar, 0.0);
@@ -842,7 +841,7 @@ class BVH {
 	NodeRef cur = NodeRef(stackPtr->ptr);
 	
 	// if the ray doesn't reach this node, move to next
-	if(*(float*)&stackPtr->dist > ray.tfar) { continue; }
+	if(*(float*)&stackPtr->dist >= ray.tfar) { continue; }
 	
 	while (true)
 	  {
@@ -856,6 +855,7 @@ class BVH {
 	    if (mask == 0) { goto pop; }
 
 	    nodeTraverser.traverseClosest(cur, mask, tNear, stackPtr, stackEnd);
+	    
 	  }
 
     	if ( !cur.isEmpty() ) {
@@ -885,6 +885,7 @@ class BVH {
 	    P t = primIDs[i];
 	    t.closestPnt(vray, ray, (void*)MDAM);
 	  }
+	  ray_far = ray.tfar;
 	}
       }
     
