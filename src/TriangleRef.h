@@ -251,6 +251,7 @@ template<typename V, typename P, typename I>
 
     moab::CartVect vec = closest_out-location;
     double dist = vec.length();
+    dist = dist*dist;
     if ( dist < ray.tfar) {
       ray.tfar = dist;
       ray.primID = eh;

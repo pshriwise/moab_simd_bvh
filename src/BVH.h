@@ -818,6 +818,7 @@ class BVH {
   inline void intersectClosest(NodeRef root, Ray &ray) {
     TravRay vray(ray.org, ray.dir);
     intersectClosest(root, ray, vray);
+    ray.tfar = sqrt(ray.tfar);
     return;
   }
   
@@ -888,7 +889,7 @@ class BVH {
 	  ray_far = ray.tfar;
 	}
       }
-    
+
     return;
   }
   
