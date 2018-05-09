@@ -290,35 +290,7 @@ __forceinline size_t nearestOnBox(const AANode &node, const TravRayT<I> &ray, co
   dist = xval*xval + yval*yval + zval*zval;
 
   vbool4 mask = tfar > dist;
-  /* // find the center of the boxes */
-  /* vfloat4 centerX = (node.lower_x+node.upper_x)*0.5; */
-  /* vfloat4 centerY = (node.lower_y+node.upper_y)*0.5; */
-  /* vfloat4 centerZ = (node.lower_z+node.upper_z)*0.5; */
 
-  /* centerX -= ray.org.x; */
-  /* centerY -= ray.org.y; */
-  /* centerZ -= ray.org.z; */
-
-  /* dist = centerX*centerX + centerY*centerY + centerZ*centerZ; */
-
-  /* dist = sqrt(dist); */
-  
-  /* // compute the vector from the ray origin to the box center */
-  /* const vfloat4 tminX = node.lower_x - ray.org.x; */
-  /* const vfloat4 tminY = node.lower_y - ray.org.y; */
-  /* const vfloat4 tminZ = node.lower_z - ray.org.z; */
-  /* const vfloat4 tmaxX = ray.org.x - node.upper_x; */
-  /* const vfloat4 tmaxY = ray.org.y - node.upper_y; */
-  /* const vfloat4 tmaxZ = ray.org.z - node.upper_z; */
-
-  /* vfloat4 tX = max(tminX, tmaxX); */
-  /* vfloat4 tY = max(tminY, tmaxY); */
-  /* vfloat4 tZ = max(tminZ, tmaxZ); */
-
-  /* dist = max(tX,tY,tZ); */
-
-
-  // we claim to "intersect" all boxes
   return movemask(mask);
   
 };

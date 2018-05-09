@@ -840,13 +840,14 @@ class BVH {
 	if(stackPtr == stack) break;
 	stackPtr--;
 	NodeRef cur = NodeRef(stackPtr->ptr);
-	
+
 	// if the ray doesn't reach this node, move to next
 	if(*(float*)&stackPtr->dist >= ray.tfar) { continue; }
 	
 	while (true)
 	  {
 	    size_t mask = 0; vfloat4 tNear(inf);
+
 	    bool nodeIntersected = intersectNearest(cur, vray, ray_near, ray_far, tNear, mask);
 
 	    if(!nodeIntersected) {
