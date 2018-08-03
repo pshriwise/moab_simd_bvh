@@ -53,8 +53,6 @@ else()
   add_definitions(-D${BBOX_TYPE})
 endif()
 
-
-
 # A list of all unittests
 # test files are named test_<test_name>
 LIST(APPEND TEST_FILES "vec3fa")
@@ -106,5 +104,5 @@ INSTALL(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
 INSTALL(TARGETS MBVH DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
 CONFIGURE_FILE(MBVHConfig.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/MBVHConfig.cmake @ONLY)
-
 INSTALL(FILES MBVHConfig.cmake DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/cmake)
+
