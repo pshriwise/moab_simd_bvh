@@ -3,3 +3,4 @@ bld
 build
 /tests/test_files.h
 *.cmake
+src/MBVH.h

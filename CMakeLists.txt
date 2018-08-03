@@ -49,8 +49,6 @@ set_property(CACHE BBOX_TYPE PROPERTY STRINGS ${BBOX_TYPES})
 list(FIND BBOX_TYPES ${BBOX_TYPE} index)
 if(index EQUAL -1)
   message(FATAL_ERROR "BBOX_TYPE must be one of ${BBOX_TYPES}")
-else()
-  add_definitions(-D${BBOX_TYPE})
 endif()
 
 # A list of all unittests
