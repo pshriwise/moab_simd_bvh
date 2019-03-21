@@ -14,7 +14,7 @@ template<typename T>
 struct BVHSettingsT {
 
   float (*evaluate_cost)(TempNodeT<T> tempNodes[N], const AABB &node_box, const size_t &numPrimitives);
-  
+
   // constructor
   BVHSettingsT() {
     // set SAH by default
@@ -23,7 +23,7 @@ struct BVHSettingsT {
 
   // implementation of the entity ratio heuristic (QUAD TREE ONLY RN)
   static float entity_ratio_heuristic(TempNodeT<T> tempNodes[N], const AABB &node_box, const size_t &numPrimitives) {
-    float cost = abs(abs(tempNodes[0].size() - tempNodes[1].size()) - abs(tempNodes[2].size() - tempNodes[3].size()));
+    float cost = abs(abs((int)tempNodes[0].size() - (int)tempNodes[1].size()) - abs((int)tempNodes[2].size() - (int)tempNodes[3].size()));
     int total = 0;
     for(size_t i = 0; i < N; i++){ total += tempNodes[i].size(); }
     return cost /= (float)total;
@@ -59,5 +59,3 @@ struct BVHSettingsT {
     }
   }
 };
-
-
