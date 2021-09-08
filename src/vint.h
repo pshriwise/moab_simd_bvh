@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _VINT_H
+#define _VINT_H
 
 
 #include "constants.h"
@@ -18,17 +19,17 @@ struct vint4
   __forceinline vint4 () {}
 
   __forceinline vint4( const __m128i a ) : v(a) {}
-  
+
   __forceinline operator const __m128i&( void ) const { return v; }
   __forceinline operator       __m128i&( void )       { return v; }
-  
+
   __forceinline vint4 (const vint4& other) { f[0] = other.f[0];
                                           f[1] = other.f[1];
 					  f[2] = other.f[2];
 					  f[3] = other.f[3]; }
 
   __forceinline vint4& operator =( const int& a ) { f[0] = a; f[1] = a; f[2] = a; f[3] = a; }
-    
+
   __forceinline vint4( int a )                            { f[0] = a; f[1] = a; f[2] = a; f[3] = a; }
   __forceinline vint4( int a, int b, int c, int d) {  f[0] = a; f[1] = b; f[2] = c; f[3] = d; }
 
@@ -88,4 +89,6 @@ __forceinline vint4 max(const vint4& a, const vint4&b) { vint4 v;
 
 __forceinline std::ostream& operator<<(std::ostream& cout, const vint4& a) {
    return cout << "<" << a[0] << ", " << a[1] << ", " << a[2] << ", " << a[3] << ">";
-}                       
+}
+
+#endif

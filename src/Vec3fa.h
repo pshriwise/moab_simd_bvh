@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _VEC3FA_H
+#define _VEC3FA_H
 
 #include <assert.h>
 #include <iostream>
@@ -27,7 +28,7 @@ struct __aligned(16) Vec3fa {
   __forceinline Vec3fa( const float px, const float py, const float pz) { x = px; y = py; z = pz; a = pz;}
 
   __forceinline Vec3fa( const float px, const float py, const float pz, const int pa) { x = px; y = py; z = pz; a = pa; }
-    
+
   __forceinline Vec3fa( ZeroTy ) { x = 0.0f; y = 0.0f; z = 0.0f; a = 0;}
   __forceinline Vec3fa( PosInfTy ) { x = inf; y = inf; z = inf; a = inf; };
   __forceinline Vec3fa( NegInfTy ) { x = neg_inf; y = neg_inf; z = neg_inf; a = neg_inf; };
@@ -40,7 +41,7 @@ struct __aligned(16) Vec3fa {
   __forceinline Vec3fa normalize() { float len = length();
     len = len < min_rcp_input ? min_rcp_input : len;
     x /= len; y /= len; z/= len; }
-  
+
 };
 
 
@@ -111,3 +112,4 @@ __forceinline std::ostream& operator <<(std::ostream &os, Vec3fa  const& v) {
 }
 
 
+#endif

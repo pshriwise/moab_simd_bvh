@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _NODE_H
+#define _NODE_H
 
 #include "Vec3.h"
 #include "AABB.h"
@@ -18,7 +19,7 @@ static const size_t align_mask = 15;
 // forward declarations
 struct AANode;
 struct Node;
- 
+
 struct NodeRef {
 
   __forceinline NodeRef () { ptr = emptyNode;}
@@ -28,7 +29,7 @@ struct NodeRef {
   __forceinline operator size_t() const { return ptr; }
 
   __forceinline size_t pointer () const { return ptr; }
-  
+
   __forceinline size_t isLeaf() const { return ptr & tyLeaf; }
 
   __forceinline size_t isSetLeaf() const { return !(isLeaf()) && (ptr & setLeafAlign); }
@@ -40,10 +41,10 @@ struct NodeRef {
 
   __forceinline       AANode* safeNode()        { return isSetLeaf() ? (AANode*)setLeafPtr() : node(); }
   __forceinline const AANode* safeNode() const  { return isSetLeaf() ? (AANode*)setLeafPtr() : node(); }
-      
+
   __forceinline       void* snode()       { return (void*)setLeafPtr(); }
   __forceinline const void* snode() const { return (const void*)setLeafPtr(); }
-  
+
   __forceinline       Node* bnode()       { return (Node*)ptr; }
   __forceinline const Node* bnode() const { return (const Node*)ptr; }
 
@@ -53,7 +54,7 @@ struct NodeRef {
   __forceinline size_t setLeafPtr() const { return (ptr & ~(size_t)setLeafAlign); }
 
   __forceinline NodeRef setLeaf() { return NodeRef(setLeafPtr()); }
-  
+
   __forceinline void* leaf(size_t& num) const {
     assert(isLeaf());
     num = 1 + (ptr & (items_mask))-tyLeaf;
@@ -65,17 +66,17 @@ struct NodeRef {
     prefetchL2(((char*)ptr)+1*64);
     return;
   }
-  
+
   /* __forceinline char* leaf(size_t& num) const { */
   /*   assert(isLeaf()); */
   /*   num = (ptr & (size_t)items_mask)-tyLeaf; */
   /*   return (char*)(ptr & ~(size_t)align_mask); */
   /* } */
 
-  
+
   private:
   size_t ptr;
-		   
+
 
 };
 
@@ -86,13 +87,13 @@ __forceinline const bool operator ==( const NodeRef& a, const NodeRef& b ) { ret
 
 struct Node {
   __forceinline Node () {}
-  
-  __forceinline void clear() { for(size_t i=0; i < N; i++) children[i] = emptyNode; }
+
+  __forceinline void clear() { for(size_t i=0; i < NARY; i++) children[i] = emptyNode; }
 
   __forceinline bool verify() {
-    for (size_t i=0; i < N; i++) {
+    for (size_t i=0; i < NARY; i++) {
       if (child(i) == NodeRef(emptyNode) ) {
-	for(; i < N; i++) {
+	for(; i < NARY; i++) {
 	  if (child(i) != NodeRef(emptyNode) )
 	    return false;
 	}
@@ -101,12 +102,12 @@ struct Node {
     }
     return true;
   }
-  
-  __forceinline NodeRef& child(size_t i) { assert(i<N); return children[i]; }
-  __forceinline const NodeRef& child(size_t i) const { assert(i<N); return children[i]; }
 
-  NodeRef children[N];
-  
+  __forceinline NodeRef& child(size_t i) { assert(i<NARY); return children[i]; }
+  __forceinline const NodeRef& child(size_t i) const { assert(i<NARY); return children[i]; }
+
+  NodeRef children[NARY];
+
 };
 
 
@@ -157,7 +158,7 @@ struct __aligned(16) AANode : public Node
 			Node::clear();
                         }
 
-  __forceinline void setRef (size_t i, const NodeRef& ref) { assert(i<N); children[i] = ref; }
+  __forceinline void setRef (size_t i, const NodeRef& ref) { assert(i<NARY); children[i] = ref; }
 
   __forceinline void setBound(size_t i, const AABB& bounds) { lower_x[i] = bounds.lower.x;
                                                        lower_y[i] = bounds.lower.y;
@@ -165,29 +166,29 @@ struct __aligned(16) AANode : public Node
 						       upper_x[i] = bounds.upper.x;
                                                        upper_y[i] = bounds.upper.y;
 						       upper_z[i] = bounds.upper.z;  }
-  
+
   inline AABB getBound(size_t i) { // check index value
-                                   assert(i >= 0 && i < 4); 
+                                   assert(i >= 0 && i < 4);
                                    // create and return bounding box
                                    return AABB( lower_x[i], lower_y[i], lower_z[i],
 						upper_x[i], upper_y[i], upper_z[i]); }
 
   __forceinline void setBounds(const AABB& bounds) { lower_x = bounds.lower.x; lower_y = bounds.lower.y; lower_z = bounds.lower.z;
                                               upper_x = bounds.upper.x; upper_y = bounds.upper.y; upper_z = bounds.upper.z; }
-  
+
   __forceinline AABB bounds() const { const Vec3f lower(min(lower_x), min(lower_y),min(lower_z));
                                const Vec3f upper(max(upper_x), max(upper_y), max(upper_z));
   			       return AABB(lower, upper); }
-  
+
   vfloat4 lower_x, upper_x, lower_y, upper_y, lower_z, upper_z;
-  
+
 };
 
 template<typename I>
 struct SetNodeT : public AANode {
 
   using::Node::children;
-  
+
   using::AANode::lower_x;
   using::AANode::lower_y;
   using::AANode::lower_z;
@@ -195,7 +196,7 @@ struct SetNodeT : public AANode {
   using::AANode::upper_y;
   using::AANode::upper_z;
 
-  
+
  SetNodeT(const AANode &aanode,
 	 const I &setid,
 	 const I &fwdID,
@@ -213,10 +214,10 @@ struct SetNodeT : public AANode {
                  children[1] = aanode.children[1];
 		 children[2] = aanode.children[2];
 		 children[3] = aanode.children[3]; }
-  
+
   I setID;
   I fwdID, revID;
-  
+
 };
 
 typedef SetNodeT<unsigned> SetNode;
@@ -248,10 +249,10 @@ __forceinline size_t intersectBox(const AANode &node, const TravRayT<I> &ray, co
   const vfloat4 tFarY = (vfloat4::load((void*)((const char*)&node.lower_x + ray.farY)) - ray.org.y) * ray.rdir.y;
   const vfloat4 tFarZ = (vfloat4::load((void*)((const char*)&node.lower_x + ray.farZ)) - ray.org.z) * ray.rdir.z;
   #endif
-  
+
   const float round_down = 1.0f-2.0f*float(ulp); // FIXME: use per instruction rounding for AVX512
   const float round_up   = 1.0f+2.0f*float(ulp);
-  
+
 #if defined(__SSE4_1__)
   const vfloat4 tNear = maxi(tNearX,tNearY,tNearZ,tnear);
   const vfloat4 tFar  = mini(tFarX ,tFarY ,tFarZ ,tfar);
@@ -264,8 +265,8 @@ __forceinline size_t intersectBox(const AANode &node, const TravRayT<I> &ray, co
   const vbool4 vmask = (round_down*tNear <= round_up*tFar);
   const size_t mask = movemask(vmask);
 #endif
-  
-  dist = tNear;  
+
+  dist = tNear;
   return mask;
 };
 
@@ -294,3 +295,5 @@ __forceinline size_t nearestOnBox(const AANode &node, const TravRayT<I> &ray, co
   // we claim to "intersect" all boxes
   return 15;
 };
+
+#endif

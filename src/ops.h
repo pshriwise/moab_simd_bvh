@@ -1,5 +1,5 @@
-
-#pragma once
+#ifndef _OPS_H
+#define _OPS_H
 
 #include <immintrin.h>
 #include <xmmintrin.h>
@@ -20,3 +20,4 @@ __forceinline size_t __bscf(size_t& v) {
   return i;
 }
 
+#endif

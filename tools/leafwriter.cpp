@@ -34,10 +34,10 @@ public:
   ~LeafWriter() {
     delete new_mbi;
   }
-  
+
 private:
   bool write_tris, write_leaves, write_set_leaves;
-  
+
   // some counters
   int num_leaves;
   int num_set_leaves;
@@ -45,9 +45,9 @@ private:
   int num_set_leaf_triangles_written;
 
   moab::Range found_tris;
-  
+
 public:
-  
+
   virtual bool visit(NodeRef& current_node, TravRay vray,
 		     const vfloat4& tnear,
 		     const vfloat4& tfar,
@@ -70,11 +70,11 @@ public:
       // if there is a mix of leafs and interior nodes, make sure the interior nodes
       // come last in the traversal by artificially setting distances
       tNear = 100.0f;
-      for (size_t i = 0; i < N; i++) {
+      for (size_t i = 0; i < NARY; i++) {
 	if ( current_node.bnode()->child(i).isLeaf() ) tNear[i] = 0.0f;
       }
     }
-    
+
     return true;
   }
 
@@ -87,7 +87,7 @@ public:
 
     SetNodeT<moab::EntityHandle>* snode = (SetNodeT<moab::EntityHandle>*)current_node.snode();
     current_node = current_node.setLeaf();
-    
+
     // get the box for this set (should be the same for all children)
     AABB box = current_node.node()->getBound(0);
 
@@ -111,7 +111,7 @@ public:
     std::stringstream outfilename;
     outfilename << "set_leaf_box_" << std::setfill('0') << std::setw(4) << num_set_leaves << ".vtk";
     write_and_clear(outfilename.str());
-    
+
     return;
   }
 
@@ -121,19 +121,19 @@ public:
     if ( current_node.isEmpty() ) { return; }
 
     num_leaves++;
-    
+
     // if no leaf writing was requested, then do nothing
     if (!write_leaves) { return; }
-    
+
     // get the child number of this node using the parent node
     int child_number = find_child_number(current_node, previous_node);
-    
+
     // retrieve bounding box for this leaf from the parent node
     AABB box = previous_node.node()->getBound(child_number);
 
     // write box to class MOAB instance
     aabb_to_hex(box);
-    
+
     moab::ErrorCode rval;
 
     // if triangles are to be written with the hexes, then
@@ -143,7 +143,7 @@ public:
       // get leaf entities
       size_t numPrims;
       MBTriangleRef* prims = (MBTriangleRef*)current_node.leaf(numPrims);
-      
+
       for(size_t i = 0; i < numPrims; i++) {
 	moab::EntityHandle tri = prims[i].eh;
 	found_tris.insert(tri);
@@ -156,16 +156,16 @@ public:
     std::stringstream outfilename;
     outfilename << "leaf_box_" << std::setfill('0') << std::setw(4) << num_leaves << ".vtk";
     write_and_clear(outfilename.str());
-    
+
     return;
   }
-  
+
   int get_num_leaves() { return num_leaves; }
 
   int get_num_set_leaves() { return num_set_leaves; }
 
   int get_num_leaf_triangles_written() { return num_leaf_triangles_written; }
-  
+
   int get_num_set_leaf_triangles_written() { return num_set_leaf_triangles_written; }
 
   bool validate_tree(moab::EntityHandle ent, bool verbose = true) {
@@ -173,9 +173,9 @@ public:
     moab::Range ent_triangles;
     rval = orig_mbi->get_entities_by_type(ent, moab::MBTRI, ent_triangles, true);
     MB_CHK_ERR_CONT(rval);
-    
+
     moab::Range result = subtract(ent_triangles, found_tris);
-    
+
     if(!result.empty() && verbose) {
       std::cout << "Warning: Tree does not contain all entities underneath the specified entity set." << std::endl;
       std::cout << "Triangles in the set: " << ent_triangles.size() << std::endl;
@@ -184,10 +184,10 @@ public:
       std::cout << "Triangles missing from the tree" << std::endl;
       std::cout << result << std::endl;
     }
-    
+
     return result.empty();
   }
-  
+
 };
 
 int main (int argc, char** argv) {
@@ -217,12 +217,12 @@ int main (int argc, char** argv) {
     std::cout << "Please specify either a volume or surface to write." << std::endl;
     return 1;
   }
-  
-  
+
+
   // create the MOAB instance and load the file
   moab::Interface *MBI = new moab::Core();
   moab::ErrorCode rval;
-  
+
   rval = MBI->load_file(filename.c_str());
   MB_CHK_SET_ERR(rval, "Failed to load the DAGMC model: " << filename);
 
@@ -240,7 +240,7 @@ int main (int argc, char** argv) {
   moab::Tag cat_tag;
   rval = MBI->tag_get_handle(CATEGORY_TAG_NAME, cat_tag);
   MB_CHK_SET_ERR(rval, "Failed to retrieve the category tag");
-  
+
   // set data
   // set tag value based on user-provided option
   std::string cat_name;
@@ -258,7 +258,7 @@ int main (int argc, char** argv) {
 
   const void* ptr[2] = { &ent_id, cat_name.c_str()};
   moab::Tag tags[2] = {gid_tag, cat_tag};
-  
+
   moab::Range entities;
 
   // get the entity of interest from the mesh database
@@ -289,7 +289,7 @@ int main (int argc, char** argv) {
   // output about standard leaves
   std::cout << "Num leaves found: " << op->get_num_leaves() << std::endl;
   if(write_tris) std::cout << "Num leaf triangles written: " << op->get_num_leaf_triangles_written() << std::endl;
-  
+
   std::cout << std::endl;
 
   // output about set leaves
@@ -302,7 +302,7 @@ int main (int argc, char** argv) {
   delete MBI;
   delete tool;
   delete BVHManager;
-  
+
   return 0;
-  
+
 }

@@ -16,7 +16,7 @@ enum BuildQuality {
   BUILD_QUALITY_NORMAL = 1,
   BUILD_QUALITY_HIGH = 2
 };
-  
+
 
 struct BBounds{
   float lower_x, lower_y, lower_z, align0;
@@ -85,7 +85,7 @@ void sortPrimitives(const int dim, const float coord,
 		    BuildPrimitive* rightPrimitives, size_t& numRightPrimitives) {
 
   std::vector<BuildPrimitive> left_list, right_list;
-  
+
   for(size_t i=0; i<numPrimitives; i++){
     if( primitives[i].center()[dim] - coord > 0.0 ){
       left_list.push_back(primitives[i]);
@@ -111,7 +111,7 @@ template <typename T> class BVHBuilder {
 
  public:
   inline BVHBuilder(createLeafFunc createLeaf = NULL) : maxLeafSize(8), depth(0), maxDepth(BVH_MAX_DEPTH), largest_leaf_size(0), smallest_leaf_size(maxLeafSize), numLeaves(0) {}
-  
+
  private:
   size_t maxLeafSize;
   size_t depth;
@@ -127,7 +127,7 @@ template <typename T> class BVHBuilder {
   return (void*) encodeLeaf((void*)primitives, numPrimitives - 1);
   }
 
-  void splitNode(NodeRef* node, size_t split_axis, const T* primitives, const size_t numPrimitives, TempNodeT<T> tn[N]) {
+  void splitNode(NodeRef* node, size_t split_axis, const T* primitives, const size_t numPrimitives, TempNodeT<T> tn[NARY]) {
 
     assert(split_axis >= 0 && split_axis <= 2);
 
@@ -142,7 +142,7 @@ template <typename T> class BVHBuilder {
 
     //create new child bounds
     vfloat4 bounds[6];
-  
+
     new (&bounds[0]) vfloat4(box.lower[0]); // lower x
     new (&bounds[1]) vfloat4(box.upper[0]); // upper x
     new (&bounds[2]) vfloat4(box.lower[1]); // lower y
@@ -155,9 +155,9 @@ template <typename T> class BVHBuilder {
     bounds[2*split_axis] = vfloat4(lb, lb + delta, lb + 2*delta, lb + 3*delta);
     bounds[2*split_axis+1] = vfloat4(lb + delta, lb + 2*delta, lb + 3*delta, lb + 4*delta);
 
-    AABB boxes[N];
+    AABB boxes[NARY];
 
-	 
+
     new (&boxes[0]) AABB(bounds[0][0],
 		    bounds[2][0],
 		    bounds[4][0],
@@ -192,7 +192,7 @@ template <typename T> class BVHBuilder {
     /* new (&tn[1]) TempNodeT<T>(); */
     /* new (&tn[2]) TempNodeT<T>(); */
     /* new (&tn[3]) TempNodeT<T>(); */
-  
+
     // sort primitives into boxes by their centroid
     for(size_t i = 0; i < numPrimitives; i++) {
       const T* p = &(primitives[i]);
@@ -213,12 +213,12 @@ template <typename T> class BVHBuilder {
   }
 
 
-  void splitNode(NodeRef* node, const T* primitives, const size_t numPrimitives, TempNodeT<T> tempNodes[N]) {
+  void splitNode(NodeRef* node, const T* primitives, const size_t numPrimitives, TempNodeT<T> tempNodes[NARY]) {
 
     // split node along each axis
     float max_cost = 2.0;
     float min_cost = 0.0;
-  
+
     float best_cost = max_cost;
     int best_dim = -1;
     float cost;
@@ -226,7 +226,7 @@ template <typename T> class BVHBuilder {
     AANode* this_node = node->node();
 
     AABB node_box = this_node->bounds();
-  
+
     // split along each axis and get lowest cost
     for(size_t i = 0; i < 3; i++) {
       splitNode(node, i, primitives, numPrimitives, tempNodes);
@@ -282,14 +282,14 @@ template <typename T> class BVHBuilder {
 		   low_y,upp_y,
 		   low_z,upp_z);
     return;
-  
+
   }
 
-  
+
   void stats () { std::cout << "Depth: " << depth << std::endl;
     std::cout << "Largest leaf: " << largest_leaf_size << std::endl;
     std::cout <<  "Smallest leaf: " << smallest_leaf_size << std::endl;
-    std::cout << "Number of leaves: " << numLeaves << std::endl;  
+    std::cout << "Number of leaves: " << numLeaves << std::endl;
   }
 
   void splitFallback(const BuildStateT<T>& current, BuildStateT<T>& left, BuildStateT<T>& right) {
@@ -310,9 +310,9 @@ template <typename T> class BVHBuilder {
 
       return;
   }
-  
+
   NodeRef* createLargeLeaf(BuildStateT<T>& current) {
-    
+
     /* if(current.depth > maxDepth) { */
     /*   std::cerr << "Maximum depth reached" << std::endl; */
     /*   std::cerr << "Current depth: " << current.depth << std::endl; */
@@ -330,15 +330,15 @@ template <typename T> class BVHBuilder {
       return storage.back().size() ? (NodeRef*) createLeaf(storage.back().ptr(), storage.back().size()) : new NodeRef();
     }
 
-    
-    BuildStateT<T> tempChildren[N];
+
+    BuildStateT<T> tempChildren[NARY];
     size_t numChildren = 1;
     AABB bounds = current.prims.bounds();
     tempChildren[0] = current;
     for( size_t i = 1; i < numChildren; i++) {
       new (&tempChildren[i]) BuildStateT<T>(current.depth+1);
     }
-    
+
     do {
 
       size_t best_child = -1;
@@ -368,32 +368,32 @@ template <typename T> class BVHBuilder {
       tempChildren[numChildren-1] = left;
       tempChildren[numChildren+0]= right;
       numChildren++;
-      
+
       /* find child with largest bounding box area */
-    } while (numChildren < N);
+    } while (numChildren < NARY);
 
     /* get children bounds */
     vfloat4 x_min, y_min, z_min, x_max, y_max, z_max;
-    
+
     for (size_t i = 0; i < numChildren; i++) {
       AABB b;
       BuildSetT<T> primitives = tempChildren[i].prims;
-      
+
       for(size_t j = 0; j < primitives.size(); j++) {
 	b.update(primitives[j].lower.x, primitives[j].lower.y, primitives[j].lower.z);
 	b.update(primitives[j].upper.x, primitives[j].upper.y, primitives[j].upper.z);
       }
-      
+
       x_min[i] = b.lower.x; y_min[i] = b.lower.y; z_min[i] = b.lower.z;
       x_max[i] = b.upper.x; y_max[i] = b.upper.y; z_max[i] = b.upper.z;
-      
+
     }
-    
+
     /* create node */
     AANode* aanode = new AANode(x_min, x_max, y_min, y_max, z_min, z_max);
     NodeRef* node = new NodeRef((size_t)aanode);
 
-    
+
     /* recurse into each child and perform reduction */
     for (size_t i = 0; i < numChildren; i++) {
 #ifdef VERBOSE_MODE
@@ -406,7 +406,7 @@ template <typename T> class BVHBuilder {
     }
 
     depth = current.depth > depth ? current.depth : depth;
-    
+
     return node;
 
   }
@@ -421,7 +421,7 @@ template <typename T> class BVHBuilder {
 
     const T* primitives = current.ptr();
     size_t numPrimitives = current.size();
-    
+
     // if the end conditions for the tree are met, then create a leaf
     if(numPrimitives <= maxLeafSize || current.depth > maxDepth) {
 #ifdef VERBOSE_MODE
@@ -443,7 +443,7 @@ template <typename T> class BVHBuilder {
     // increment depth and recur here
     aanode->setBounds(box);
     NodeRef* this_node = new NodeRef((size_t)aanode);
-    TempNodeT<T> tempNodes[4];
+    TempNodeT<T> tempNodes[NARY];
     splitNode(this_node, primitives, numPrimitives, tempNodes);
 
 #ifdef VERBOSE_MODE
@@ -451,7 +451,7 @@ template <typename T> class BVHBuilder {
     std::cout << "At depth: " << depth << std::endl;
 #endif
 
-    for(size_t i = 0; i < N ; i++){
+    for(size_t i = 0; i < NARY ; i++){
       BuildStateT<T>* br = new BuildStateT<T>(current.depth+1, tempNodes[i].prims);
       NodeRef* child_node = Build(*br);
       // link the child node
@@ -459,11 +459,10 @@ template <typename T> class BVHBuilder {
     }
 
     depth = current.depth > depth ? current.depth : depth;
-    
+
     return this_node;
   } // end build
 
 };
 
 typedef BVHBuilder<BuildPrimitive> BuildPrimitiveBVH;
-

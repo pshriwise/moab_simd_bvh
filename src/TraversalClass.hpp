@@ -19,16 +19,16 @@
 template <typename V, typename P, typename I>
 class BVHCustomTraversalT {
 
-  static const size_t stackSize = 1+(N-1)*BVH_MAX_DEPTH;
+  static const size_t stackSize = 1+(NARY-1)*BVH_MAX_DEPTH;
 
 private:
   NodeRef previous_node;
-  
+
 public:
   //  void intersectRay(NodeRef root, Ray& ray);
-  
+
   bool intersect(NodeRef& node, const TravRay& ray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& dist, size_t& mask);
-  
+
   void traverse(NodeRef root, RayT<V,P,I> & ray, BVHOperator<V,P,I>& op);
 
 };
@@ -66,10 +66,10 @@ void BVHCustomTraversalT<V,P,I>::traverse(NodeRef root, RayT<V,P,I> & ray, BVHOp
 	if(stackPtr == stack) break;
 	stackPtr--;
 	NodeRef cur = NodeRef(stackPtr->ptr);
-	
+
 	// if the ray doesn't reach this node, move to next
 	if(*(float*)&stackPtr->dist > ray.tfar) { continue; }
-        
+
 	while (true)
 	  {
 	    size_t mask = 0; vfloat4 tNear(inf);
@@ -79,7 +79,7 @@ void BVHCustomTraversalT<V,P,I>::traverse(NodeRef root, RayT<V,P,I> & ray, BVHOp
 	    AANode* curaa = cur.node();
 	    if( !cur.isEmpty() ) std::cout << curaa->bounds() << std::endl;
 	    else std::cout << "EMPTY NODE" << std::endl;
-	    
+
 	    if (nodeIntersected) {
 	      std::cout << "INTERIOR NODE" << std::endl;
 	      std::cout << std::bitset<4>(mask) << std::endl;
@@ -99,7 +99,7 @@ void BVHCustomTraversalT<V,P,I>::traverse(NodeRef root, RayT<V,P,I> & ray, BVHOp
 	      break; }
 
 	    previous_node = cur;
-	    
+
 	    // if no children were hit, pop next node
 	    if (mask == 0) { goto pop; }
 
@@ -107,12 +107,7 @@ void BVHCustomTraversalT<V,P,I>::traverse(NodeRef root, RayT<V,P,I> & ray, BVHOp
 	  }
 
 	op.leaf(cur, previous_node, ray);
-	
+
       }
     return;
 }
-
-
-
-
-

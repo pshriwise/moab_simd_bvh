@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _VDOUBLE_H
+#define _VDOUBLE_H
 
 
 #include "constants.h"
@@ -20,7 +21,7 @@ struct vdouble4
 					  f[3] = other.f[3]; }
 
   __forceinline vdouble4& operator =( const double& a ) { f[0] = a; f[1] = a; f[2] = a; f[3] = a; }
-    
+
   __forceinline vdouble4( double a )                            { f[0] = a; f[1] = a; f[2] = a; f[3] = a; }
   __forceinline vdouble4( double a, double b, double c, double d) {  f[0] = a; f[1] = b; f[2] = c; f[3] = d; }
 
@@ -38,7 +39,7 @@ struct vdouble4
                                                for(size_t i=0; i < 4; i++) {
 						 (*p).f[i] = v[i];
 					       }
-                            } 
+                            }
 
 };
 
@@ -75,7 +76,7 @@ __forceinline vdouble4& operator *=( vdouble4& a, const vdouble4& b ) { return a
 __forceinline vdouble4& operator *=( vdouble4& a, const double&   b ) { return a = a * b; }
 
 __forceinline vdouble4& operator /=( vdouble4& a, const vdouble4& b ) { return a = a / b; }
-__forceinline vdouble4& operator /=( vdouble4& a, const double&   b ) { return a = a / b; }                       
+__forceinline vdouble4& operator /=( vdouble4& a, const double&   b ) { return a = a / b; }
 
 
 ////////// Comparators //////////
@@ -108,7 +109,7 @@ __forceinline const vbool4 operator <=( const vdouble4& a, const vdouble4&b ) { 
 __forceinline const vdouble4 madd  ( const vdouble4& a, const vdouble4& b, const vdouble4& c) { return a*b+c; }
 __forceinline const vdouble4 msub  ( const vdouble4& a, const vdouble4& b, const vdouble4& c) { return a*b-c; }
 __forceinline const vdouble4 nmadd ( const vdouble4& a, const vdouble4& b, const vdouble4& c) { return -a*b+c;}
-__forceinline const vdouble4 nmsub ( const vdouble4& a, const vdouble4& b, const vdouble4& c) { return -a*b-c; }       
+__forceinline const vdouble4 nmsub ( const vdouble4& a, const vdouble4& b, const vdouble4& c) { return -a*b-c; }
 
 __forceinline double min(const vdouble4& v ) { return std::min(std::min(v.f[0],v.f[1]),std::min(v.f[2],v.f[3])); }
 __forceinline double max(const vdouble4& v ) { return std::max(std::max(v.f[0],v.f[1]),std::max(v.f[2],v.f[3])); }
@@ -137,4 +138,6 @@ __forceinline vdouble4 max(const vdouble4& a, const vdouble4&b, const vdouble4& 
 
 __forceinline std::ostream& operator<<(std::ostream& cout, const vdouble4& a) {
    return cout << "<" << a[0] << ", " << a[1] << ", " << a[2] << ", " << a[3] << ">";
-}                       
+}
+
+#endif

@@ -22,13 +22,13 @@ public:
   TravWriter(moab::Interface* original_moab_instance) : WriteVisitor(original_moab_instance),
 							nodes_visited(0) {
   }
-  
+
 private:
   // some counters
   int nodes_visited;
-  
+
 public:
-  
+
   virtual bool visit(NodeRef& current_node, TravRay vray, const vfloat4& tnear, const vfloat4& tfar, vfloat4& tNear, size_t& mask)  {
 
     // if this is a leaf, no intersection
@@ -40,7 +40,7 @@ public:
       if( current_node.isSetLeaf() ) {
 	current_node = current_node.setLeaf();
       }
-      
+
       // perform ray intersection
       mask = intersectBox(*current_node.node(), vray, tnear, tfar, tNear);
 
@@ -59,42 +59,42 @@ public:
 	std::stringstream outfilename;
 	outfilename << "step_" << std::setfill('0') << std::setw(4) << nodes_visited << ".vtk";
 	write_and_clear(outfilename.str());
-      
+
 	// if there is a mix of leafs and interior nodes, make sure the interior nodes
 	// come last in the traversal by artificially setting distances
-	for (size_t i = 0; i < N; i++) {
+	for (size_t i = 0; i < NARY; i++) {
 	  if ( !current_node.bnode()->child(i).isLeaf() ) tNear[i] = inf;
 	}
       }
-      
+
     }
     return true;
-    
+
   }
 
   virtual void setLeaf(NodeRef current_node) {
     // nothing to do for set leaves
-    return; 
+    return;
   }
 
   virtual void leaf(NodeRef current_node, NodeRef previous_node, Ray ray) {
     // if node is empty, do nothing
     if ( current_node.isEmpty() ) return;
-    
+
     nodes_visited++;
 
     int child_number = find_child_number(current_node, previous_node);
-    
+
     // retrieve bounding box for this leaf from the parent node
     AABB box = previous_node.node()->getBound(child_number);
 
     aabb_to_hex(box);
-    
+
     moab::ErrorCode rval;
     // get leaf entities
     size_t numPrims;
     MBTriangleRef* prims = (MBTriangleRef*)current_node.leaf(numPrims);
-    
+
     for(size_t i = 0; i < numPrims; i++) {
       moab::EntityHandle tri = prims[i].eh;
       transfer_tri(tri);
@@ -103,12 +103,12 @@ public:
     std::stringstream outfilename;
     outfilename << "step_" << std::setfill('0') << std::setw(4) << nodes_visited << ".vtk";
     write_and_clear(outfilename.str());
-    
+
     return;
   }
-  
+
   int get_nodes_visited() { return nodes_visited; }
-  
+
 };
 
 int main (int argc, char** argv) {
@@ -130,7 +130,7 @@ int main (int argc, char** argv) {
 
   double ray_length;
   po.addOpt<double>("r", "Create a file representing the ray (ray.vtk) for visualization. The user-specified value is the length of the ray.");
-		    
+
   int vol_id = 1;
   po.addOpt<int>("i", "ID of the volume to write as hexes. (1 by default)", &vol_id);
 
@@ -140,7 +140,7 @@ int main (int argc, char** argv) {
   // create the MOAB instance and load the file
   moab::Interface *MBI = new moab::Core();
   moab::ErrorCode rval;
-  
+
   rval = MBI->load_file(filename.c_str());
   MB_CHK_SET_ERR(rval, "Failed to load the DAGMC model: " << filename);
 
@@ -157,7 +157,7 @@ int main (int argc, char** argv) {
   moab::Tag cat_tag;
   rval = MBI->tag_get_handle(CATEGORY_TAG_NAME, cat_tag);
   MB_CHK_SET_ERR(rval, "Failed to retrieve the category tag");
-  
+
   // set data
   // set tag value based on user-provided option
   std::string cat_name;
@@ -167,7 +167,7 @@ int main (int argc, char** argv) {
   cat_name.resize(CATEGORY_TAG_SIZE);
   const void* ptr[2] = { &ent_id, cat_name.c_str()};
   moab::Tag tags[2] = {gid_tag, cat_tag};
-  
+
   moab::Range entities;
 
   // get the entity of interest from the mesh database
@@ -192,7 +192,7 @@ int main (int argc, char** argv) {
   //create the traversal class
   BVHCustomTraversal* tool = new BVHCustomTraversal();
 
-  // set up ray 
+  // set up ray
   MBRay ray;
   ray.tnear = 0.0;
   ray.tfar = inf;
@@ -212,6 +212,6 @@ int main (int argc, char** argv) {
   delete MBI;
   delete BVHManager;
   delete tool;
-  
+
   return 0;
 }

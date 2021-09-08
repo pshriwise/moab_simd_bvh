@@ -20,7 +20,7 @@ void test_intersect();
 int main(int argc, char** argv) {
 
   test_intersect();
-  
+
   return 0;
 
 }
@@ -39,9 +39,9 @@ int main(int argc, char** argv) {
  node of the tree is returned.
  */
 size_t generate_tree(int current_depth, int split_axis, AABB box, int depth) {
-  
-  
-  
+
+
+
   if(current_depth <= depth) {
     // determine the child box interval in each dimension
     Vec3fa dxdydz = (box.upper - box.lower)/4.0f;
@@ -65,18 +65,18 @@ size_t generate_tree(int current_depth, int split_axis, AABB box, int depth) {
     AANode* this_node = new AANode(bounds[0], bounds[1], bounds[2], bounds[3], bounds[4], bounds[5]);
 
     //generate children
-    int new_split_axis = split_axis == 2 ? 0 : split_axis+1;    
+    int new_split_axis = split_axis == 2 ? 0 : split_axis+1;
     current_depth++;
-    
+
     // create child nodes/leaves
-    for(unsigned int i=0; i < N; i++){
+    for(unsigned int i=0; i < NARY; i++){
       AABB box = AABB(Vec3fa(bounds[0][i],bounds[2][i],bounds[4][i]),
 		      Vec3fa(bounds[1][i],bounds[3][i],bounds[5][i]));
       this_node->children[i] = generate_tree(current_depth, new_split_axis, box, depth);
     }
 
     // return a reference to this node
-    return NodeRef((size_t) this_node);	      
+    return NodeRef((size_t) this_node);
   }
   else {
     return NodeRef(tyLeaf);
@@ -98,7 +98,7 @@ void print_tree(AANode node, int depth) {
       print_tree(n,depth+1);
     }
   }
-  
+
 }
 
 void test_intersect() {
@@ -108,7 +108,7 @@ void test_intersect() {
   // generate the tree for this box
   NodeRef root_ref = generate_tree(0, 0, bbox, 4);
   print_tree(*root_ref.node(),0);
-  
+
   // create a ray for intersection with the hierarchy
   Vec3fa org(10.0, 2.5, 2.5), dir(-1.0, 0.0, 0.0);
   Ray r(org, dir);
